@@ -8,8 +8,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$_SESSION['wishlist'] ??= [];
-$_SESSION['cart'] ??= [];
+// scope wishlist and cart per user to prevent shared data
+$userId = $_SESSION['user_id'] ?? null;
+$wishlistKey = $userId ? "wishlist_user_{$userId}" : 'wishlist_guest';
+if (!isset($_SESSION[$wishlistKey])) $_SESSION[$wishlistKey] = [];
+$wishlistRef = &$_SESSION[$wishlistKey];
+
+$cartKey = $userId ? "cart_user_{$userId}" : 'cart_guest';
+if (!isset($_SESSION[$cartKey])) $_SESSION[$cartKey] = [];
+$cartRef = &$_SESSION[$cartKey];
 
 /* =========================
    ACTIONS (AJAX)
@@ -18,27 +25,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $id = (int)($_POST['product_id'] ?? 0);
 
+
     if ($action === 'add' && $id > 0) {
-        $_SESSION['wishlist'][$id] = time();
+        $wishlistRef[$id] = time();
     }
 
     if ($action === 'remove' && $id > 0) {
-        unset($_SESSION['wishlist'][$id]);
+        unset($wishlistRef[$id]);
     }
 
     if ($action === 'move_to_cart' && $id > 0) {
-        $_SESSION['cart'][$id] = ($_SESSION['cart'][$id] ?? 0) + 1;
-        unset($_SESSION['wishlist'][$id]);
+        $cartRef[$id] = ($cartRef[$id] ?? 0) + 1;
+        unset($wishlistRef[$id]);
     }
 
     if ($action === 'clear') {
-        $_SESSION['wishlist'] = [];
+        // clear the user-scoped wishlist
+        $_SESSION[$wishlistKey] = [];
+        $wishlistRef = &$_SESSION[$wishlistKey];
     }
 
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
-        'count' => count($_SESSION['wishlist'])
+        'count' => count($wishlistRef),
+        'wishlist_count' => count($wishlistRef)
     ]);
     exit;
 }
@@ -46,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* =========================
    FETCH PRODUCTS
 ========================= */
-$wishlist = $_SESSION['wishlist'];
+$wishlist = $wishlistRef;
 $products = [];
 
 if ($wishlist) {

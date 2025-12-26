@@ -8,7 +8,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$_SESSION['cart'] ??= [];
+// Use per-user cart (so different users don't see each other's carts)
+$userId = $_SESSION['user_id'] ?? null;
+$cartSessionKey = $userId ? "cart_user_{$userId}" : 'cart_guest';
+if (!isset($_SESSION[$cartSessionKey])) $_SESSION[$cartSessionKey] = [];
+$cartRef = &$_SESSION[$cartSessionKey];
+// shipping location per-user
+$locSessionKey = $userId ? "shipping_location_user_{$userId}" : 'shipping_location_guest';
+if (!isset($_SESSION[$locSessionKey])) $_SESSION[$locSessionKey] = null;
 
 /* ===============================
    CART ACTIONS (AJAX)
@@ -19,29 +26,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $qty    = (int)($_POST['quantity'] ?? 1);
 
     if ($action === 'update') {
-        if ($qty > 0) $_SESSION['cart'][$id] = $qty;
-        else unset($_SESSION['cart'][$id]);
+        if ($qty > 0) $cartRef[$id] = $qty;
+        else unset($cartRef[$id]);
     }
 
     if ($action === 'add') {
         if ($id > 0) {
-            $existing = (int)($_SESSION['cart'][$id] ?? 0);
-            $_SESSION['cart'][$id] = $existing + max(1, $qty);
+            $existing = (int)($cartRef[$id] ?? 0);
+            $cartRef[$id] = $existing + max(1, $qty);
         }
     }
 
     if ($action === 'remove') {
-        unset($_SESSION['cart'][$id]);
+        unset($cartRef[$id]);
     }
 
-    $count = array_sum($_SESSION['cart']);
+    $count = array_sum($cartRef);
     $subtotal = 0;
 
     if ($count > 0) {
-        $ids = implode(',', array_keys($_SESSION['cart']));
+        $ids = implode(',', array_keys($cartRef));
         $stmt = $pdo->query("SELECT product_id, price FROM products WHERE product_id IN ($ids)");
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            $subtotal += $r['price'] * $_SESSION['cart'][$r['product_id']];
+            $subtotal += $r['price'] * $cartRef[$r['product_id']];
         }
     }
 
@@ -60,10 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-/* ===============================
-   FETCH CART PRODUCTS
-================================ */
-$cart = $_SESSION['cart'];
+$cart = $cartRef;
 $products = [];
 $subtotal = 0;
 
@@ -131,12 +135,23 @@ $total = $subtotal + $tax;
                                 <div>
                                     <h2 class="font-medium text-lg"><?= htmlspecialchars($p['name']) ?></h2>
                                     <p class="text-gray-600 text-sm mt-1">Men's Shoes</p>
-                                    <p class="text-gray-600 text-sm mt-1">
-                                        Black / Smoke Grey / Dark Smoke Grey
-                                    </p>
-                                    <p class="text-gray-600 text-sm mt-1">
-                                        Size <span class="underline">M 13 / W 14.5</span>
-                                    </p>
+                                    <div class="mt-4">
+                                        <p class="text-gray-600 text-sm mb-2">Select Size</p>
+
+                                        <div class="grid grid-cols-4 gap-2">
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 7</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 7.5</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 8</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 8.5</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 9</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 9.5</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 10</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 10.5</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 11</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 11.5</button>
+                                            <button class="size-btn border py-2 text-sm hover:border-black">US 12</button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="font-semibold text-lg">
@@ -285,6 +300,13 @@ $total = $subtotal + $tax;
             if (<?= count($cart) ?> === 0) alert('Cart is empty');
             else location.href = 'checkout.php';
         }
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.size-btn')
+                    .forEach(b => b.classList.remove('border-black'));
+                btn.classList.add('border-black');
+            };
+        });
     </script>
 
 </body>

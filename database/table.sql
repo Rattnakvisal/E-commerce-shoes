@@ -33,21 +33,6 @@ CREATE TABLE products (
         ON DELETE SET NULL
 );
 
-CREATE TABLE product_details (
-    detail_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    product_id INT UNSIGNED NOT NULL,
-    size VARCHAR(10),
-    color VARCHAR(50),
-    additional_info TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_product_details_product
-        FOREIGN KEY (product_id)
-        REFERENCES products(product_id)
-        ON DELETE CASCADE
-);
-
-
 CREATE TABLE orders (
     order_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED,

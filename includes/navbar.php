@@ -30,6 +30,11 @@ if (!empty($_SESSION['avatar'])) {
 	$user_avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($user_name ?: 'User') . '&background=10b981&color=fff';
 }
 
+// Navigation counts - determine current user and compute counts (per-user or guest)
+$navUserId = $_SESSION['user_id'] ?? null;
+$navCartCount = $navUserId ? array_sum($_SESSION["cart_user_{$navUserId}"] ?? []) : array_sum($_SESSION['cart_guest'] ?? []);
+$navWishlistCount = $navUserId ? count($_SESSION["wishlist_user_{$navUserId}"] ?? []) : count($_SESSION['wishlist_guest'] ?? []);
+
 try {
 	$parents = $pdo->query("SELECT id, title, position FROM navbar_parents ORDER BY position, id")->fetchAll(PDO::FETCH_ASSOC);
 	$groups = $pdo->query("SELECT id, parent_id, group_title, position, link_url FROM navbar_groups ORDER BY position, id")->fetchAll(PDO::FETCH_ASSOC);
@@ -144,8 +149,8 @@ foreach ($items as $it) {
 			<!-- Wishlist -->
 			<a href="/E-commerce-shoes/view/wishlist.php" class="relative hidden md:block text-xl text-gray-700 hover:text-black">
 				<i class="far fa-heart"></i>
-				<span id="wishlistCount" class="wishlist-count absolute -top-1 -right-2 bg-pink-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-					<?= count($_SESSION['wishlist'] ?? []) ?>
+				<span id="wishlistCount" class="wishlist-count absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+					<?= $navWishlistCount ?>
 				</span>
 			</a>
 
@@ -153,7 +158,7 @@ foreach ($items as $it) {
 			<a href="/E-commerce-shoes/view/cart.php" class="relative text-xl text-gray-700 hover:text-black">
 				<i class="fas fa-shopping-bag"></i>
 				<span id="cartCount" class="cart-count absolute -top-1 -right-2 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-					<?= array_sum($_SESSION['cart'] ?? []) ?>
+					<?= $navCartCount ?>
 				</span>
 			</a>
 
