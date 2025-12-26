@@ -339,7 +339,6 @@ function refreshData() {
    EVENT LISTENERS SETUP
 ===================================================== */
 function setupEventListeners() {
-    // Modal events
     Elements.openAddUserBtn?.addEventListener('click', () => {
         ModalController.reset();
         ModalController.open();

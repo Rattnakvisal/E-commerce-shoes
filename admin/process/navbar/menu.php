@@ -53,24 +53,36 @@ require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
     <!-- Header -->
     <main class="md:ml-64 min-h-screen">
-        <!-- Main Content Area -->
-        <div>
+        <!-- Page Header -->
+        <div class="mb-6 animate-fade-in">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-4">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 py-4">
+
+                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">
+                        <h1 class="text-2xl font-bold text-gray-900">
                             Navbar Manager
                         </h1>
-                        <p class="text-sm text-gray-500 mt-1">Manage your website navigation menu</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Manage your website navigation menu
+                        </p>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <button onclick="refreshData()" class="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                            <i class="fas fa-sync-alt mr-2"></i>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
+                        <button
+                            onclick="refreshData()"
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition"
+                            title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
+
                 </div>
             </div>
         </div>
+
 
         <!-- Main Content -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -196,7 +196,7 @@ function uploadImage($file)
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
     move_uploaded_file($file['tmp_name'], $dir . $name);
-    return '/Pos-system_drink/assets/Images/products/' . $name;
+    return '/E-commerce-shoes/assets/Images/products/' . $name;
 }
 
 function bindProduct(PDOStatement $stmt, array $data)

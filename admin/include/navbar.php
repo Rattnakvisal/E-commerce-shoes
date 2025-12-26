@@ -37,14 +37,13 @@ if (empty($admin_avatar)) {
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto hide-scrollbar">
         <!-- Dashboard -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/Pos-system_drink/admin/dashboard.php"
+            <a href="/E-commerce-shoes/admin/dashboard.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift active-menu-item">
                 <i class="fas fa-home mr-3 text-gray-500 w-5 text-center"></i>
                 Dashboard
-                <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">5</span>
             </a>
         <?php elseif ($currentRole === 'staff'): ?>
-            <a href="/Pos-system_drink/pos/staff_dashboard.php"
+            <a href="/E-commerce-shoes/pos/staff_dashboard.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                 <i class="fas fa-home mr-3 text-gray-500 w-5 text-center"></i>
                 Staff Dashboard
@@ -53,7 +52,7 @@ if (empty($admin_avatar)) {
 
         <!-- Users (admin only) -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/Pos-system_drink/admin/process/user/user.php"
+            <a href="/E-commerce-shoes/admin/process/user/user.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                 <i class="fas fa-users mr-3 text-gray-500 w-5 text-center"></i>
                 Users
@@ -61,7 +60,7 @@ if (empty($admin_avatar)) {
         <?php endif; ?>
 
         <!-- Navbar Manager -->
-        <a href="/Pos-system_drink/admin/process/navbar/menu.php"
+        <a href="/E-commerce-shoes/admin/process/navbar/menu.php"
             class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
             <i class="fas fa-bars mr-3 text-gray-600 w-5 text-center"></i>
             Navbar Manager
@@ -70,7 +69,7 @@ if (empty($admin_avatar)) {
         <div class="pt-2">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">E-commerce</p>
             <div class="mt-2 space-y-1">
-                <a href="/Pos-system_drink/admin/process/products/products.php"
+                <a href="/E-commerce-shoes/admin/process/products/products.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-shopping-bag mr-3 text-gray-500 w-5 text-center"></i>
                     Products
@@ -83,7 +82,6 @@ if (empty($admin_avatar)) {
                         <i class="fa-solid fa-folder-open mr-3 text-gray-500 w-5 text-center"></i>
                         Item
                         <span class="ml-auto flex items-center gap-2">
-                            <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">24</span>
                             <i class="itemChevron fa-solid fa-chevron-down text-xs transition-transform"></i>
                         </span>
                     </button>
@@ -91,27 +89,29 @@ if (empty($admin_avatar)) {
                     <!-- Dropdown Menu -->
                     <div class="itemDropdown hidden mt-1 ml-8 space-y-1">
 
-                        <a href="/Pos-system_drink/admin/products.php"
-                            class="block px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                        <a href="/E-commerce-shoes/admin/products.php"
+                            class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                            <i class="fa-solid fa-star mr-3 text-gray-500 w-5 text-center"></i>
                             Featured
                         </a>
 
-                        <a href="/Pos-system_drink/admin/process/category/category.php"
-                            class="block px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                        <a href="/E-commerce-shoes/admin/process/category/category.php"
+                            class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                            <i class="fa-solid fa-layer-group mr-3 text-gray-500 w-5 text-center"></i>
                             Categories
                         </a>
 
-                        <a href="/Pos-system_drink/admin/process/slides/slides.php"
-                            class="block px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
-                            Slide
+                        <a href="/E-commerce-shoes/admin/process/slides/slides.php"
+                            class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                            <i class="fa-solid fa-sliders mr-3 text-gray-500 w-5 text-center"></i>
+                            Slides
                         </a>
                     </div>
                 </div>
-                <a href="/Pos-system_drink/admin/orders.php"
+                <a href="/E-commerce-shoes/admin/orders.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-shopping-cart mr-3 text-gray-500 w-5 text-center"></i>
                     Orders
-                    <span class="ml-auto bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">3</span>
                 </a>
             </div>
         </div>
@@ -119,19 +119,19 @@ if (empty($admin_avatar)) {
         <div class="pt-4">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
             <div class="mt-2 space-y-1">
-                <a href="/Pos-system_drink/admin/analytics.php"
+                <a href="/E-commerce-shoes/admin/analytics.php"
                     class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                     <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
                     Analytics
                 </a>
 
-                <a href="/Pos-system_drink/admin/reports.php"
+                <a href="/E-commerce-shoes/admin/reports.php"
                     class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                     <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                     Reports
                 </a>
 
-                <a href="/Pos-system_drink/admin/insights.php"
+                <a href="/E-commerce-shoes/admin/insights.php"
                     class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                     <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
                     Insights
@@ -143,17 +143,17 @@ if (empty($admin_avatar)) {
         <div class="pt-2">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
             <div class="mt-2 space-y-1">
-                <a href="/Pos-system_drink/admin/settings.php"
+                <a href="/E-commerce-shoes/admin/settings.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-cog mr-3 text-gray-500 w-5 text-center"></i>
                     Settings
                 </a>
-                <a href="/Pos-system_drink/admin/logs.php"
+                <a href="/E-commerce-shoes/admin/logs.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-clipboard-list mr-3 text-gray-500 w-5 text-center"></i>
                     Activity Logs
                 </a>
-                <a href="/Pos-system_drink/admin/security.php"
+                <a href="/E-commerce-shoes/admin/security.php"
                     class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                     <i class="fas fa-shield-alt mr-3 text-gray-500 w-5 text-center"></i>
                     Security
@@ -334,19 +334,19 @@ if (empty($admin_avatar)) {
                                 <p class="text-xs text-gray-500 mt-1"><?php echo htmlspecialchars($admin_role); ?></p>
                             </div>
                             <div class="p-2">
-                                <a href="/Pos-system_drink/admin/profile.php"
+                                <a href="/E-commerce-shoes/admin/profile.php"
                                     class="flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
                                     <i class="fas fa-user mr-3 text-gray-500 w-5 text-center"></i>
                                     My Profile
                                 </a>
-                                <a href="/Pos-system_drink/admin/activity.php"
+                                <a href="/E-commerce-shoes/admin/activity.php"
                                     class="flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
                                     <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
                                     Activity
                                 </a>
                             </div>
                             <div class="p-2 border-t border-gray-200">
-                                <a href="/Pos-system_drink/auth/logout.php"
+                                <a href="/E-commerce-shoes/auth/logout.php"
                                     onclick="return confirm('Are you sure you want to logout?');"
                                     class="flex items-center px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg">
                                     <i class="fas fa-sign-out-alt mr-3 text-red-500 w-5 text-center"></i>
@@ -396,7 +396,7 @@ if (empty($admin_avatar)) {
     <div class="px-3 py-4 overflow-y-auto h-[calc(100%-8rem)] hide-scrollbar">
         <nav class="space-y-1">
             <!-- Dashboard -->
-            <a href="/Pos-system_drink/admin/dashboard.php"
+            <a href="/E-commerce-shoes/admin/dashboard.php"
                 class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 active-menu-item touch-feedback">
                 <i class="fas fa-home mr-3 text-gray-500 w-5 text-center"></i>
                 Dashboard
@@ -404,14 +404,14 @@ if (empty($admin_avatar)) {
             </a>
 
             <!-- Users -->
-            <a href="/Pos-system_drink/admin/process/user/user.php"
+            <a href="/E-commerce-shoes/admin/process/user/user.php"
                 class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                 <i class="fas fa-users mr-3 text-gray-500 w-5 text-center"></i>
                 Users
             </a>
 
             <!-- Navbar Manager -->
-            <a href="/Pos-system_drink/admin/process/navbar/menu.php"
+            <a href="/E-commerce-shoes/admin/process/navbar/menu.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                 <i class="fas fa-bars mr-3 text-gray-600 w-5 text-center"></i>
                 Navbar Manager
@@ -421,7 +421,7 @@ if (empty($admin_avatar)) {
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">E-commerce</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/Pos-system_drink/admin/process/products/products.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                    <a href="/E-commerce-shoes/admin/process/products/products.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-shopping-bag mr-3 text-gray-500 w-5 text-center"></i>
                         Products
                     </a>
@@ -441,24 +441,26 @@ if (empty($admin_avatar)) {
                         <!-- Dropdown Menu -->
                         <div class="itemDropdown hidden mt-1 ml-8 space-y-1">
 
-                            <a href="/Pos-system_drink/admin/products.php"
-                                class="block px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                            <a href="/E-commerce-shoes/admin/products.php"
+                                class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                                <i class="fa-solid fa-star mr-3 text-gray-500 w-5 text-center"></i>
                                 Featured
                             </a>
 
-                            <a href="/Pos-system_drink/admin/process/category/category.php"
-                                class="block px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                            <a href="/E-commerce-shoes/admin/process/category/category.php"
+                                class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                                <i class="fa-solid fa-layer-group mr-3 text-gray-500 w-5 text-center"></i>
                                 Categories
                             </a>
 
-                            <a href="/Pos-system_drink/admin/process/slides/slides.php"
-                                class="block px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
-                                Slide
+                            <a href="/E-commerce-shoes/admin/process/slides/slides.php"
+                                class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
+                                <i class="fa-solid fa-sliders mr-3 text-gray-500 w-5 text-center"></i>
+                                Slides
                             </a>
                         </div>
                     </div>
-
-                    <a href="/Pos-system_drink/admin/orders.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                    <a href="/E-commerce-shoes/admin/orders.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-shopping-cart mr-3 text-gray-500 w-5 text-center"></i>
                         Orders
                     </a>
@@ -469,19 +471,19 @@ if (empty($admin_avatar)) {
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/Pos-system_drink/admin/analytics.php"
+                    <a href="/E-commerce-shoes/admin/analytics.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
                         Analytics
                     </a>
 
-                    <a href="/Pos-system_drink/admin/reports.php"
+                    <a href="/E-commerce-shoes/admin/reports.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                         Reports
                     </a>
 
-                    <a href="/Pos-system_drink/admin/insights.php"
+                    <a href="/E-commerce-shoes/admin/insights.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
                         Insights
@@ -493,19 +495,19 @@ if (empty($admin_avatar)) {
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/Pos-system_drink/admin/settings.php"
+                    <a href="/E-commerce-shoes/admin/settings.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-cog mr-3 text-gray-500 w-5 text-center"></i>
                         Settings
                     </a>
 
-                    <a href="/Pos-system_drink/admin/logs.php"
+                    <a href="/E-commerce-shoes/admin/logs.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-clipboard-list mr-3 text-gray-500 w-5 text-center"></i>
                         Activity Logs
                     </a>
 
-                    <a href="/Pos-system_drink/admin/security.php"
+                    <a href="/E-commerce-shoes/admin/security.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-shield-alt mr-3 text-gray-500 w-5 text-center"></i>
                         Security
@@ -527,4 +529,4 @@ if (empty($admin_avatar)) {
         if (chevron) chevron.classList.toggle('rotate-180');
     }
 </script>
-<script src="/Pos-system_drink/assets/Js/nav.js"></script>
+<script src="/E-commerce-shoes/assets/Js/nav.js"></script>

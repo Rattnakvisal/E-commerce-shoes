@@ -364,26 +364,44 @@ function getUsers($pdo, $search, $role, $sort, $page, $limit = 10)
     <!-- Main Content -->
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
+
             <!-- Page Header -->
             <div class="mb-6 animate-fade-in">
-                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Users Management</h1>
-                        <p class="text-gray-600 mt-1">Manage user accounts, roles, and permissions</p>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Users Management
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            Manage user accounts, roles, and permissions
+                        </p>
                     </div>
-                    <div class="mt-4 md:mt-0">
-                        <button id="openAddUserBtn" type="button"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300">
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
+
+                        <button
+                            id="openAddUserBtn"
+                            type="button"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
+                           hover:bg-indigo-700 transition">
                             <i class="fas fa-user-plus mr-2"></i>
-                            Add New User
+                            Add User
                         </button>
 
-                        <button onclick="refreshData()" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-300">
-                            <i class="fas fa-sync-alt mr-2"></i>
+                        <button
+                            onclick="refreshData()"
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition">
+                            <i class="fas fa-sync-alt"></i>
                         </button>
+
                     </div>
                 </div>
             </div>
+
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 animate-fade-in">
@@ -440,229 +458,245 @@ function getUsers($pdo, $search, $role, $sort, $page, $limit = 10)
                 </div>
             </div>
 
-            <!-- Filters and Actions -->
+            <!-- Filters -->
             <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        Filter Users
+                    </h3>
+
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
                         <!-- Search -->
-                        <div class="flex-1 max-w-md">
+                        <form method="GET" id="searchForm" class="flex-1 max-w-md">
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fas fa-search text-gray-400"></i>
-                                </div>
-                                <form method="GET" action="" id="searchForm">
-                                    <input type="text"
-                                        name="search"
-                                        value="<?php echo htmlspecialchars($search); ?>"
-                                        class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                        placeholder="Search users by name or email...">
-                                </form>
+                                </span>
+                                <input
+                                    type="text"
+                                    name="search"
+                                    value="<?php echo htmlspecialchars($search); ?>"
+                                    placeholder="Search by name or email..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
-                        </div>
+                        </form>
 
                         <!-- Filters -->
-                        <div class="flex flex-wrap gap-3">
-                            <div class="flex items-center space-x-3">
-                                <!-- Role Filter -->
-                                <div>
-                                    <select name="role" id="roleFilter"
-                                        class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">All Roles</option>
-                                        <option value="admin" <?php echo $role === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                        <option value="staff" <?php echo $role === 'staff' ? 'selected' : ''; ?>>Staff</option>
-                                        <option value="customer" <?php echo $role === 'customer' ? 'selected' : ''; ?>>Customer</option>
-                                    </select>
-                                </div>
+                        <div class="flex flex-wrap items-center gap-3">
 
-                                <!-- Sort -->
-                                <div>
-                                    <select name="sort" id="sortFilter"
-                                        class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Newest First</option>
-                                        <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
-                                        <option value="name" <?php echo $sort === 'name' ? 'selected' : ''; ?>>By Name</option>
-                                        <option value="email" <?php echo $sort === 'email' ? 'selected' : ''; ?>>By Email</option>
-                                    </select>
-                                </div>
-                                <!-- Apply / Clear Buttons -->
-                                <div class="flex items-center space-x-2">
-                                    <button id="applyFiltersBtn" type="button" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Apply</button>
-                                    <a href="user.php" id="clearFiltersBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Clear</a>
-                                </div>
-                            </div>
+                            <!-- Role -->
+                            <select id="roleFilter"
+                                class="px-3 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">All Roles</option>
+                                <option value="admin" <?= $role === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                <option value="staff" <?= $role === 'staff' ? 'selected' : '' ?>>Staff</option>
+                                <option value="customer" <?= $role === 'customer' ? 'selected' : '' ?>>Customer</option>
+                            </select>
+
+                            <!-- Sort -->
+                            <select id="sortFilter"
+                                class="px-3 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Newest</option>
+                                <option value="oldest" <?= $sort === 'oldest' ? 'selected' : '' ?>>Oldest</option>
+                                <option value="name" <?= $sort === 'name' ? 'selected' : '' ?>>Name</option>
+                                <option value="email" <?= $sort === 'email' ? 'selected' : '' ?>>Email</option>
+                            </select>
+
+                            <!-- Actions -->
+                            <button
+                                id="applyFiltersBtn"
+                                type="button"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg
+                           hover:bg-indigo-700 transition">
+                                Apply
+                            </button>
+
+                            <a
+                                href="user.php"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition">
+                                Clear
+                            </a>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Users Table -->
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+
+                <!-- Users Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="checkbox-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                </th>
+                                <th class="avatar-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    User
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Email
+                                </th>
+                                <th class="role-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Role
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Joined
+                                </th>
+                                <th class="action-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody">
+                            <?php if (empty($users)): ?>
                                 <tr>
-                                    <th class="checkbox-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                    </th>
-                                    <th class="avatar-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        User
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Email
-                                    </th>
-                                    <th class="role-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Role
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Joined
-                                    </th>
-                                    <th class="action-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
+                                            <p class="text-lg font-medium text-gray-900">No users found</p>
+                                            <p class="text-gray-500 mt-1">Try adjusting your search or filters</p>
+                                            <a href="user.php" class="mt-4 text-indigo-600 hover:text-indigo-800">
+                                                <i class="fas fa-redo mr-1"></i>
+                                                Reset filters
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody">
-                                <?php if (empty($users)): ?>
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                            <div class="flex flex-col items-center justify-center">
-                                                <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
-                                                <p class="text-lg font-medium text-gray-900">No users found</p>
-                                                <p class="text-gray-500 mt-1">Try adjusting your search or filters</p>
-                                                <a href="user.php" class="mt-4 text-indigo-600 hover:text-indigo-800">
-                                                    <i class="fas fa-redo mr-1"></i>
-                                                    Reset filters
+                            <?php else: ?>
+                                <?php foreach ($users as $user): ?>
+                                    <?php
+                                    $name = $user['NAME'] ?? $user['name'] ?? 'Unknown';
+                                    $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=6366f1&color=fff';
+                                    $roleVal = $user['ROLE'] ?? $user['role'] ?? 'customer';
+                                    $roleClass = '';
+                                    switch ($roleVal) {
+                                        case 'admin':
+                                            $roleClass = 'role-admin';
+                                            break;
+                                        case 'staff':
+                                            $roleClass = 'role-staff';
+                                            break;
+                                        default:
+                                            $roleClass = 'role-customer';
+                                            break;
+                                    }
+                                    $createdAt = $user['created_at'] ?? 'N/A';
+                                    $joinDate = $createdAt !== 'N/A' ? date('M d, Y', strtotime($createdAt)) : 'N/A';
+                                    ?>
+                                    <tr class="table-row hover:bg-gray-50 transition-colors" data-id="<?php echo $user['user_id']; ?>">
+                                        <td class="checkbox-cell px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox"
+                                                value="<?php echo $user['user_id']; ?>"
+                                                class="user-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                        </td>
+                                        <td class="avatar-cell px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full"
+                                                        src="<?php echo htmlspecialchars($avatar); ?>"
+                                                        alt="<?php echo htmlspecialchars($name); ?>">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        <?php echo htmlspecialchars($name); ?>
+                                                    </div>
+                                                    <div class="text-sm text-gray-500">
+                                                        ID: <?php echo $user['user_id']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">
+                                                <a href="mailto:<?php echo htmlspecialchars($user['email']); ?>"
+                                                    class="text-indigo-600 hover:text-indigo-900">
+                                                    <?php echo htmlspecialchars($user['email']); ?>
                                                 </a>
                                             </div>
                                         </td>
+                                        <td class="role-cell px-6 py-4 whitespace-nowrap">
+                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $roleClass; ?>">
+                                                <?php echo ucfirst($roleVal); ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <?php echo $joinDate; ?>
+                                        </td>
+                                        <td class="action-cell px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex items-center space-x-3">
+                                                <!-- Edit -->
+                                                <button type="button"
+                                                    onclick="editUser(<?php echo $user['user_id']; ?>)"
+                                                    class="text-indigo-600 p-2 hover:text-indigo-900 transition"
+                                                    title="Edit User">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+
+                                                <!-- Quick Role Change -->
+                                                <button type="button"
+                                                    onclick="quickChangeRole(<?php echo $user['user_id']; ?>, '<?php echo $name; ?>')"
+                                                    class="text-yellow-600 p-2 hover:text-yellow-900 transition"
+                                                    title="Change Role">
+                                                    <i class="fas fa-user-tag"></i>
+                                                </button>
+
+                                                <!-- Delete -->
+                                                <button type="button"
+                                                    onclick="deleteUser(<?php echo $user['user_id']; ?>, '<?php echo addslashes($name); ?>')"
+                                                    class="text-red-600 p-2 hover:text-red-900 transition"
+                                                    title="Delete User">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                <?php else: ?>
-                                    <?php foreach ($users as $user): ?>
-                                        <?php
-                                        $name = $user['NAME'] ?? $user['name'] ?? 'Unknown';
-                                        $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=6366f1&color=fff';
-                                        $roleVal = $user['ROLE'] ?? $user['role'] ?? 'customer';
-                                        $roleClass = '';
-                                        switch ($roleVal) {
-                                            case 'admin':
-                                                $roleClass = 'role-admin';
-                                                break;
-                                            case 'staff':
-                                                $roleClass = 'role-staff';
-                                                break;
-                                            default:
-                                                $roleClass = 'role-customer';
-                                                break;
-                                        }
-                                        $createdAt = $user['created_at'] ?? 'N/A';
-                                        $joinDate = $createdAt !== 'N/A' ? date('M d, Y', strtotime($createdAt)) : 'N/A';
-                                        ?>
-                                        <tr class="table-row hover:bg-gray-50 transition-colors" data-id="<?php echo $user['user_id']; ?>">
-                                            <td class="checkbox-cell px-6 py-4 whitespace-nowrap">
-                                                <input type="checkbox"
-                                                    value="<?php echo $user['user_id']; ?>"
-                                                    class="user-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                            </td>
-                                            <td class="avatar-cell px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="flex-shrink-0 h-10 w-10">
-                                                        <img class="h-10 w-10 rounded-full"
-                                                            src="<?php echo htmlspecialchars($avatar); ?>"
-                                                            alt="<?php echo htmlspecialchars($name); ?>">
-                                                    </div>
-                                                    <div class="ml-4">
-                                                        <div class="text-sm font-medium text-gray-900">
-                                                            <?php echo htmlspecialchars($name); ?>
-                                                        </div>
-                                                        <div class="text-sm text-gray-500">
-                                                            ID: <?php echo $user['user_id']; ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">
-                                                    <a href="mailto:<?php echo htmlspecialchars($user['email']); ?>"
-                                                        class="text-indigo-600 hover:text-indigo-900">
-                                                        <?php echo htmlspecialchars($user['email']); ?>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                            <td class="role-cell px-6 py-4 whitespace-nowrap">
-                                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $roleClass; ?>">
-                                                    <?php echo ucfirst($roleVal); ?>
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <?php echo $joinDate; ?>
-                                            </td>
-                                            <td class="action-cell px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div class="flex items-center space-x-3">
-                                                    <!-- Edit -->
-                                                    <button type="button"
-                                                        onclick="editUser(<?php echo $user['user_id']; ?>)"
-                                                        class="text-indigo-600 p-2 hover:text-indigo-900 transition"
-                                                        title="Edit User">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-
-                                                    <!-- Quick Role Change -->
-                                                    <button type="button"
-                                                        onclick="quickChangeRole(<?php echo $user['user_id']; ?>, '<?php echo $name; ?>')"
-                                                        class="text-yellow-600 p-2 hover:text-yellow-900 transition"
-                                                        title="Change Role">
-                                                        <i class="fas fa-user-tag"></i>
-                                                    </button>
-
-                                                    <!-- Delete -->
-                                                    <button type="button"
-                                                        onclick="deleteUser(<?php echo $user['user_id']; ?>, '<?php echo addslashes($name); ?>')"
-                                                        class="text-red-600 p-2 hover:text-red-900 transition"
-                                                        title="Delete User">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <?php if ($totalPages > 1): ?>
-                        <div class="px-6 py-4 border-t border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm text-gray-700">
-                                    Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
-                                    <span class="font-medium"><?php echo min($offset + $limit, $totalResults); ?></span> of
-                                    <span class="font-medium"><?php echo $totalResults; ?></span> users
-                                </div>
-                                <div class="flex space-x-2">
-                                    <?php if ($page > 1): ?>
-                                        <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
-                                            class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
-                                            Previous
-                                        </a>
-                                    <?php endif; ?>
-
-                                    <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                                        <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
-                                            class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition">
-                                            <?php echo $i; ?>
-                                        </a>
-                                    <?php endfor; ?>
-
-                                    <?php if ($page < $totalPages): ?>
-                                        <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
-                                            class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
-                                            Next
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
+                            <span class="font-medium"><?php echo min($offset + $limit, $totalResults); ?></span> of
+                            <span class="font-medium"><?php echo $totalResults; ?></span> users
+                        </div>
+                        <div class="flex space-x-2">
+                            <?php if ($page > 1): ?>
+                                <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    Previous
+                                </a>
+                            <?php endif; ?>
+
+                            <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
+                                <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition">
+                                    <?php echo $i; ?>
+                                </a>
+                            <?php endfor; ?>
+
+                            <?php if ($page < $totalPages): ?>
+                                <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    Next
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        </div>
     </main>
 
     <!-- Add/Edit User Modal -->

@@ -53,11 +53,34 @@ require_once __DIR__ . '/api_category.php';
 
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
-            <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800">Category Management</h1>
-                <p class="text-gray-600 mt-2">Manage product categories and organize your inventory</p>
+            <!-- Page Header -->
+            <div class="mb-6 animate-fade-in">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                    <!-- Title -->
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Category Management
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            Manage product categories and organize your inventory
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
+                        <button
+                            onclick="refreshData()"
+                            title="Refresh"
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                       hover:bg-gray-200 transition">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+
+                </div>
             </div>
+
 
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -127,27 +150,6 @@ require_once __DIR__ . '/api_category.php';
                                 <i class="fas fa-save mr-2"></i> Add Category
                             </button>
                         </form>
-
-                        <!-- Quick Tips -->
-                        <div class="mt-8 pt-6 border-t border-gray-200">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i> Tips for Categories
-                            </h3>
-                            <ul class="text-sm text-gray-600 space-y-2">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs"></i>
-                                    <span>Use clear, descriptive names</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs"></i>
-                                    <span>Keep category names concise</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs"></i>
-                                    <span>Organize categories hierarchically if needed</span>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
 
@@ -291,6 +293,77 @@ require_once __DIR__ . '/api_category.php';
     </div>
 
     <script src="../../../assets/Js/category.js"></script>
+    <script>
+        function showLoading(message = 'Loading...') {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: message,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            } else {
+                console.log('Loading:', message);
+            }
+        }
+
+        function showToast(message, icon = 'success') {
+            if (typeof Swal !== 'undefined') {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: icon,
+                    title: message
+                });
+            } else {
+                console.log(message);
+            }
+        }
+
+        function showError(message) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message,
+                    confirmButtonColor: '#3b82f6'
+                });
+            } else {
+                console.error(message);
+            }
+        }
+
+        function refreshData() {
+            try {
+                showLoading('Refreshing data...');
+                localStorage.setItem('category_refreshed', '1');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 150);
+            } catch (error) {
+                if (typeof Swal !== 'undefined') Swal.close();
+                showError('Failed to refresh data');
+                console.error('Refresh error:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (localStorage.getItem('category_refreshed')) {
+                    localStorage.removeItem('category_refreshed');
+                    showToast('Data refreshed!', 'success');
+                }
+            } catch (e) {
+                // ignore
+            }
+        });
+    </script>
 </body>
 
 </html>

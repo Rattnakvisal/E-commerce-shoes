@@ -1,18 +1,13 @@
 <?php
 require_once __DIR__ . '/../config/connection.php';
-
-// ensure session and derive user display state
 if (session_status() === PHP_SESSION_NONE) {
 	session_start();
 }
-
 // logged-in flag
 $userLogged = !empty($_SESSION['user_id']);
 
-// derive user name (support different DB column casing)
 $user_name = $_SESSION['name'] ?? $_SESSION['NAME'] ?? $_SESSION['user_name'] ?? $_SESSION['email'] ?? '';
 
-// initials fallback
 $initials = '';
 if (!empty($user_name)) {
 	$parts = preg_split('/\s+/', trim($user_name));
@@ -62,13 +57,13 @@ foreach ($items as $it) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-p+1mYk0..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script src="https://cdn.tailwindcss.com"></script>
 
-<link rel="stylesheet" href="/Pos-system_drink/assets/Css/navbar.css">
+<link rel="stylesheet" href="/E-commerce-shoes/assets/Css/navbar.css">
 <nav class="sticky top-0 bg-white shadow-sm border-b z-50">
 
 	<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 
 		<!-- LOGO -->
-		<a href="/Pos-system_drink/view/index.php" class="flex items-center gap-2">
+		<a href="/E-commerce-shoes/view/index.php" class="flex items-center gap-2">
 			<div class="w-8 h-8 rounded-full bg-black text-white font-bold flex items-center justify-center">✓</div>
 			<span class="text-xl font-bold text-gray-900">MyBrand</span>
 		</a>
@@ -147,13 +142,19 @@ foreach ($items as $it) {
 			</button>
 
 			<!-- Wishlist -->
-			<a href="wishlist.php" class="hidden md:block text-xl text-gray-700 hover:text-black">
+			<a href="/E-commerce-shoes/view/wishlist.php" class="relative hidden md:block text-xl text-gray-700 hover:text-black">
 				<i class="far fa-heart"></i>
+				<span id="wishlistCount" class="wishlist-count absolute -top-1 -right-2 bg-pink-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+					<?= count($_SESSION['wishlist'] ?? []) ?>
+				</span>
 			</a>
 
 			<!-- Cart -->
-			<a href="cart.php" class="text-xl text-gray-700 hover:text-black">
+			<a href="/E-commerce-shoes/view/cart.php" class="relative text-xl text-gray-700 hover:text-black">
 				<i class="fas fa-shopping-bag"></i>
+				<span id="cartCount" class="cart-count absolute -top-1 -right-2 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+					<?= array_sum($_SESSION['cart'] ?? []) ?>
+				</span>
 			</a>
 
 			<!-- USER PROFILE -->
@@ -194,7 +195,7 @@ foreach ($items as $it) {
 						<a href="orders.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">My Orders</a>
 						<a href="wishlist.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">Wishlist</a>
 						<div class="border-t my-2"></div>
-						<a href="/Pos-system_drink/auth/login.php?action=logout"
+						<a href="/E-commerce-shoes/auth/login.php?action=logout"
 							class="block px-4 py-3 text-red-600 hover:bg-gray-100">
 							Logout
 						</a>
@@ -203,7 +204,7 @@ foreach ($items as $it) {
 				<?php else: ?>
 
 					<!-- Sign in -->
-					<a href="/Pos-system_drink/auth/login.php"
+					<a href="/E-commerce-shoes/auth/login.php"
 						class="flex items-center gap-2 text-gray-700 hover:text-black">
 						<div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
 							<i class="far fa-user text-gray-600"></i>
@@ -325,4 +326,4 @@ foreach ($items as $it) {
 
 	<?php endforeach; ?>
 </div>
-<script src="../assets/Js/script.js"></script>
+<script src="/E-commerce-shoes/assets/Js/script.js"></script>

@@ -1,94 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
-
-// Initialize variables
-$products = [];
-$categories = [];
-$stats = [
-    'total' => 0,
-    'active' => 0,
-    'total_stock' => 0,
-    'avg_price' => 0.0,
-    'inactive' => 0
-];
-$message = '';
-$error = '';
-$search = $_GET['search'] ?? '';
-$category_id = $_GET['category_id'] ?? '';
-$status = $_GET['status'] ?? '';
-$page = max(1, intval($_GET['page'] ?? 1));
-$limit = 10;
-$offset = ($page - 1) * $limit;
-
-try {
-    // Fetch categories
-    $stmt = $conn->query("SELECT category_id, category_name FROM categories ORDER BY category_name");
-    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Build WHERE clause
-    $where = [];
-    $params = [];
-
-    if ($search) {
-        $where[] = "(p.name LIKE :search OR p.description LIKE :search)";
-        $params[':search'] = "%$search%";
-    }
-
-    if ($category_id && $category_id !== '') {
-        $where[] = "p.category_id = :category_id";
-        $params[':category_id'] = $category_id;
-    }
-
-    if ($status && $status !== '') {
-        $where[] = "p.status = :status";
-        $params[':status'] = $status;
-    }
-
-    $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-
-    // Count total products
-    $countSql = "SELECT COUNT(*) as total FROM products p $whereClause";
-    $stmt = $conn->prepare($countSql);
-    $stmt->execute($params);
-    $totalProducts = $stmt->fetchColumn();
-    $totalPages = ceil($totalProducts / $limit);
-
-    // Fetch products with pagination
-    $sql = "SELECT p.*, c.category_name, 
-            p.image_url as image_url
-            FROM products p 
-            LEFT JOIN categories c ON p.category_id = c.category_id 
-            $whereClause 
-            ORDER BY p.created_at DESC 
-            LIMIT :limit OFFSET :offset";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
-    foreach ($params as $key => $value) {
-        $stmt->bindValue($key, $value);
-    }
-
-    $stmt->execute();
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Fetch stats
-    $statsSql = "SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-        SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive,
-        SUM(stock) as total_stock,
-        AVG(price) as avg_price
-        FROM products";
-
-    $stmt = $conn->query($statsSql);
-    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-    $stats['avg_price'] = $stats['avg_price'] ? round($stats['avg_price'], 2) : 0;
-    $stats['total_stock'] = $stats['total_stock'] ?? 0;
-} catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
-}
+require_once __DIR__ . '/products_api.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -160,27 +72,43 @@ try {
     <!-- Main Content -->
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
+
             <!-- Page Header -->
             <div class="mb-6 animate-fade-in">
-                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Products Management</h1>
-                        <p class="text-gray-600 mt-1">Manage your inventory and product listings</p>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Products Management
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            Manage your inventory and product listings
+                        </p>
                     </div>
-                    <div class="mt-4 md:mt-0 flex space-x-3">
-                        <button id="openAddProduct" type="button"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300">
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
+
+                        <button
+                            id="openAddProduct"
+                            type="button"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
+                           hover:bg-indigo-700 transition">
                             <i class="fas fa-plus mr-2"></i>
                             Add Product
                         </button>
-                        <div class="flex items-center space-x-4">
-                            <button onclick="refreshData()" class="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                                <i class="fas fa-sync-alt mr-2"></i>
-                            </button>
-                        </div>
+
+                        <button
+                            onclick="refreshData()"
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+
 
             <!-- Add/Edit Product Modal -->
             <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center">
@@ -332,54 +260,78 @@ try {
                 </div>
             </div>
 
-            <!-- Filters -->
+            <!-- Product Filters -->
             <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Products</h3>
-                    <form method="GET" action="" class="grid grid-cols-1 md:grid-cols-4 gap-4" id="filterForm">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                            <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Name or description">
-                        </div>
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        Filter Products
+                    </h3>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select name="category_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                        <!-- Search -->
+                        <form method="GET" id="filterForm" class="flex-1 max-w-md">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    name="search"
+                                    value="<?= htmlspecialchars($search) ?>"
+                                    placeholder="Search by name or description..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </form>
+
+                        <!-- Filters -->
+                        <div class="flex flex-wrap items-center gap-3">
+
+                            <!-- Category -->
+                            <select
+                                name="category_id"
+                                class="px-3 py-2 border border-gray-300 rounded-lg
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">All Categories</option>
                                 <?php foreach ($categories as $cat): ?>
-                                    <option value="<?php echo $cat['category_id']; ?>"
-                                        <?php echo $category_id == $cat['category_id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($cat['category_name']); ?>
+                                    <option value="<?= $cat['category_id'] ?>"
+                                        <?= $category_id == $cat['category_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($cat['category_name']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <!-- Status -->
+                            <select
+                                name="status"
+                                class="px-3 py-2 border border-gray-300 rounded-lg
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">All Status</option>
-                                <option value="active" <?php echo $status == 'active' ? 'selected' : ''; ?>>Active</option>
-                                <option value="inactive" <?php echo $status == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
+                                <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>
+                                    Active
+                                </option>
+                                <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>
+                                    Inactive
+                                </option>
                             </select>
-                        </div>
 
-                        <div class="flex items-end space-x-2">
-                            <button type="submit"
-                                class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-                                <i class="fas fa-filter mr-2"></i>
+                            <!-- Actions -->
+                            <button
+                                type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg
+                           hover:bg-indigo-700 transition">
                                 Apply
                             </button>
-                            <a href="products.php"
-                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+
+                            <a
+                                href="products.php"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition">
                                 Clear
                             </a>
                         </div>
-                    </form>
+                    </div>
                 </div>
 
                 <!-- Products Table -->
@@ -493,42 +445,42 @@ try {
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
+                            <span class="font-medium"><?php echo min($offset + $limit, $totalProducts); ?></span> of
+                            <span class="font-medium"><?php echo $totalProducts; ?></span> products
+                        </div>
+                        <div class="flex space-x-2">
+                            <?php if ($page > 1): ?>
+                                <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&category_id=<?php echo $category_id; ?>&status=<?php echo urlencode($status); ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    Previous
+                                </a>
+                            <?php endif; ?>
 
-                <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
-                    <div class="px-6 py-4 border-t border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div class="text-sm text-gray-700">
-                                Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
-                                <span class="font-medium"><?php echo min($offset + $limit, $totalProducts); ?></span> of
-                                <span class="font-medium"><?php echo $totalProducts; ?></span> products
-                            </div>
-                            <div class="flex space-x-2">
-                                <?php if ($page > 1): ?>
-                                    <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&category_id=<?php echo $category_id; ?>&status=<?php echo urlencode($status); ?>"
-                                        class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
-                                        Previous
-                                    </a>
-                                <?php endif; ?>
+                            <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
+                                <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&category_id=<?php echo $category_id; ?>&status=<?php echo urlencode($status); ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition">
+                                    <?php echo $i; ?>
+                                </a>
+                            <?php endfor; ?>
 
-                                <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                                    <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&category_id=<?php echo $category_id; ?>&status=<?php echo urlencode($status); ?>"
-                                        class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition">
-                                        <?php echo $i; ?>
-                                    </a>
-                                <?php endfor; ?>
-
-                                <?php if ($page < $totalPages): ?>
-                                    <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&category_id=<?php echo $category_id; ?>&status=<?php echo urlencode($status); ?>"
-                                        class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
-                                        Next
-                                    </a>
-                                <?php endif; ?>
-                            </div>
+                            <?php if ($page < $totalPages): ?>
+                                <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&category_id=<?php echo $category_id; ?>&status=<?php echo urlencode($status); ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                                    Next
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php endif; ?>
+        </div>
         </div>
     </main>
 

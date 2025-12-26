@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 
-<body>
+<body class="bg-white">
     <!-- Navbar HTML here -->
     <?php require_once '../includes/navbar.php'; ?>
 </body>

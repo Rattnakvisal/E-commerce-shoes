@@ -123,7 +123,6 @@ async function editProduct(id) {
 
         if (data.success) {
             const product = data.data;
-            // tolerate different column name casings
             productId.value = product.product_id ?? product.product_id ?? product.id ?? '';
             productName.value = product.name ?? product.NAME ?? '';
             productDescription.value = product.description ?? product.DESCRIPTION ?? '';
@@ -156,36 +155,6 @@ async function editProduct(id) {
         console.error('Edit error:', error);
     }
 }
-
-/* =====================================================
-   REFRESH FUNCTION
-===================================================== */
-function refreshData() {
-    showLoading('Refreshing data...');
-    try {
-        // mark for post-reload success message
-        localStorage.setItem('products_refreshed', '1');
-        setTimeout(() => {
-            window.location.reload();
-        }, 150);
-    } catch (error) {
-        Swal.close();
-        showError('Failed to refresh data');
-        console.error('Refresh error:', error);
-    }
-}
-
-// After reload, show a short success modal if refresh was requested
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        if (localStorage.getItem('products_refreshed')) {
-            localStorage.removeItem('products_refreshed');
-            showToast('Data refreshed!', 'success');
-        }
-    } catch (e) {
-        // ignore
-    }
-});
 
 // Delete Product
 async function deleteProduct(id) {
@@ -237,7 +206,6 @@ async function deleteProduct(id) {
 productForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    // Validate required fields
     if (!productName.value.trim()) {
         showError('Product name is required');
         return;
@@ -259,13 +227,10 @@ productForm.addEventListener('submit', async function (e) {
     loadingSpinner.classList.remove('hidden');
 
     try {
-        // Build FormData using field names expected by add-product.php
         const fd = new FormData();
-        // map action value: frontend uses 'add'/'update', backend expects 'create'/'update'
         const act = formAction.value === 'add' ? 'create' : (formAction.value === 'update' ? 'update' : formAction.value);
         fd.append('action', act);
         if (formAction.value === 'update' && productId.value) fd.append('product_id', productId.value);
-        // server expects upper-case NAME/DESCRIPTION/STATUS but also handles lower-case for other fields
         fd.append('NAME', productName.value);
         fd.append('DESCRIPTION', productDescription.value);
         fd.append('category_id', productCategory.value);
@@ -326,5 +291,26 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 productModal.addEventListener('click', (e) => {
     if (e.target === productModal) {
         closeModal();
+    }
+});
+
+/* =====================================================
+   UTILITY FUNCTIONS
+===================================================== */
+function refreshData() {
+    showLoading('Refreshing data...');
+    setTimeout(() => {
+        localStorage.setItem('products_refreshed', '1');
+        window.location.reload();
+    }, 150);
+}
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('products_refreshed')) {
+        localStorage.removeItem('products_refreshed');
+        setTimeout(() => showToast('Data refreshed!', 'success'), 300);
     }
 });

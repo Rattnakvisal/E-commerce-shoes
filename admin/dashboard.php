@@ -40,6 +40,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .sidebar-transition {
@@ -91,6 +92,34 @@ try {
             background: #6366f1;
             border-radius: 3px 0 0 3px;
         }
+
+        .status-active {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .status-inactive {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .stock-low {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        .stock-out {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .swal2-container {
+            z-index: 99999 !important;
+        }
     </style>
 </head>
 
@@ -99,13 +128,27 @@ try {
     <div class="md:ml-64 min-h-screen">
         <main class="pt-6 md:pt-16 p-4 sm:p-6 lg:p-8 page-transition bg-gray-50 min-h-screen">
             <!-- Page Header -->
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold text-gray-900">
-                    Welcome back, <?php echo htmlspecialchars(explode(' ', $admin_name)[0]); ?>!
-                </h1>
-                <p class="text-gray-600 mt-1">
-                    Here's what's happening with your store today.
-                </p>
+            <div class="mb-6 animate-fade-in">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                    <!-- Welcome Text -->
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Welcome back, <?= htmlspecialchars(explode(' ', $admin_name)[0]) ?>!
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            Here's what's happening with your store today.
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <button
+                        onclick="refreshData()"
+                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
             </div>
             <!-- Dashboard Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -180,6 +223,55 @@ try {
         </main>
     </div>
     <script src="../assets/Js/nav.js"></script>
+    <script>
+        /* ================================
+   TOAST & LOADING HELPERS
+================================ */
+
+        function showToast(message, icon = 'success') {
+            Swal.fire({
+                toast: true,
+                icon,
+                title: message,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+            });
+        }
+
+        function showLoading(title = 'Loading...') {
+            Swal.fire({
+                title,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+        }
+
+        /* ================================
+           REFRESH HANDLER
+        ================================ */
+
+        function refreshData() {
+            showLoading('Refreshing data...');
+            setTimeout(() => {
+                localStorage.setItem('dashboard_refreshed', '1');
+                window.location.reload();
+            }, 300);
+        }
+
+        /* ================================
+           SHOW TOAST AFTER RELOAD
+        ================================ */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('dashboard_refreshed')) {
+                localStorage.removeItem('dashboard_refreshed');
+                showToast('Data refreshed!', 'success');
+            }
+        });
+    </script>
 </body>
 
 </html>

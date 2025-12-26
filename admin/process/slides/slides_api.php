@@ -10,8 +10,8 @@ $editData = [];
 /* ------------------------------
    UPLOAD CONFIG
 --------------------------------*/
-$uploadDirWeb = "/uploads/slides/";
-$uploadDirFs  = $_SERVER['DOCUMENT_ROOT'] . $uploadDirWeb;
+$uploadDirWeb = '/assets/Images/slides/';
+$uploadDirFs  = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . $uploadDirWeb;
 
 if (!is_dir($uploadDirFs)) {
     mkdir($uploadDirFs, 0755, true);
@@ -172,7 +172,6 @@ if (isset($_POST['save_slide'])) {
 /* ------------------------------
    FETCH SLIDES (with filters)
 --------------------------------*/
-// overall counts for stats
 $totalSlidesAll = (int)$pdo->query("SELECT COUNT(*) FROM slides")->fetchColumn();
 $activeSlidesAll = (int)$pdo->query("SELECT COUNT(*) FROM slides WHERE is_active = 1")->fetchColumn();
 $inactiveSlidesAll = $totalSlidesAll - $activeSlidesAll;

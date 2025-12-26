@@ -565,40 +565,6 @@ editItemForm.addEventListener('submit', async e => {
 });
 
 /* =====================================================
-   REFRESH FUNCTION
-===================================================== */
-function refreshData() {
-    showLoading('Refreshing data...');
-    try {
-        // Reload via AJAX (no full page reload)
-        loadData().then(() => {
-            Swal.close();
-            showToast('Data refreshed!', 'success');
-        }).catch(err => {
-            Swal.close();
-            showError('Failed to refresh data');
-            console.error('Refresh error:', err);
-        });
-    } catch (error) {
-        Swal.close();
-        showError('Failed to refresh data');
-        console.error('Refresh error:', error);
-    }
-}
-
-// After reload, show a short toast if refresh was requested
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        if (localStorage.getItem('menu_refreshed')) {
-            localStorage.removeItem('menu_refreshed');
-            showToast('Data refreshed!', 'success');
-        }
-    } catch (e) {
-        // ignore
-    }
-});
-
-/* =====================================================
    INITIALIZE
 ===================================================== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -619,4 +585,25 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.closest('.modal').classList.add('hidden');
         }
     });
+});
+
+/* =====================================================
+   UTILITY FUNCTIONS
+===================================================== */
+function refreshData() {
+    showLoading('Refreshing data...');
+    setTimeout(() => {
+        localStorage.setItem('menu_refreshed', '1');
+        window.location.reload();
+    }, 150);
+}
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('menu_refreshed')) {
+        localStorage.removeItem('menu_refreshed');
+        setTimeout(() => showToast('Data refreshed!', 'success'), 300);
+    }
 });
