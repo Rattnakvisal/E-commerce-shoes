@@ -19,7 +19,6 @@ if (empty($initials) && !empty($_SESSION['email'])) {
 	$initials = strtoupper(substr($local, 0, 2));
 }
 
-// avatar URL: prefer session avatar, otherwise ui-avatars
 $user_avatar_url = '';
 if (!empty($_SESSION['avatar'])) {
 	$user_avatar_url = $_SESSION['avatar'];
@@ -30,7 +29,6 @@ if (!empty($_SESSION['avatar'])) {
 	$user_avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($user_name ?: 'User') . '&background=10b981&color=fff';
 }
 
-// Navigation counts - determine current user and compute counts (per-user or guest)
 $navUserId = $_SESSION['user_id'] ?? null;
 $navCartCount = $navUserId ? array_sum($_SESSION["cart_user_{$navUserId}"] ?? []) : array_sum($_SESSION['cart_guest'] ?? []);
 $navWishlistCount = $navUserId ? count($_SESSION["wishlist_user_{$navUserId}"] ?? []) : count($_SESSION['wishlist_guest'] ?? []);
@@ -44,14 +42,12 @@ try {
 	return;
 }
 
-// Index groups by parent_id
 $groupsByParent = [];
 foreach ($groups as $g) {
 	$pid = $g['parent_id'] ?? 0;
 	$groupsByParent[$pid][] = $g;
 }
 
-// Index items by group_id
 $itemsByGroup = [];
 foreach ($items as $it) {
 	$gid = $it['group_id'];

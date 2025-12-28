@@ -50,6 +50,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     password_hash($password, PASSWORD_DEFAULT),
                     $default_role
                 ]);
+                // create a system notification for admin about new registration
+                try {
+                    $newId = $conn->lastInsertId();
+                    $nt = $conn->prepare(
+                        "INSERT INTO notifications (user_id, title, message, type, reference_id, is_read, created_at)
+                         VALUES (:uid, :title, :msg, 'system', :ref, 0, NOW())"
+                    );
+                    $nt->execute([
+                        ':uid' => null,
+                        ':title' => 'New user registered',
+                        ':msg' => sprintf('User %s (%s) registered', $name, $email),
+                        ':ref' => $newId ?: null
+                    ]);
+                } catch (Throwable $e) {
+                    // ignore notification errors
+                }
+
                 header('Location: login.php?registered=1&email=' . urlencode($email));
                 exit;
             } catch (Throwable $e) {

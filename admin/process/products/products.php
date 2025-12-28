@@ -472,8 +472,7 @@ require_once __DIR__ . '/products_api.php';
         </div>
     </main>
 
-    <!-- Inline JavaScript -->
-    <script src="../../../assets/Js/products.js"></script>
+    <script src="/assets/Js/notifications.js"></script>
     <script>
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -486,6 +485,7 @@ require_once __DIR__ . '/products_api.php';
             <?php endif; ?>
         });
     </script>
+    <script src="/admin/assets/Js/notifications.js"></script>
 </body>
 
 </html>

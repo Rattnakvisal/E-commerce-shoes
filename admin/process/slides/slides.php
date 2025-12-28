@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/slides_api.php';
 ?>
 <!DOCTYPE html>
@@ -227,7 +226,7 @@ require_once __DIR__ . '/slides_api.php';
                                             <?php echo $slide['is_active'] ? 'Active' : 'Inactive'; ?>
                                         </a>
                                     </td>
-                                      <td class="py-4 px-6">
+                                    <td class="py-4 px-6">
                                         <img src="<?php echo $slide['image_url']; ?>"
                                             alt="<?php echo htmlspecialchars($slide['title']); ?>"
                                             class="thumbnail">
@@ -439,6 +438,7 @@ require_once __DIR__ . '/slides_api.php';
         </form>
     </div>
 </div>
+<script src="/assets/Js/notifications.js"></script>
 <script>
     // Modal Functions
     function openAddModal() {

@@ -223,7 +223,7 @@ try {
             </div>
         </main>
     </div>
-    <script src="../assets/Js/nav.js"></script>
+    <script src="/assets/Js/notifications.js"></script>
     <script>
         /* ================================
    TOAST & LOADING HELPERS

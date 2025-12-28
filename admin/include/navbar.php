@@ -1,17 +1,62 @@
 <?php
+
+declare(strict_types=1);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$currentRole = $_SESSION['role'] ?? null;
-$admin_name = $_SESSION['admin_name'] ?? $_SESSION['name'] ?? 'Admin';
-$admin_role = ucfirst($_SESSION['role'] ?? 'Admin');
-// Admin avatar: use session value when available, otherwise generate a placeholder avatar
-$admin_avatar = $_SESSION['admin_avatar'] ?? $_SESSION['avatar'] ?? '';
-if (empty($admin_avatar)) {
-    $initials = rawurlencode($admin_name);
-    $admin_avatar = "https://ui-avatars.com/api/?name={$initials}&background=ffffff&color=111827&rounded=true&size=128";
+
+require_once __DIR__ . '/../../config/conn.php';
+
+/*
+|--------------------------------------------------------------------------
+| Session Data
+|--------------------------------------------------------------------------
+*/
+$userId      = $_SESSION['user_id'] ?? null;
+$role        = $_SESSION['role'] ?? 'admin';
+$adminName   = $_SESSION['admin_name'] ?? $_SESSION['name'] ?? 'Admin';
+$adminRole   = ucfirst($role);
+$adminAvatar = $_SESSION['admin_avatar'] ?? $_SESSION['avatar'] ?? '';
+
+if ($adminAvatar === '') {
+    $initials    = rawurlencode($adminName);
+    $adminAvatar = "https://ui-avatars.com/api/?name={$initials}&background=ffffff&color=111827&rounded=true&size=128";
 }
+
+$currentRole = $role;
+$admin_name  = $adminName;
+$admin_role  = $adminRole;
+$admin_avatar = $adminAvatar;
+
+/*
+|--------------------------------------------------------------------------
+| Notifications
+|--------------------------------------------------------------------------
+*/
+
+// 🔔 Unread count
+$unreadStmt = $pdo->prepare(
+    "SELECT COUNT(*)
+     FROM notifications
+     WHERE is_read = 0
+       AND (user_id = :uid OR user_id IS NULL)"
+);
+$unreadStmt->execute(['uid' => $userId]);
+$unreadCount = (int) $unreadStmt->fetchColumn();
+
+// 📥 Latest notifications
+$listStmt = $pdo->prepare(
+    "SELECT notification_id, title, message, is_read, created_at
+     FROM notifications
+     WHERE (user_id = :uid OR user_id IS NULL)
+     ORDER BY created_at DESC
+     LIMIT 10"
+);
+$listStmt->execute(['uid' => $userId]);
+$notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 <!-- Sidebar for Desktop -->
 <div class="hidden md:flex flex-col fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 sidebar-transition z-30">
@@ -108,7 +153,7 @@ if (empty($admin_avatar)) {
                         </a>
                     </div>
                 </div>
-                <a href="/E-commerce-shoes/admin/orders.php"
+                <a href="/E-commerce-shoes/admin/process/orders/order.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-shopping-cart mr-3 text-gray-500 w-5 text-center"></i>
                     Orders
@@ -198,26 +243,85 @@ if (empty($admin_avatar)) {
                         <button id="notificationsButton"
                             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative">
                             <i class="fas fa-bell"></i>
-                            <span class="badge-count absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" style="display:none">0</span>
+
+                            <?php if ($unreadCount > 0): ?>
+                                <span
+                                    class="badge-count absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                    <?= $unreadCount > 99 ? '99+' : $unreadCount ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="badge-count absolute -top-1 -right-1 hidden"></span>
+                            <?php endif; ?>
                         </button>
 
-                        <!-- Notifications Dropdown -->
                         <div id="notificationsDropdown"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden dropdown-transition z-50">
-                            <div class="p-4 border-b border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="font-semibold text-gray-800">Notifications</h3>
-                                    <button class="text-xs text-indigo-600 hover:text-indigo-800">Mark all as read</button>
+                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden z-50">
+
+                            <!-- Header -->
+                            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                <h3 class="font-semibold text-gray-800">Notifications</h3>
+
+                                <div class="flex items-center gap-3">
+                                    <button id="markAllReadBtn"
+                                        class="text-xs text-indigo-600 hover:text-indigo-800">
+                                        Mark all as read
+                                    </button>
+                                    <button id="clearAllNotifsBtn"
+                                        class="text-xs text-red-600 hover:text-red-800">
+                                        Clear all
+                                    </button>
                                 </div>
                             </div>
+
+                            <!-- Notifications List -->
+                            <div id="notificationsList"
+                                class="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                                <?php if (empty($notifications)): ?>
+                                    <p class="text-center text-sm text-gray-500 py-6">
+                                        No notifications
+                                    </p>
+                                <?php else: ?>
+                                    <?php foreach ($notifications as $n): ?>
+                                        <div class="notif-row relative">
+                                            <a href="#"
+                                                data-id="<?= (int)$n['notification_id'] ?>"
+                                                class="notif-item block px-4 py-3 hover:bg-gray-50
+                                                <?= $n['is_read'] == 0 ? 'bg-indigo-50' : '' ?>">
+                                                <div class="flex justify-between items-start">
+                                                    <p class="text-sm font-medium text-gray-800">
+                                                        <?= htmlspecialchars($n['title']) ?>
+                                                    </p>
+                                                    <span class="text-xs text-gray-400 whitespace-nowrap">
+                                                        <?= date('d M Y H:i', strtotime($n['created_at'])) ?>
+                                                    </span>
+                                                </div>
+
+                                                <p class="text-xs text-gray-600 mt-1 truncate">
+                                                    <?= htmlspecialchars($n['message']) ?>
+                                                </p>
+                                            </a>
+                                            <?php if ($n['is_read'] == 0): ?>
+                                                <span class="absolute top-4 left-3 w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>
+                                            <?php endif; ?>
+                                            <button type="button"
+                                                data-id="<?= (int)$n['notification_id'] ?>"
+                                                class="notif-clear absolute top-3 right-3 text-gray-400 hover:text-red-500 text-sm"
+                                                aria-label="Delete notification">
+                                                &times;
+                                            </button>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
                             <div class="p-3 border-t border-gray-200">
-                                <a href="#" class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                                <a id="viewAllNotifications"
+                                    href="/notifications.php"
+                                    class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all notifications
                                 </a>
                             </div>
                         </div>
                     </div>
-
                     <!-- Messages -->
                     <div class="relative">
                         <button id="messagesButton"
@@ -418,7 +522,7 @@ if (empty($admin_avatar)) {
                             </a>
                         </div>
                     </div>
-                    <a href="/E-commerce-shoes/admin/orders.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                    <a href="/E-commerce-shoes/admin/process/orders/order.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-shopping-cart mr-3 text-gray-500 w-5 text-center"></i>
                         Orders
                     </a>
@@ -492,4 +596,4 @@ if (empty($admin_avatar)) {
     <script src="/E-commerce-shoes/admin/process/slides/media_choice.js"></script>
     <script src="/E-commerce-shoes/admin/process/slides/media_preview.js"></script>
 <?php endif; ?>
-<script src="/E-commerce-shoes/admin/assets/Js/notifications.js"></script>
+<script src="/E-commerce-shoes/assets/Js/notifications.js"></script>

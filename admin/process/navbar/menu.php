@@ -389,6 +389,7 @@ require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
 
     <!-- Add inline JavaScript -->
     <script src="../../../assets/Js/menu.js"></script>
+    <script src="/assets/Js/notifications.js"></script>
 </body>
 
 </html>
