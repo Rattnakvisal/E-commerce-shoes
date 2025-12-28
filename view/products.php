@@ -69,7 +69,6 @@ if ($availability === 'in_stock') {
     $sql .= " AND p.stock > 0";
 }
 
-// Pick up today filter (separate parameter to avoid name collision with availability)
 if ($pickup === 'pick_up_today') {
     $sql .= " AND p.stock > 10";
 }
@@ -113,7 +112,7 @@ function e($string): string
     <!-- External Resources -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <link rel="stylesheet" href="../view/assets/Css/products.css">
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
@@ -132,83 +131,14 @@ function e($string): string
             }
         }
     </script>
-
-    <!-- Custom Styles -->
-    <style>
-        .product-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .filter-section {
-            scrollbar-width: thin;
-            scrollbar-color: #d1d5db transparent;
-        }
-
-        .filter-section::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .filter-section::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .filter-section::-webkit-scrollbar-thumb {
-            background-color: #d1d5db;
-            border-radius: 2px;
-        }
-
-        .price-slider {
-            -webkit-appearance: none;
-            height: 2px;
-            background: #d1d5db;
-        }
-
-        .price-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #111111;
-            cursor: pointer;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        input[type="checkbox"]:checked,
-        input[type="radio"]:checked {
-            background-color: #111111;
-            border-color: #111111;
-        }
-
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .sticky-sidebar {
-            position: sticky;
-            top: 100px;
-        }
-
-        .transition-transform {
-            transition: transform 0.3s ease;
-        }
-
-        .transition-opacity {
-            transition: opacity 0.3s ease;
-        }
-
-        .transition-colors {
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-    </style>
 </head>
 
 <body class="bg-white text-nike-black">
     <!-- Navigation -->
-    <?php require_once '../includes/navbar.php'; ?>
+    <?php
+    require_once '../includes/topbar.php';
+    require_once '../includes/navbar.php';
+    ?>
     <div class="max-w-[1440px] mx-auto px-4 py-6">
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- DESKTOP FILTER SIDEBAR (hidden on mobile) -->
@@ -588,11 +518,11 @@ function e($string): string
             </main>
         </div>
     </div>
+    <?php
+    require_once '../includes/footer.php';
+    ?>
     <script src="../view/assets/Js/prodcuts.js"></script>
     <script>
-        /**
-         * Validate min/max price input
-         */
         document
             .querySelectorAll('#mobileFiltersForm [name="price_min"], #mobileFiltersForm [name="price_max"]')
             .forEach(input => {

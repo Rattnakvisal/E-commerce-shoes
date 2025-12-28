@@ -83,7 +83,6 @@ try {
 
                                 <div class="mt-8 flex items-center gap-4">
                                     <a href="<?= $link ?>" class="px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100">
-                                        <i class="fa-solid fa-cart-shopping"></i>
                                         Shop
                                     </a>
                                 </div>
@@ -114,12 +113,12 @@ try {
 
                 <button id="prevBtn"
                     class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center">
-                    ‹
+                    <i class="fas fa-chevron-left"></i>
                 </button>
 
                 <button id="nextBtn"
                     class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center">
-                    ›
+                    <i class="fas fa-chevron-right"></i>
                 </button>
 
             </div>

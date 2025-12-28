@@ -9,8 +9,12 @@
 
 <body class="bg-white">
     <!-- Navbar HTML here -->
-    <?php require_once '../includes/navbar.php'; ?>
-    <?php require_once '../includes/slide.php'; ?>
+    <?php
+    require_once '../includes/topbar.php';
+    require_once '../includes/navbar.php';
+    require_once '../includes/slide.php';
+    require_once '../includes/footer.php';
+    ?>
 </body>
 
 </html>
