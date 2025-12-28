@@ -9,28 +9,34 @@ $initials   = '';
 
 if (!empty($_SESSION['user_id'])) {
 
-    require_once __DIR__ . '/../config/conn.php'; // PDO MySQL
+    $userLogged = true;
 
-    $stmt = $pdo->prepare("
-        SELECT full_name 
-        FROM users 
-        WHERE user_id = :id
-        LIMIT 1
-    ");
-    $stmt->execute([
-        ':id' => $_SESSION['user_id']
-    ]);
+    // Prefer session name (already set at login)
+    $userName = $_SESSION['name'] ?? '';
 
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Fallback: fetch from DB if missing
+    if ($userName === '') {
 
-    if ($user) {
-        $userLogged = true;
-        $userName   = $user['full_name'] ?? 'User';
+        require_once __DIR__ . '/../config/conn.php';
 
-        $parts = explode(' ', trim($userName));
-        $initials = strtoupper(
-            substr($parts[0], 0, 1) .
-            (isset($parts[1]) ? substr($parts[1], 0, 1) : '')
+        $stmt = $conn->prepare(
+            "SELECT name, full_name
+             FROM users
+             WHERE user_id = ?
+             LIMIT 1"
         );
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $userName = $user['name']
+            ?? $user['full_name']
+            ?? 'User';
     }
+
+    /* Build initials */
+    $parts = preg_split('/\s+/', trim($userName));
+    $initials = strtoupper(
+        substr($parts[0] ?? '', 0, 1) .
+            substr($parts[1] ?? '', 0, 1)
+    );
 }

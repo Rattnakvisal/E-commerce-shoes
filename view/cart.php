@@ -8,7 +8,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Use per-user cart (so different users don't see each other's carts)
 $userId = $_SESSION['user_id'] ?? null;
 $cartSessionKey = $userId ? "cart_user_{$userId}" : 'cart_guest';
 if (!isset($_SESSION[$cartSessionKey])) $_SESSION[$cartSessionKey] = [];

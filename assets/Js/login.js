@@ -1,85 +1,94 @@
-// Toggle password visibility
-document.getElementById('togglePassword').addEventListener('click', function () {
+document.addEventListener('DOMContentLoaded', () => {
+
+    const form = document.querySelector('form');
+    const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
-    const icon = this.querySelector('i');
+    const toggleBtn = document.getElementById('togglePassword');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-});
-// Form validation
-document.querySelector('form').addEventListener('submit', function (e) {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    /* -----------------------------
+       Toggle password visibility
+    ------------------------------ */
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const icon = toggleBtn.querySelector('i');
+            const isHidden = passwordInput.type === 'password';
 
-    if (!email || !password) {
-        e.preventDefault();
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'mb-6 bg-red-50 border border-red-200 rounded-lg p-4 animate-fade-in';
-        errorDiv.innerHTML = `
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">Validation Error</h3>
-                            <div class="mt-1 text-sm text-red-700">
-                                Please fill in all required fields.
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-        // Insert error message
-        const form = this;
-        const firstChild = form.firstElementChild;
-        form.insertBefore(errorDiv, firstChild);
-
-        // Remove error after 5 seconds
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 5000);
-
-        return false;
-    }
-
-    // Basic email validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-        e.preventDefault();
-        alert('Please enter a valid email address.');
-        return false;
-    }
-
-    return true;
-});
-
-// Social login buttons (demo)
-document.querySelectorAll('button[type="button"]').forEach(button => {
-    if (button.textContent.includes('Google') || button.textContent.includes('Microsoft')) {
-        button.addEventListener('click', function () {
-            const provider = this.textContent.trim();
-            alert(`Social login with ${provider} would be implemented here.`);
+            passwordInput.type = isHidden ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isHidden);
+            icon.classList.toggle('fa-eye-slash', isHidden);
         });
     }
-});
 
-// Add loading state to submit button
-document.querySelector('form').addEventListener('submit', function () {
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
-    submitBtn.disabled = true;
+    /* -----------------------------
+       Show error message
+    ------------------------------ */
+    function showError(message) {
+        removeError();
 
-    // Reset button after 3 seconds (in case of error)
-    setTimeout(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    }, 3000);
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'loginError';
+        errorDiv.className = 'mb-6 bg-red-50 border border-red-200 rounded-lg p-4 animate-fade-in';
+        errorDiv.innerHTML = `
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Login Error</h3>
+                    <p class="mt-1 text-sm text-red-700">${message}</p>
+                </div>
+            </div>
+        `;
+
+        form.prepend(errorDiv);
+
+        setTimeout(removeError, 5000);
+    }
+
+    function removeError() {
+        const error = document.getElementById('loginError');
+        if (error) error.remove();
+    }
+
+    /* -----------------------------
+       Form validation
+    ------------------------------ */
+    form.addEventListener('submit', (e) => {
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+            e.preventDefault();
+            showError('Please fill in all required fields.');
+            return;
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            e.preventDefault();
+            showError('Please enter a valid email address.');
+            return;
+        }
+
+        /* -----------------------------
+           Loading state
+        ------------------------------ */
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Sign In';
+        }, 3000);
+    });
+
+    /* -----------------------------
+       Social login (demo only)
+    ------------------------------ */
+    document.querySelectorAll('[data-social]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            alert(`Social login with ${btn.dataset.social} coming soon.`);
+        });
+    });
+
 });

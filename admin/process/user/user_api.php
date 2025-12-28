@@ -264,5 +264,8 @@ $role   = $_GET['role'] ?? '';
 $sort   = $_GET['sort'] ?? 'newest';
 $page   = max(1, (int)($_GET['page'] ?? 1));
 
+$limit = 10;
+$offset = ($page - 1) * $limit;
+
 [$users, $totalResults, $totalPages] =
-    getUsers($pdo, $search, $role, $sort, $page);
+    getUsers($pdo, $search, $role, $sort, $page, $limit);

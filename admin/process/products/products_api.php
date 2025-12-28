@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
+require_once __DIR__ . '/../../../config/conn.php';
 
 $message = '';
 if (isset($_SESSION['message'])) {
@@ -101,10 +101,9 @@ $categories = $pdo->query("
 $stats = $pdo->query("
     SELECT 
         COUNT(*) AS total,
-        SUM(status = 'active') AS active,
-        SUM(status = 'inactive') AS inactive,
-        SUM(stock) AS total_stock,
-        AVG(price) AS avg_price
+        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active,
+        SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) AS inactive,
+        SUM(stock) AS total_stock
     FROM products
 ")->fetch(PDO::FETCH_ASSOC);
 
@@ -115,7 +114,6 @@ $stats = [
     'total' => 0,
     'active' => 0,
     'total_stock' => 0,
-    'avg_price' => 0.0,
     'inactive' => 0
 ];
 $message = '';
@@ -160,7 +158,6 @@ try {
     $totalProducts = $stmt->fetchColumn();
     $totalPages = ceil($totalProducts / $limit);
 
-    // Fetch products with pagination
     $sql = "SELECT p.*, c.category_name, 
             p.image_url as image_url
             FROM products p 
@@ -185,13 +182,11 @@ try {
         COUNT(*) as total,
         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
         SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive,
-        SUM(stock) as total_stock,
-        AVG(price) as avg_price
+        SUM(stock) as total_stock
         FROM products";
 
     $stmt = $conn->query($statsSql);
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-    $stats['avg_price'] = $stats['avg_price'] ? round($stats['avg_price'], 2) : 0;
     $stats['total_stock'] = $stats['total_stock'] ?? 0;
 } catch (PDOException $e) {
     $error = "Database error: " . $e->getMessage();

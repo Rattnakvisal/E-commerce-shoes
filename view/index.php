@@ -10,6 +10,7 @@
 <body class="bg-white">
     <!-- Navbar HTML here -->
     <?php require_once '../includes/navbar.php'; ?>
+    <?php require_once '../includes/slide.php'; ?>
 </body>
 
 </html>

@@ -200,7 +200,7 @@ foreach ($items as $it) {
 						<a href="orders.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">My Orders</a>
 						<a href="wishlist.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">Wishlist</a>
 						<div class="border-t my-2"></div>
-						<a href="/E-commerce-shoes/auth/login.php?action=logout"
+						<a href="/E-commerce-shoes/auth/logout.php"
 							class="block px-4 py-3 text-red-600 hover:bg-gray-100">
 							Logout
 						</a>

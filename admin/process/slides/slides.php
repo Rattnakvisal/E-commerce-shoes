@@ -180,11 +180,11 @@ require_once __DIR__ . '/slides_api.php';
                         <thead>
                             <tr class="bg-gray-50 border-b">
                                 <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ID</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">IMAGE</th>
                                 <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">TITLE</th>
                                 <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ORDER</th>
                                 <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">BUTTON</th>
                                 <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">STATUS</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">IMAGE</th>
                                 <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ACTIONS</th>
                             </tr>
                         </thead>
@@ -193,11 +193,6 @@ require_once __DIR__ . '/slides_api.php';
                                 <tr class="table-row">
                                     <td class="py-4 px-6">
                                         <span class="text-sm font-medium text-gray-900"><?php echo $slide['slides_id']; ?></span>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <img src="<?php echo $slide['image_url']; ?>"
-                                            alt="<?php echo htmlspecialchars($slide['title']); ?>"
-                                            class="thumbnail">
                                     </td>
                                     <td class="py-4 px-6">
                                         <div class="max-w-xs">
@@ -231,6 +226,11 @@ require_once __DIR__ . '/slides_api.php';
                                             class="status-badge <?php echo $slide['is_active'] ? 'status-active' : 'status-inactive'; ?>">
                                             <?php echo $slide['is_active'] ? 'Active' : 'Inactive'; ?>
                                         </a>
+                                    </td>
+                                      <td class="py-4 px-6">
+                                        <img src="<?php echo $slide['image_url']; ?>"
+                                            alt="<?php echo htmlspecialchars($slide['title']); ?>"
+                                            class="thumbnail">
                                     </td>
                                     <td class="py-4 px-6">
                                         <div class="flex space-x-2">
@@ -439,7 +439,6 @@ require_once __DIR__ . '/slides_api.php';
         </form>
     </div>
 </div>
-<!-- SweetAlert2 Scripts -->
 <script>
     // Modal Functions
     function openAddModal() {

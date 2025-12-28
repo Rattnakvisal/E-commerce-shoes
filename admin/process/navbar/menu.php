@@ -297,10 +297,6 @@ require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
                 <div class="p-6">
                     <div id="menuStructure" class="space-y-4">
                         <!-- Dynamic content will be loaded here -->
-                        <div class="text-center py-8 text-gray-400">
-                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                            <p>Loading menu structure...</p>
-                        </div>
                     </div>
                 </div>
             </div>

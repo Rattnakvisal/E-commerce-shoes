@@ -186,7 +186,6 @@ if (empty($admin_avatar)) {
                     </div>
                 </div>
 
-                <!-- Right: Notifications & Admin Dropdown -->
                 <div class="flex items-center space-x-3">
                     <!-- Search Mobile -->
                     <button id="mobileSearchButton"
@@ -199,7 +198,7 @@ if (empty($admin_avatar)) {
                         <button id="notificationsButton"
                             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative">
                             <i class="fas fa-bell"></i>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                            <span class="badge-count absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" style="display:none">0</span>
                         </button>
 
                         <!-- Notifications Dropdown -->
@@ -210,47 +209,6 @@ if (empty($admin_avatar)) {
                                     <h3 class="font-semibold text-gray-800">Notifications</h3>
                                     <button class="text-xs text-indigo-600 hover:text-indigo-800">Mark all as read</button>
                                 </div>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto">
-                                <!-- Notification Items -->
-                                <a href="#" class="flex items-start px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-user-plus text-blue-600 text-sm"></i>
-                                        </div>
-                                    </div>
-                                    <div class="ml-3 flex-1">
-                                        <p class="text-sm font-medium text-gray-900">New user registered</p>
-                                        <p class="text-xs text-gray-500 mt-1">John Doe just signed up</p>
-                                        <p class="text-xs text-gray-400 mt-1">2 minutes ago</p>
-                                    </div>
-                                </a>
-
-                                <a href="#" class="flex items-start px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-shopping-cart text-green-600 text-sm"></i>
-                                        </div>
-                                    </div>
-                                    <div class="ml-3 flex-1">
-                                        <p class="text-sm font-medium text-gray-900">New order received</p>
-                                        <p class="text-xs text-gray-500 mt-1">Order #ORD-78945</p>
-                                        <p class="text-xs text-gray-400 mt-1">1 hour ago</p>
-                                    </div>
-                                </a>
-
-                                <a href="#" class="flex items-start px-4 py-3 hover:bg-gray-50">
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm"></i>
-                                        </div>
-                                    </div>
-                                    <div class="ml-3 flex-1">
-                                        <p class="text-sm font-medium text-gray-900">System Alert</p>
-                                        <p class="text-xs text-gray-500 mt-1">High server load detected</p>
-                                        <p class="text-xs text-gray-400 mt-1">3 hours ago</p>
-                                    </div>
-                                </a>
                             </div>
                             <div class="p-3 border-t border-gray-200">
                                 <a href="#" class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
@@ -530,3 +488,8 @@ if (empty($admin_avatar)) {
     }
 </script>
 <script src="/E-commerce-shoes/assets/Js/nav.js"></script>
+<?php if (strpos($_SERVER['REQUEST_URI'], '/admin/process/slides/slides.php') !== false): ?>
+    <script src="/E-commerce-shoes/admin/process/slides/media_choice.js"></script>
+    <script src="/E-commerce-shoes/admin/process/slides/media_preview.js"></script>
+<?php endif; ?>
+<script src="/E-commerce-shoes/admin/assets/Js/notifications.js"></script>

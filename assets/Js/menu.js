@@ -565,29 +565,6 @@ editItemForm.addEventListener('submit', async e => {
 });
 
 /* =====================================================
-   INITIALIZE
-===================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-    // Show loading when page loads
-    showLoading('Loading menu data...');
-    loadData().then(() => {
-        Swal.close();
-    }).catch(error => {
-        Swal.close();
-        showError('Failed to load initial data');
-        console.error('Initial load error:', error);
-    });
-
-    // Close modals when clicking outside
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal-overlay') ||
-            (e.target.closest('.modal') && e.target.classList.contains('bg-black'))) {
-            e.target.closest('.modal').classList.add('hidden');
-        }
-    });
-});
-
-/* =====================================================
    UTILITY FUNCTIONS
 ===================================================== */
 function refreshData() {

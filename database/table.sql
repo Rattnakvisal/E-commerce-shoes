@@ -101,15 +101,34 @@ CREATE TABLE shipping (
         ON DELETE CASCADE
 );
 
-CREATE TABLE cash_register (
-    register_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    opened_by INT UNSIGNED,
-    opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    closed_at TIMESTAMP NULL,
-    opening_balance DECIMAL(10,2),
-    closing_balance DECIMAL(10,2),
-    CONSTRAINT fk_register_user
-        FOREIGN KEY (opened_by)
+CREATE TABLE notifications (
+    notification_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    -- Who receives the notification
+    user_id INT UNSIGNED NULL,
+
+    -- What the notification is about
+    title VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+
+    -- Optional related data
+    type ENUM(
+        'order',
+        'payment',
+        'inventory',
+        'shipping',
+        'system'
+    ) NOT NULL DEFAULT 'system',
+
+    reference_id INT UNSIGNED NULL, -- order_id, product_id, etc.
+
+    -- Status
+    is_read TINYINT(1) DEFAULT 0,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_notification_user
+        FOREIGN KEY (user_id)
         REFERENCES users(user_id)
-        ON DELETE SET NULL
+        ON DELETE CASCADE
 );

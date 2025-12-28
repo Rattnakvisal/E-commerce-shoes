@@ -3,7 +3,6 @@ require_once __DIR__ . '/../../../config/conn.php';
 
 header('Content-Type: application/json');
 
-// Normalize connection
 if (!isset($pdo) && isset($conn)) {
     $pdo = $conn;
 }

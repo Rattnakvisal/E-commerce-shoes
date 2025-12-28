@@ -2,9 +2,6 @@
     MOBILE FILTER DRAWER
 ===================================================== */
 
-/**
- * Toggle mobile filter drawer & overlay
- */
 function toggleMobileFilters() {
     const overlay = document.getElementById('mobileFiltersOverlay');
     const drawer = document.getElementById('mobileFiltersDrawer');
@@ -29,16 +26,10 @@ function toggleMobileFilters() {
     }
 }
 
-/**
- * Disable / enable body scroll
- */
 function toggleBodyScroll(disable) {
     document.body.style.overflow = disable ? 'hidden' : '';
 }
 
-/**
- * Close drawer when clicking overlay
- */
 document.getElementById('mobileFiltersOverlay')?.addEventListener('click', e => {
     if (e.target.id === 'mobileFiltersOverlay') {
         toggleMobileFilters();
@@ -49,9 +40,6 @@ document.getElementById('mobileFiltersOverlay')?.addEventListener('click', e => 
    FILTER FORM SYNC
 ===================================================== */
 
-/**
- * Sync values between desktop & mobile filter forms
- */
 function syncFilterForms(direction) {
     const desktopForm = document.getElementById('desktopFiltersForm');
     const mobileForm = document.getElementById('mobileFiltersForm');
@@ -62,17 +50,20 @@ function syncFilterForms(direction) {
     const targetForm = direction === 'desktopToMobile' ? mobileForm : desktopForm;
 
     const formData = new FormData(sourceForm);
-    const fields = ['availability', 'category', 'gender', 'price_min', 'price_max'];
+    const fields = ['availability', 'pickup', 'category', 'price_min', 'price_max'];
 
     fields.forEach(name => {
-        const value = formData.get(name);
+        const values = formData.getAll(name);
+        const single = values.length ? values[0] : null;
         const inputs = targetForm.querySelectorAll(`[name="${name}"]`);
 
         inputs.forEach(input => {
-            if (input.type === 'radio' || input.type === 'checkbox') {
-                input.checked = input.value === value;
+            if (input.type === 'checkbox') {
+                input.checked = values.includes(input.value);
+            } else if (input.type === 'radio') {
+                input.checked = (single !== null && input.value === single);
             } else {
-                input.value = value ?? '';
+                input.value = single ?? '';
             }
         });
     });
@@ -83,9 +74,6 @@ function syncFilterForms(direction) {
     }
 }
 
-/**
- * Apply mobile filters
- */
 function applyMobileFilters() {
     syncFilterForms('mobileToDesktop');
     document.getElementById('desktopFiltersForm')?.submit();
@@ -103,9 +91,6 @@ if (mobilePriceSlider) {
     });
 }
 
-/**
- * Update price labels & inputs
- */
 function updateMobilePriceUI(min, max) {
     if (min !== undefined) {
         document.getElementById('mobileMinPriceValue').textContent = min;
@@ -114,15 +99,16 @@ function updateMobilePriceUI(min, max) {
         document.getElementById('mobileMaxPriceValue').textContent = max;
         document.querySelector('#mobileFiltersForm [name="price_max"]').value = max;
     }
+    if (min !== undefined) {
+        const minInput = document.querySelector('#mobileFiltersForm [name="price_min"]');
+        if (minInput) minInput.value = min;
+    }
 }
 
 /* =====================================================
    TOAST NOTIFICATION
 ===================================================== */
 
-/**
- * Show toast message
- */
 function showToast(message, type = 'success') {
     let toast = document.getElementById('globalToast');
 
@@ -149,9 +135,6 @@ function showToast(message, type = 'success') {
    CART & WISHLIST
 ===================================================== */
 
-/**
- * Add product to cart (AJAX)
- */
 async function addToCart(productId, qty = 1) {
     try {
         const res = await fetch('cart.php', {
@@ -179,9 +162,7 @@ async function addToCart(productId, qty = 1) {
     }
 }
 
-/**
- * Add product to wishlist (AJAX)
- */
+
 async function addToWishlist(productId) {
     try {
         const res = await fetch('wishlist.php', {
@@ -208,9 +189,6 @@ async function addToWishlist(productId) {
     }
 }
 
-/**
- * Update navbar badge counters
- */
 function updateBadge(selector, count, idFallback) {
     document.querySelectorAll(selector).forEach(el => el.textContent = count);
     const fallback = document.getElementById(idFallback);

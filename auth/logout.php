@@ -1,13 +1,10 @@
 <?php
-// Logout endpoint: destroy session and redirect to login
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Capture user id before destroying session so we can clear DB token
 $userId = $_SESSION['user_id'] ?? null;
 
-// Attempt to clear persisted auth token in DB (ignore errors)
 if ($userId) {
     try {
         require_once __DIR__ . '/../config/conn.php';
@@ -21,8 +18,23 @@ if ($userId) {
 // Clear session data
 $_SESSION = [];
 
-// Remove auth_token cookie if present
-setcookie('auth_token', '', time() - 42000, '/', '', false, true);
+$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+$httponly = true;
+$cookieParams = session_get_cookie_params();
+$pathsToTry = ['/', $cookieParams['path'] ?? '/', '/E-commerce-shoes'];
+
+foreach ($_COOKIE as $cName => $cVal) {
+    $lower = strtolower($cName);
+    if (stripos($lower, 'token') !== false || stripos($lower, 'auth') !== false || stripos($lower, 'remember') !== false) {
+        // try clearing with session params and common paths
+        foreach ($pathsToTry as $path) {
+            @setcookie($cName, '', time() - 42000, $path, $cookieParams['domain'] ?? '', $secure, $httponly);
+            @setcookie($cName, '', time() - 42000, $path, '', $secure, $httponly);
+        }
+        // also remove from PHP superglobal
+        unset($_COOKIE[$cName]);
+    }
+}
 
 // Clear session cookie if set
 if (ini_get('session.use_cookies')) {
@@ -38,9 +50,7 @@ if (ini_get('session.use_cookies')) {
     );
 }
 
-// Destroy session
 session_destroy();
 
-// Redirect back to login with a flag
 header('Location: login.php?loggedout=1');
 exit;

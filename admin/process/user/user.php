@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
+require_once __DIR__ . '/user_api.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

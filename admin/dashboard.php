@@ -1,19 +1,20 @@
 <?php
 require_once __DIR__ . '/../config/conn.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (empty($_SESSION['user_id']) || (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin')) {
+if (!isset($_SESSION['user_id'], $_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../auth/login.php');
     exit;
 }
+
 
 $admin_name = $admin_name ?? ($_SESSION['name'] ?? ($_SESSION['email'] ?? 'Admin'));
 $admin_role = $admin_role ?? ($_SESSION['role'] ?? 'Administrator');
 $admin_avatar = $admin_avatar ?? ('https://ui-avatars.com/api/?name=' . urlencode($admin_name) . '&background=6366f1&color=fff');
 
-// Fetch dashboard metrics from database
 try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM users");
     $total_users = (int)$stmt->fetchColumn();

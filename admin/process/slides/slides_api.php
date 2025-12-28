@@ -92,14 +92,18 @@ if (isset($_POST['save_slide'])) {
         $errors[] = "Title is required";
     }
 
-    /* Image upload */
+    /* Image / Video upload */
     if (!empty($_FILES['image']['name'])) {
         $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4'];
+        $maxImageSize = 5 * 1024 * 1024;      // 5MB for images
+        $maxVideoSize = 50 * 1024 * 1024;     // 50MB for videos
 
         if (!in_array($ext, $allowed)) {
-            $errors[] = "Only JPG, PNG, GIF, and WebP images are allowed";
-        } elseif ($_FILES['image']['size'] > 5 * 1024 * 1024) {
+            $errors[] = "Only JPG, PNG, GIF, WebP images and MP4 videos are allowed";
+        } elseif ($ext === 'mp4' && $_FILES['image']['size'] > $maxVideoSize) {
+            $errors[] = "Video size must be less than 50MB";
+        } elseif ($ext !== 'mp4' && $_FILES['image']['size'] > $maxImageSize) {
             $errors[] = "Image size must be less than 5MB";
         } else {
             $newName = uniqid('slide_') . "." . $ext;
@@ -110,7 +114,7 @@ if (isset($_POST['save_slide'])) {
                 }
                 $imageUrl = $uploadDirWeb . $newName;
             } else {
-                $errors[] = "Failed to upload image";
+                $errors[] = "Failed to upload file";
             }
         }
     }

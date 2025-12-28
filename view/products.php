@@ -17,6 +17,7 @@ $gender = $_GET['gender'] ?? '';
 $price_min = (int)($_GET['price_min'] ?? 0);
 $price_max = (int)($_GET['price_max'] ?? 1000);
 $availability = $_GET['availability'] ?? '';
+$pickup = $_GET['pickup'] ?? '';
 
 /* =========================
    FETCH CATEGORIES WITH COUNTS
@@ -66,7 +67,10 @@ if ($price_min > 0 || $price_max < 1000) {
 // Availability filter
 if ($availability === 'in_stock') {
     $sql .= " AND p.stock > 0";
-} elseif ($availability === 'pick_up_today') {
+}
+
+// Pick up today filter (separate parameter to avoid name collision with availability)
+if ($pickup === 'pick_up_today') {
     $sql .= " AND p.stock > 10";
 }
 
@@ -228,9 +232,9 @@ function e($string): string
                             <div class="space-y-2">
                                 <label class="flex items-center space-x-3 cursor-pointer group">
                                     <input type="checkbox"
-                                        name="availability"
+                                        name="pickup"
                                         value="pick_up_today"
-                                        <?= $availability === 'pick_up_today' ? 'checked' : '' ?>
+                                        <?= $pickup === 'pick_up_today' ? 'checked' : '' ?>
                                         class="rounded border-gray-300 text-nike-black focus:ring-nike-black">
                                     <span class="text-sm group-hover:text-nike-black">Available for Pickup</span>
                                 </label>
@@ -264,24 +268,6 @@ function e($string): string
                                 <?php endforeach; ?>
                             </div>
                         </section>
-
-                        <!-- Gender -->
-                        <section>
-                            <h3 class="font-bold mb-4">Gender</h3>
-                            <div class="space-y-2">
-                                <?php foreach (['men', 'women', 'kids'] as $g): ?>
-                                    <label class="flex items-center space-x-3 cursor-pointer group">
-                                        <input type="radio"
-                                            name="gender"
-                                            value="<?= $g ?>"
-                                            <?= ($gender === $g || ($gender === '' && $g === 'men')) ? 'checked' : '' ?>
-                                            class="text-nike-black focus:ring-nike-black">
-                                        <span class="text-sm group-hover:text-nike-black capitalize"><?= $g ?></span>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </section>
-
                         <!-- Price Range -->
                         <section>
                             <h3 class="font-bold mb-4">Price</h3>
@@ -434,9 +420,9 @@ function e($string): string
                                         <div class="space-y-2">
                                             <label class="flex items-center space-x-3 cursor-pointer py-2">
                                                 <input type="checkbox"
-                                                    name="availability"
+                                                    name="pickup"
                                                     value="pick_up_today"
-                                                    <?= $availability === 'pick_up_today' ? 'checked' : '' ?>
+                                                    <?= $pickup === 'pick_up_today' ? 'checked' : '' ?>
                                                     class="rounded border-gray-300 text-nike-black focus:ring-nike-black">
                                                 <span class="text-sm">Available for Pickup</span>
                                             </label>
@@ -470,24 +456,6 @@ function e($string): string
                                             <?php endforeach; ?>
                                         </div>
                                     </section>
-
-                                    <!-- Gender -->
-                                    <section>
-                                        <h3 class="font-bold mb-3">Gender</h3>
-                                        <div class="space-y-2">
-                                            <?php foreach (['men', 'women', 'kids'] as $g): ?>
-                                                <label class="flex items-center space-x-3 cursor-pointer py-2">
-                                                    <input type="radio"
-                                                        name="gender"
-                                                        value="<?= $g ?>"
-                                                        <?= ($gender === $g || ($gender === '' && $g === 'men')) ? 'checked' : '' ?>
-                                                        class="text-nike-black focus:ring-nike-black">
-                                                    <span class="text-sm capitalize"><?= $g ?></span>
-                                                </label>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </section>
-
                                     <!-- Price Range -->
                                     <section>
                                         <h3 class="font-bold mb-3">Price</h3>

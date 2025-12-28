@@ -198,7 +198,7 @@ require_once __DIR__ . '/products_api.php';
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6 animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 animate-fade-in">
                 <div class="bg-white rounded-xl shadow p-6 card-hover">
                     <div class="flex items-center justify-between">
                         <div>
@@ -231,18 +231,6 @@ require_once __DIR__ . '/products_api.php';
                         </div>
                         <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                             <i class="fas fa-cubes text-purple-600 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow p-6 card-hover">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Avg. Price</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-2">$<?php echo number_format($stats['avg_price'], 2); ?></p>
-                        </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
