@@ -33,58 +33,73 @@ $category_counts = $pdo->query(
 $total_products = $pdo->query("SELECT COUNT(*) as count FROM products WHERE status = 'active'")->fetch()['count'];
 
 /* =========================
-   BUILD PRODUCT QUERY
+   BUILD PRODUCT QUERY + PAGINATION
+   - preserves existing filter behavior
+   - adds pagination (page, limit)
 ========================= */
-$sql = "
-    SELECT p.product_id, p.name, p.price, p.image_url, c.category_name,
-           p.created_at, p.stock
-    FROM products p
-    LEFT JOIN categories c ON c.category_id = p.category_id
-    WHERE p.status = 'active'
-";
+
+$where = ["p.status = 'active'"];
 $params = [];
 
 // Category filter
 if ($category !== '') {
-    $sql .= " AND p.category_id = ?";
+    $where[] = "p.category_id = ?";
     $params[] = $category;
 }
 
 // Gender filter
 if ($gender !== '') {
-    $sql .= " AND (c.category_name LIKE ? OR p.name LIKE ?)";
+    $where[] = "(c.category_name LIKE ? OR p.name LIKE ?)";
     $params[] = "%$gender%";
     $params[] = "%$gender%";
 }
 
 // Price range filter
 if ($price_min > 0 || $price_max < 1000) {
-    $sql .= " AND p.price BETWEEN ? AND ?";
+    $where[] = "p.price BETWEEN ? AND ?";
     $params[] = $price_min;
     $params[] = $price_max;
 }
 
 // Availability filter
 if ($availability === 'in_stock') {
-    $sql .= " AND p.stock > 0";
+    $where[] = "p.stock > 0";
 }
 
 if ($pickup === 'pick_up_today') {
-    $sql .= " AND p.stock > 10";
+    $where[] = "p.stock > 10";
 }
 
-// Sorting
-$sql .= match ($sort) {
-    'price_low'  => " ORDER BY p.price ASC",
-    'price_high' => " ORDER BY p.price DESC",
-    'name_asc'   => " ORDER BY p.name ASC",
-    'name_desc'  => " ORDER BY p.name DESC",
-    default      => " ORDER BY p.created_at DESC"
+$whereSql = '';
+if (!empty($where)) {
+    $whereSql = ' WHERE ' . implode(' AND ', $where);
+}
+
+$baseFrom = "FROM products p LEFT JOIN categories c ON c.category_id = p.category_id";
+
+// Get total count for pagination
+$countStmt = $pdo->prepare("SELECT COUNT(*) as total $baseFrom $whereSql");
+$countStmt->execute($params);
+$total = (int)$countStmt->fetchColumn();
+
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = 12;
+$offset = ($page - 1) * $limit;
+
+$order = match ($sort) {
+    'price_low'  => 'p.price ASC',
+    'price_high' => 'p.price DESC',
+    'name_asc'   => 'p.name ASC',
+    'name_desc'  => 'p.name DESC',
+    default      => 'p.created_at DESC'
 };
 
-$stmt = $pdo->prepare($sql);
+$selectSql = "SELECT p.product_id, p.name, p.price, p.image_url, c.category_name, p.created_at, p.stock $baseFrom $whereSql ORDER BY $order LIMIT $limit OFFSET $offset";
+$stmt = $pdo->prepare($selectSql);
 $stmt->execute($params);
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$totalPages = (int)ceil($total / $limit);
 
 // Get price range for slider
 $price_range = $pdo->query("SELECT MIN(price) as min, MAX(price) as max FROM products WHERE status = 'active'")->fetch();
@@ -514,6 +529,45 @@ function e($string): string
                         </article>
                     <?php endforeach; ?>
                 </div>
+
+                <!-- Pagination -->
+                <?php if ($totalPages > 1): ?>
+                    <?php
+                    // preserve current filters in pagination links
+                    $baseParams = [];
+                    foreach (['category','gender','price_min','price_max','availability','pickup','sort'] as $f) {
+                        if (isset($$f) && $$f !== '') $baseParams[$f] = $$f;
+                    }
+                    ?>
+                    <div class="mt-8">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-nike-gray">
+                                Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
+                                <span class="font-medium"><?php echo min($offset + $limit, $total); ?></span> of
+                                <span class="font-medium"><?php echo $total; ?></span> products
+                            </div>
+                            <div class="flex space-x-2">
+                                <?php if ($page > 1):
+                                    $qp = array_merge($baseParams, ['page' => $page - 1]);
+                                ?>
+                                    <a href="?<?php echo http_build_query($qp); ?>" class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-nike-gray bg-white hover:bg-gray-50 transition">Previous</a>
+                                <?php endif; ?>
+
+                                <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++):
+                                    $qp = array_merge($baseParams, ['page' => $i]);
+                                ?>
+                                    <a href="?<?php echo http_build_query($qp); ?>" class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-nike-black text-white border-nike-black' : 'text-nike-gray bg-white hover:bg-gray-50'; ?> transition"><?php echo $i; ?></a>
+                                <?php endfor; ?>
+
+                                <?php if ($page < $totalPages):
+                                    $qp = array_merge($baseParams, ['page' => $page + 1]);
+                                ?>
+                                    <a href="?<?php echo http_build_query($qp); ?>" class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-nike-gray bg-white hover:bg-gray-50 transition">Next</a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
             </main>
         </div>

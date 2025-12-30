@@ -106,16 +106,14 @@ require_once __DIR__ . '/user_api.php';
                         <button
                             id="openAddUserBtn"
                             type="button"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
-                           hover:bg-indigo-700 transition">
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                             <i class="fas fa-user-plus mr-2"></i>
                             Add User
                         </button>
 
                         <button
                             onclick="refreshData()"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                           hover:bg-gray-200 transition">
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
                             <i class="fas fa-sync-alt"></i>
                         </button>
 
@@ -384,7 +382,7 @@ require_once __DIR__ . '/user_api.php';
 
             <!-- Pagination -->
             <?php if ($totalPages > 1): ?>
-                <div class="px-6 py-4 border-t border-gray-200">
+                <div id="usersPagination" class="px-6 py-4 border-t border-gray-200">
                     <div class="flex items-center justify-between">
                         <div class="text-sm text-gray-700">
                             Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
@@ -393,22 +391,25 @@ require_once __DIR__ . '/user_api.php';
                         </div>
                         <div class="flex space-x-2">
                             <?php if ($page > 1): ?>
-                                <a href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
-                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                                <a href="?page=<?php echo $page - 1; ?>"
+                                    data-page="<?php echo $page - 1; ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition pagination-link">
                                     Previous
                                 </a>
                             <?php endif; ?>
 
                             <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                                <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
-                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition">
+                                <a href="?page=<?php echo $i; ?>"
+                                    data-page="<?php echo $i; ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition pagination-link">
                                     <?php echo $i; ?>
                                 </a>
                             <?php endfor; ?>
 
                             <?php if ($page < $totalPages): ?>
-                                <a href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo urlencode($role); ?>&sort=<?php echo urlencode($sort); ?>"
-                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                                <a href="?page=<?php echo $page + 1; ?>"
+                                    data-page="<?php echo $page + 1; ?>"
+                                    class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition pagination-link">
                                     Next
                                 </a>
                             <?php endif; ?>

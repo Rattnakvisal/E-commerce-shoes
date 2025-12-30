@@ -364,7 +364,6 @@ require_once __DIR__ . '/api_category.php';
             }
         });
     </script>
-    <script src="/assets/Js/notifications.js"></script>
 </body>
 
 </html>

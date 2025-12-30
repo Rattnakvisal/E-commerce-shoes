@@ -1,37 +1,51 @@
-// Inject a media type selector before the file input named 'image'
-(function () {
-    document.addEventListener('DOMContentLoaded', function () {
-        var fileInput = document.querySelector('input[type=file][name="image"]');
-        if (!fileInput) return;
+document.addEventListener("DOMContentLoaded", () => {
+  const fileInput = document.querySelector('input[type="file"][name="image"]');
+  if (!fileInput || !fileInput.parentNode) return;
 
-        // Create selector
-        var label = document.createElement('label');
-        label.setAttribute('for', 'media_type');
-        label.className = 'form-label';
-        label.textContent = 'Media Type';
+  /* ===============================
+       Create Media Type Selector
+    ================================ */
+  const label = document.createElement("label");
+  label.className = "form-label";
+  label.htmlFor = "media_type";
+  label.textContent = "Media Type";
 
-        var select = document.createElement('select');
-        select.name = 'media_type';
-        select.id = 'media_type';
-        select.className = 'form-select mb-2';
+  const select = document.createElement("select");
+  select.id = "media_type";
+  select.name = "media_type";
+  select.className = "form-select mb-2";
 
-        var optImage = document.createElement('option'); optImage.value = 'image'; optImage.text = 'Image';
-        var optVideo = document.createElement('option'); optVideo.value = 'video'; optVideo.text = 'Video (MP4)';
-        select.appendChild(optImage); select.appendChild(optVideo);
+  select.innerHTML = `
+        <option value="image">Image</option>
+        <option value="video">Video (MP4)</option>
+    `;
 
-        // Insert before file input
-        fileInput.parentNode.insertBefore(label, fileInput);
-        fileInput.parentNode.insertBefore(select, fileInput);
+  /* ===============================
+       Helper text
+    ================================ */
+  const help = document.createElement("p");
+  help.className = "file-help text-xs text-gray-500 mt-1";
 
-        // Update accept based on selection
-        function updateAccept() {
-            if (select.value === 'video') {
-                fileInput.accept = 'video/mp4';
-            } else {
-                fileInput.accept = 'image/*';
-            }
-        }
-        select.addEventListener('change', updateAccept);
-        updateAccept();
-    });
-})();
+  /* ===============================
+       Insert elements
+    ================================ */
+  fileInput.parentNode.insertBefore(label, fileInput);
+  fileInput.parentNode.insertBefore(select, fileInput);
+  fileInput.parentNode.appendChild(help);
+
+  /* ===============================
+       Update accept & help text
+    ================================ */
+  const updateAccept = () => {
+    if (select.value === "video") {
+      fileInput.accept = "video/mp4";
+      help.textContent = "Max size: 20MB. MP4 video only";
+    } else {
+      fileInput.accept = ".jpg,.jpeg,.png,.gif,.webp,image/*";
+      help.textContent = "Max size: 5MB. JPG, PNG, GIF, WebP";
+    }
+  };
+
+  select.addEventListener("change", updateAccept);
+  updateAccept();
+});

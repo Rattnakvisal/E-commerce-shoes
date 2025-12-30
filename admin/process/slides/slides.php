@@ -281,101 +281,102 @@ require_once __DIR__ . '/slides_api.php';
 <!-- Slide Modal -->
 <div id="slideModal"
     class="fixed inset-0 z-50 hidden flex items-center justify-center overflow-y-auto">
-
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 animate-fade-in">
-
-        <!-- Modal Header -->
+    <div class="bg-white w-full max-w-2xl mx-4 rounded-xl shadow-xl animate-fade-in">
+        <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b">
-            <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">
-                Add Slide
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide
             </h3>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        <!-- Modal Body -->
-        <form method="POST" enctype="multipart/form-data" id="slideForm">
+
+        <!-- Body -->
+        <form id="slideForm" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="slide_id" id="slideId">
             <input type="hidden" name="old_image" id="oldImage">
-
             <div class="p-6 space-y-5">
-
                 <!-- Title -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Title *
+                    <label for="modalTitleInput" class="block text-sm font-medium text-gray-700 mb-1">
+                        Title <span class="text-red-500">*</span>
                     </label>
-                    <input type="text"
-                        name="title"
+                    <input
                         id="modalTitleInput"
+                        name="title"
+                        type="text"
                         required
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2
-                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Enter slide title">
+                        placeholder="Enter slide title"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="modalDescription" class="block text-sm font-medium text-gray-700 mb-1">
                         Description
                     </label>
-                    <textarea name="description"
+                    <textarea
                         id="modalDescription"
+                        name="description"
                         rows="3"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2
-                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Enter slide description"></textarea>
+                        placeholder="Enter slide description"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                 </div>
 
-                <!-- Link & Button Text -->
+                <!-- Link & Button -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="modalLinkUrl" class="block text-sm font-medium text-gray-700 mb-1">
                             Link URL
                         </label>
-                        <input type="url"
-                            name="link_url"
+                        <input
                             id="modalLinkUrl"
+                            name="link_url"
+                            type="url"
+                            placeholder="https://example.com"
                             class="w-full rounded-lg border border-gray-300 px-4 py-2
-                            focus:ring-2 focus:ring-indigo-500"
-                            placeholder="https://example.com">
+                                   focus:ring-2 focus:ring-indigo-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="modalButtonText" class="block text-sm font-medium text-gray-700 mb-1">
                             Button Text
                         </label>
-                        <input type="text"
-                            name="button_text"
+                        <input
                             id="modalButtonText"
+                            name="button_text"
+                            type="text"
+                            placeholder="Learn More"
                             class="w-full rounded-lg border border-gray-300 px-4 py-2
-                            focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Learn More">
+                                   focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
 
-                <!-- Display Order & Status -->
+                <!-- Order & Status -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="modalDisplayOrder" class="block text-sm font-medium text-gray-700 mb-1">
                             Display Order
                         </label>
-                        <input type="number"
-                            name="display_order"
+                        <input
                             id="modalDisplayOrder"
+                            name="display_order"
+                            type="number"
                             min="1"
                             class="w-full rounded-lg border border-gray-300 px-4 py-2
-                            focus:ring-2 focus:ring-indigo-500">
+                                   focus:ring-2 focus:ring-indigo-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="modalIsActive" class="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select name="is_active"
+                        <select
                             id="modalIsActive"
+                            name="is_active"
                             class="w-full rounded-lg border border-gray-300 px-4 py-2
-                            focus:ring-2 focus:ring-indigo-500">
+                                   focus:ring-2 focus:ring-indigo-500">
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
                         </select>
@@ -385,64 +386,64 @@ require_once __DIR__ . '/slides_api.php';
                 <!-- Current Image -->
                 <div id="currentImageContainer" class="hidden">
                     <p class="text-sm text-gray-600 mb-2">Current Image</p>
-                    <img id="currentImagePreview"
-                        class="rounded-lg border max-h-40">
+                    <img id="currentImagePreview" class="rounded-lg border max-h-40">
+                    <video id="currentVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
                 </div>
 
-                <!-- Image Upload -->
+                <!-- Upload -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-1">
                         Slide Image
                     </label>
-
-                    <input type="file"
-                        name="image"
+                    <input
                         id="imageUpload"
+                        name="image"
+                        type="file"
                         accept=".jpg,.jpeg,.png,.gif,.webp"
                         onchange="previewNewImage(this)"
                         class="block w-full text-sm text-gray-600
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-lg file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-indigo-50 file:text-indigo-600
-                        hover:file:bg-indigo-100">
-
+                               file:mr-4 file:py-2 file:px-4
+                               file:rounded-lg file:border-0
+                               file:text-sm file:font-semibold
+                               file:bg-indigo-50 file:text-indigo-600
+                               hover:file:bg-indigo-100">
                     <p class="text-xs text-gray-500 mt-1">
                         Max size: 5MB. JPG, PNG, GIF, WebP
                     </p>
                 </div>
 
-                <!-- New Image Preview -->
+                <!-- New Preview -->
                 <div id="newImageContainer" class="hidden">
                     <p class="text-sm text-gray-600 mb-2">New Image Preview</p>
-                    <img id="newImagePreview"
-                        class="rounded-lg border max-h-40">
+                    <img id="newImagePreview" class="rounded-lg border max-h-40">
+                    <video id="newVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
                 </div>
 
             </div>
 
-            <!-- Modal Footer -->
+            <!-- Footer -->
             <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl">
                 <button type="button"
                     onclick="closeModal()"
-                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
                     Cancel
                 </button>
-
                 <button type="submit"
                     name="save_slide"
                     class="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
                     Save Slide
                 </button>
             </div>
+
         </form>
     </div>
 </div>
-<script src="/assets/Js/notifications.js"></script>
+
+</div>
 <script>
     // Modal Functions
     function openAddModal() {
-        document.getElementById('modalTitle').innerHTML = ' Add New Slide';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide';
         document.getElementById('slideId').value = '0';
         document.getElementById('oldImage').value = '';
         document.getElementById('modalTitleInput').value = '';
@@ -472,9 +473,29 @@ require_once __DIR__ . '/slides_api.php';
         const statusEl = document.getElementById('modalIsActive');
         if (statusEl) statusEl.value = isActive == 1 ? '1' : '0';
 
-        // Show current image
         if (imageUrl) {
-            document.getElementById('currentImagePreview').src = imageUrl;
+            var currentImgEl = document.getElementById('currentImagePreview');
+            var currentVideoEl = document.getElementById('currentVideoPreview');
+            if (/\.(mp4)(\?.*)?$/i.test(imageUrl)) {
+                // show video preview
+                if (currentVideoEl) {
+                    currentVideoEl.src = imageUrl;
+                    currentVideoEl.classList.remove('hidden');
+                }
+                if (currentImgEl) {
+                    currentImgEl.classList.add('hidden');
+                    currentImgEl.removeAttribute('src');
+                }
+            } else {
+                if (currentImgEl) {
+                    currentImgEl.src = imageUrl;
+                    currentImgEl.classList.remove('hidden');
+                }
+                if (currentVideoEl) {
+                    currentVideoEl.classList.add('hidden');
+                    currentVideoEl.src = '';
+                }
+            }
             document.getElementById('currentImageContainer').classList.remove('hidden');
         } else {
             document.getElementById('currentImageContainer').classList.add('hidden');

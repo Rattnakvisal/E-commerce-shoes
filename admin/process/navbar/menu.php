@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
+require_once __DIR__ . '/../../../config/connection.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,18 +67,12 @@ require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
                             Manage your website navigation menu
                         </p>
                     </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center gap-3">
-                        <button
-                            onclick="refreshData()"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                           hover:bg-gray-200 transition"
-                            title="Refresh">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-
+                    <button
+                        onclick="refreshData()"
+                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                           hover:bg-gray-200 transition">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -389,7 +383,6 @@ require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
 
     <!-- Add inline JavaScript -->
     <script src="../../../assets/Js/menu.js"></script>
-    <script src="/assets/Js/notifications.js"></script>
 </body>
 
 </html>

@@ -17,21 +17,20 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 ============================================================ */
 function respond(bool $ok, string $msg = '', array $data = []): void
 {
-    echo json_encode(array_merge([
-        'ok'  => $ok,
-        'msg' => $msg
-    ], $data), JSON_UNESCAPED_UNICODE);
+    echo json_encode(
+        array_merge(['ok' => $ok, 'msg' => $msg], $data),
+        JSON_UNESCAPED_UNICODE
+    );
     exit;
 }
 
 function input(): array
 {
-    return json_decode(file_get_contents('php://input'), true)
-        ?? $_POST
-        ?? [];
+    $json = json_decode(file_get_contents('php://input'), true);
+    return is_array($json) ? $json : ($_POST ?? []);
 }
 
-function run(PDO $pdo, string $sql, array $params = []): void
+function execQuery(PDO $pdo, string $sql, array $params = []): void
 {
     try {
         $stmt = $pdo->prepare($sql);
@@ -80,9 +79,9 @@ if ($action === 'add_parent') {
     $title = trim($inp['title'] ?? '');
     $pos   = (int)($inp['position'] ?? 1);
 
-    if ($title === '') respond(false, 'Title required');
+    if ($title === '') respond(false, 'Title is required');
 
-    run(
+    execQuery(
         $pdo,
         "INSERT INTO navbar_parents (title, position)
          VALUES (:t, :p)",
@@ -97,7 +96,7 @@ if ($action === 'edit_parent') {
 
     if ($id <= 0 || $title === '') respond(false, 'Invalid data');
 
-    run(
+    execQuery(
         $pdo,
         "UPDATE navbar_parents
          SET title = :t, position = :p
@@ -110,7 +109,7 @@ if ($action === 'delete_parent') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    run(
+    execQuery(
         $pdo,
         "DELETE FROM navbar_parents WHERE id = :id",
         [':id' => $id]
@@ -123,7 +122,7 @@ if ($action === 'delete_parent') {
 if (in_array($action, ['add_group', 'edit_group'], true)) {
 
     $id     = (int)($inp['id'] ?? 0);
-    $parent = is_numeric($inp['parent_id'] ?? null)
+    $parent = isset($inp['parent_id']) && is_numeric($inp['parent_id'])
         ? (int)$inp['parent_id']
         : null;
 
@@ -131,10 +130,10 @@ if (in_array($action, ['add_group', 'edit_group'], true)) {
     $pos   = (int)($inp['position'] ?? 1);
     $url   = trim($inp['link_url'] ?? '');
 
-    if ($title === '') respond(false, 'Group title required');
+    if ($title === '') respond(false, 'Group title is required');
 
     if ($action === 'add_group') {
-        run(
+        execQuery(
             $pdo,
             "INSERT INTO navbar_groups
              (parent_id, group_title, position, link_url)
@@ -151,7 +150,7 @@ if (in_array($action, ['add_group', 'edit_group'], true)) {
     if ($action === 'edit_group') {
         if ($id <= 0) respond(false, 'Invalid ID');
 
-        run(
+        execQuery(
             $pdo,
             "UPDATE navbar_groups
              SET parent_id = :pid,
@@ -174,7 +173,7 @@ if ($action === 'delete_group') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    run(
+    execQuery(
         $pdo,
         "DELETE FROM navbar_groups WHERE id = :id",
         [':id' => $id]
@@ -197,7 +196,7 @@ if (in_array($action, ['add_item', 'edit_item'], true)) {
     if ($action === 'add_item') {
         if ($gid <= 0) respond(false, 'Invalid group');
 
-        run(
+        execQuery(
             $pdo,
             "INSERT INTO navbar_items
              (group_id, item_title, link_url, position)
@@ -214,7 +213,7 @@ if (in_array($action, ['add_item', 'edit_item'], true)) {
     if ($action === 'edit_item') {
         if ($id <= 0) respond(false, 'Invalid ID');
 
-        run(
+        execQuery(
             $pdo,
             "UPDATE navbar_items
              SET item_title = :t,
@@ -235,7 +234,7 @@ if ($action === 'delete_item') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    run(
+    execQuery(
         $pdo,
         "DELETE FROM navbar_items WHERE id = :id",
         [':id' => $id]
