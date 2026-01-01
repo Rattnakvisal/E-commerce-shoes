@@ -288,25 +288,3 @@ bindForm(els.addItemForm, "add_item");
 bindForm(els.editParentForm, "edit_parent", "editParentModal");
 bindForm(els.editGroupForm, "edit_group", "editGroupModal");
 bindForm(els.editItemForm, "edit_item", "editItemModal");
-
-/* =====================================================
-   UTILITY / REFRESH
-===================================================== */
-function refreshData() {
-  loading("Refreshing data...");
-  setTimeout(() => {
-    localStorage.setItem("menu_refreshed", "1");
-    window.location.reload();
-  }, 150);
-}
-
-/* =====================================================
-   INIT
-===================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("menu_refreshed")) {
-    localStorage.removeItem("menu_refreshed");
-    setTimeout(() => toast("Data refreshed!", "success"), 300);
-  }
-  loadData();
-});

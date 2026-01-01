@@ -110,13 +110,6 @@ require_once __DIR__ . '/user_api.php';
                             <i class="fas fa-user-plus mr-2"></i>
                             Add User
                         </button>
-
-                        <button
-                            onclick="refreshData()"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-
                     </div>
                 </div>
             </div>
@@ -417,7 +410,6 @@ require_once __DIR__ . '/user_api.php';
                     </div>
                 </div>
             <?php endif; ?>
-        </div>
         </div>
     </main>
 

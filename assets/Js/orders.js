@@ -1,161 +1,163 @@
 /* =====================================================
-   ORDERS MANAGEMENT SCRIPT
+   CONFIG
 ===================================================== */
+const API_BASE_URL = "/admin/process/orders/get_order.php";
 
-document.addEventListener('click', (e) => {
-    const viewBtn = e.target.closest('.btn-view');
-    const completeBtn = e.target.closest('.btn-complete');
-    const cancelBtn = e.target.closest('.btn-cancel');
+/* =====================================================
+   EVENT DELEGATION
+===================================================== */
+document.addEventListener("click", (e) => {
+  const viewBtn = e.target.closest(".btn-view");
+  const completeBtn = e.target.closest(".btn-complete");
+  const cancelBtn = e.target.closest(".btn-cancel");
 
-    if (viewBtn) {
-        viewOrder(viewBtn.dataset.id);
-        return;
-    }
+  if (viewBtn) {
+    viewOrder(viewBtn.dataset.id);
+  }
 
-    if (completeBtn) {
-        confirmStatusChange(completeBtn.dataset.id, 'completed', completeBtn);
-        return;
-    }
+  if (completeBtn) {
+    confirmStatusChange(completeBtn.dataset.id, "completed");
+  }
 
-    if (cancelBtn) {
-        confirmStatusChange(cancelBtn.dataset.id, 'cancelled', cancelBtn);
-        return;
-    }
+  if (cancelBtn) {
+    confirmStatusChange(cancelBtn.dataset.id, "cancelled");
+  }
 });
 
 /* =====================================================
    CONFIRM STATUS CHANGE
 ===================================================== */
-function confirmStatusChange(orderId, status, button) {
-    if (!orderId) return;
+function confirmStatusChange(orderId, status) {
+  if (!orderId) return;
 
-    Swal.fire({
-        title: 'Are you sure?',
-        text: `Mark order as ${status}?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, update'
-    }).then(({ isConfirmed }) => {
-        if (!isConfirmed) return;
-        updateOrderStatus(orderId, status, button);
-    });
+  Swal.fire({
+    title: "Are you sure?",
+    html: `Change order status to <strong>${status.toUpperCase()}</strong>?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, update",
+    confirmButtonColor: "#4f46e5",
+  }).then(({ isConfirmed }) => {
+    if (isConfirmed) {
+      updateOrderStatus(orderId, status);
+    }
+  });
 }
 
 /* =====================================================
    UPDATE ORDER STATUS (API)
 ===================================================== */
-async function updateOrderStatus(orderId, status, button) {
+async function updateOrderStatus(orderId, status) {
+  const action = status === "completed" ? "complete" : "cancel";
 
-    const originalText = button.textContent;
-    button.disabled = true;
-    button.textContent = 'Saving...';
+  try {
+    showLoading("Updating order...");
 
+    const res = await fetch(`${API_BASE_URL}?action=${action}`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ order_id: orderId }),
+    });
+
+    let data;
     try {
-        const action = status === 'completed' ? 'complete' : 'cancel';
-        const res = await fetch(`/E-commerce-shoes/admin/process/orders/get_order.php?action=${action}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ order_id: orderId })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.ok) {
-            throw new Error(data.error || data.message || 'Update failed');
-        }
-
-        updateRowStatus(orderId, status);
-
-        Swal.fire('Updated!', 'Order status updated successfully.', 'success');
-
-        // Reload the page so related UI (buttons, counts, inventory) refreshes
-        if (status === 'completed' || status === 'cancelled') {
-            setTimeout(() => location.reload(), 700);
-        }
-
+      data = await res.json();
     } catch (err) {
-        Swal.fire('Error', err.message || 'Server error', 'error');
-    } finally {
-        button.disabled = false;
-        button.textContent = originalText;
+      throw new Error("Server error");
     }
+
+    if (!res.ok || !(data.ok || data.success)) {
+      throw new Error(data.error || data.message || "Update failed");
+    }
+
+    showSuccess("Order updated successfully");
+    setTimeout(() => location.reload(), 600);
+  } catch (err) {
+    showError(err.message || "Server error");
+  }
 }
 
 /* =====================================================
    VIEW ORDER DETAILS
 ===================================================== */
 async function viewOrder(orderId) {
-    if (!orderId) return;
+  if (!orderId) return;
 
+  try {
+    showLoading("Loading order details...");
+
+    const res = await fetch(`${API_BASE_URL}?action=view&order_id=${orderId}`, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+    });
+
+    let data;
     try {
-        const res = await fetch(
-            `/E-commerce-shoes/admin/process/orders/get_order.php?action=view&order_id=${orderId}`,
-            { credentials: 'same-origin' }
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            Swal.fire('Error', data.error || 'Failed to load order', 'error');
-            return;
-        }
-
-        renderOrderModal(data);
-
-    } catch {
-        Swal.fire('Error', 'Server error', 'error');
+      data = await res.json();
+    } catch (err) {
+      throw new Error("Server error");
     }
-}
 
-/* =====================================================
-   UPDATE STATUS TEXT IN TABLE
-===================================================== */
-function updateRowStatus(orderId, status) {
-    const row = document.querySelector(`tr[data-row="${orderId}"]`);
-    if (!row) return;
-
-    const statusCell = row.querySelector('.status');
-    if (statusCell) {
-        statusCell.textContent = capitalize(status);
+    if (!res.ok || !(data.ok || data.success)) {
+      throw new Error(data.error || "Failed to load order");
     }
+
+    renderOrderModal(data);
+  } catch (err) {
+    showError(err.message || "Server error");
+  }
 }
 
 /* =====================================================
    RENDER ORDER MODAL
 ===================================================== */
 function renderOrderModal({ order, items = [], shipping }) {
+  let subtotal = 0;
 
-    let subtotal = 0;
+  const rows = items
+    .map((it) => {
+      const price = Number(it.price ?? it.unit_price ?? 0);
+      const line = price * Number(it.quantity ?? 0);
+      subtotal += line;
 
-    const rows = items.map(it => {
-        const line = (Number(it.price) * Number(it.quantity)) || 0;
-        subtotal += line;
+      return `
+      <tr>
+        <td>${escapeHtml(it.product_name ?? it.name ?? "Item")}</td>
+        <td>${it.quantity}</td>
+        <td>$${price.toFixed(2)}</td>
+        <td>$${line.toFixed(2)}</td>
+      </tr>
+    `;
+    })
+    .join("");
 
-        return `
-            <tr>
-                <td>${escapeHtml(it.name)}</td>
-                <td>${it.quantity}</td>
-                <td>$${Number(it.price).toFixed(2)}</td>
-                <td>$${line.toFixed(2)}</td>
-            </tr>
-        `;
-    }).join('');
-
-    Swal.fire({
-        title: `Order #${order.order_id}`,
-        width: 720,
-        html: `
-            <div class="text-left text-sm space-y-1">
-                <p><b>Customer:</b> ${escapeHtml(order.customer)}</p>
-                <p><b>Payment:</b> ${escapeHtml(order.payment_status)}</p>
-                <p><b>Status:</b> ${escapeHtml(order.order_status)}</p>
-                <p><b>Date:</b> ${new Date(order.created_at).toLocaleString()}</p>
-                ${shipping ? `<p><b>Shipping:</b> ${escapeHtml(shipping.address || '')}</p>` : ''}
-                <hr class="my-2"/>
-                <table class="w-full text-sm">
+  Swal.fire({
+    title: `Order #${order.order_id}`,
+    width: 720,
+    html: `
+            <div class="text-left text-sm space-y-2">
+                <p><b>Customer:</b> ${escapeHtml(
+                  order.customer_name ?? order.customer ?? ""
+                )}</p>
+                <p><b>Payment:</b> ${escapeHtml(order.payment_status ?? "")}</p>
+                <p><b>Status:</b> ${escapeHtml(order.order_status ?? "")}</p>
+                <p><b>Date:</b> ${new Date(
+                  order.created_at
+                ).toLocaleString()}</p>
+                ${
+                  shipping
+                    ? `<p><b>Shipping:</b> ${escapeHtml(
+                        shipping.address || ""
+                      )}</p>`
+                    : ""
+                }
+                <hr class="my-2">
+                <table class="w-full border text-sm">
                     <thead>
                         <tr>
                             <th>Item</th>
@@ -167,27 +169,49 @@ function renderOrderModal({ order, items = [], shipping }) {
                     <tbody>${rows}</tbody>
                 </table>
                 <div class="text-right mt-2">
-                    <p><b>Subtotal:</b> $${subtotal.toFixed(2)}</p>
-                    <p><b>Total:</b> $${Number(order.total).toFixed(2)}</p>
+                    <p><b>Total:</b> $${Number(
+                      order.total ?? order.total_amount ?? 0
+                    ).toFixed(2)}</p>
                 </div>
             </div>
-        `
-    });
+        `,
+    confirmButtonText: "Close",
+    confirmButtonColor: "#4f46e5",
+  });
 }
 
 /* =====================================================
-   UTILITIES
+   UI HELPERS
 ===================================================== */
-function capitalize(text = '') {
-    return text.charAt(0).toUpperCase() + text.slice(1);
+function showLoading(message = "Loading...") {
+  Swal.fire({
+    title: message,
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading(),
+  });
 }
 
-function escapeHtml(text = '') {
-    return text.replace(/[&"'<>]/g, c => ({
-        '&': '&amp;',
-        '"': '&quot;',
-        "'": '&#39;',
-        '<': '&lt;',
-        '>': '&gt;'
-    }[c]));
+function showSuccess(message) {
+  Swal.fire({
+    icon: "success",
+    title: "Success",
+    text: message,
+    confirmButtonColor: "#059669",
+  });
+}
+
+function showError(message) {
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: message,
+    confirmButtonColor: "#dc2626",
+  });
+}
+
+function escapeHtml(text = "") {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }

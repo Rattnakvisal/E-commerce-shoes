@@ -67,12 +67,6 @@ require_once __DIR__ . '/../../../config/connection.php';
                             Manage your website navigation menu
                         </p>
                     </div>
-                    <button
-                        onclick="refreshData()"
-                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                           hover:bg-gray-200 transition">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
                 </div>
             </div>
         </div>

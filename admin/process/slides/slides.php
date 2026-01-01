@@ -46,15 +46,6 @@ require_once __DIR__ . '/slides_api.php';
                         <i class="fas fa-plus mr-2"></i>
                         Add Slide
                     </button>
-
-                    <button
-                        onclick="refreshData()"
-                        title="Refresh"
-                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                       hover:bg-gray-200 transition">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-
                 </div>
             </div>
         </div>

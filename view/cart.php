@@ -31,8 +31,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'add') {
         if ($id > 0) {
+            // verify stock before adding
+            $pstmt = $pdo->prepare('SELECT stock FROM products WHERE product_id = ?');
+            $pstmt->execute([$id]);
+            $prod = $pstmt->fetch(PDO::FETCH_ASSOC);
+            $stock = (int)($prod['stock'] ?? 0);
+
+            if ($stock <= 0) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Out of stock',
+                    'message' => 'Product is out of stock'
+                ]);
+                exit;
+            }
+
             $existing = (int)($cartRef[$id] ?? 0);
-            $cartRef[$id] = $existing + max(1, $qty);
+            $newQty = $existing + max(1, $qty);
+            // do not exceed available stock
+            if ($newQty > $stock) {
+                $newQty = $stock;
+            }
+            $cartRef[$id] = $newQty;
         }
     }
 

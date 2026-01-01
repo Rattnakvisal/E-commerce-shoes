@@ -349,17 +349,6 @@ const FilterController = {
 };
 
 /* =====================================================
-   UTILITY FUNCTIONS
-===================================================== */
-function refreshData() {
-  SwalHelpers.loading("Refreshing data...");
-  setTimeout(() => {
-    localStorage.setItem("users_refreshed", "1");
-    window.location.reload();
-  }, 150);
-}
-
-/* =====================================================
    EVENT LISTENERS SETUP
 ===================================================== */
 function setupEventListeners() {
@@ -413,17 +402,6 @@ function setupEventListeners() {
   // Run once initially
   setTimeout(updatePaginationLinks, 50);
 }
-
-/* =====================================================
-   INITIALIZATION
-===================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  setupEventListeners();
-  if (localStorage.getItem("users_refreshed")) {
-    localStorage.removeItem("users_refreshed");
-    setTimeout(() => SwalHelpers.toast("Data refreshed!", "success"), 300);
-  }
-});
 
 /* =====================================================
    GLOBAL EXPORTS

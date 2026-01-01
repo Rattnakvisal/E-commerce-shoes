@@ -503,10 +503,17 @@ function e($string): string
                                 </div>
 
                                 <div class="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform">
-                                    <button onclick="addToCart(<?= $product['product_id'] ?>)"
-                                        class="w-full bg-nike-black text-white py-3 text-sm font-bold hover:bg-gray-800 transition-colors">
-                                        Quick Add
-                                    </button>
+                                    <?php if ((int)$product['stock'] > 0): ?>
+                                        <button onclick="addToCart(<?= $product['product_id'] ?>)"
+                                            class="w-full bg-nike-black text-white py-3 text-sm font-bold hover:bg-gray-800 transition-colors">
+                                            Quick Add
+                                        </button>
+                                    <?php else: ?>
+                                        <button disabled
+                                            class="w-full bg-gray-300 text-gray-600 py-3 text-sm font-bold cursor-not-allowed">
+                                            Out of Stock
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
@@ -522,10 +529,17 @@ function e($string): string
                                 </div>
                             </div>
 
-                            <button onclick="addToCart(<?= $product['product_id'] ?>)"
-                                class="mt-4 w-full border border-nike-black py-3 text-sm font-bold rounded hover:bg-nike-black hover:text-white transition-colors">
-                                Add to Cart
-                            </button>
+                            <?php if ((int)$product['stock'] > 0): ?>
+                                <button onclick="addToCart(<?= $product['product_id'] ?>)"
+                                    class="mt-4 w-full border border-nike-black py-3 text-sm font-bold rounded hover:bg-nike-black hover:text-white transition-colors">
+                                    Add to Cart
+                                </button>
+                            <?php else: ?>
+                                <button disabled
+                                    class="mt-4 w-full border border-gray-200 bg-gray-100 text-gray-500 py-3 text-sm font-bold rounded cursor-not-allowed">
+                                    Out of Stock
+                                </button>
+                            <?php endif; ?>
                         </article>
                     <?php endforeach; ?>
                 </div>
@@ -535,7 +549,7 @@ function e($string): string
                     <?php
                     // preserve current filters in pagination links
                     $baseParams = [];
-                    foreach (['category','gender','price_min','price_max','availability','pickup','sort'] as $f) {
+                    foreach (['category', 'gender', 'price_min', 'price_max', 'availability', 'pickup', 'sort'] as $f) {
                         if (isset($$f) && $$f !== '') $baseParams[$f] = $$f;
                     }
                     ?>

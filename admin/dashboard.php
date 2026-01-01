@@ -219,13 +219,6 @@ try {
                         </p>
                     </div>
                 </div>
-                <!-- Actions -->
-                <button
-                    onclick="refreshData()"
-                    class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                           hover:bg-gray-200 transition">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
             </div>
             <!-- Dashboard Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

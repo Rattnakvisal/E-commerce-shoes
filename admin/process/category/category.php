@@ -66,18 +66,6 @@ require_once __DIR__ . '/api_category.php';
                             Manage product categories and organize your inventory
                         </p>
                     </div>
-
-                    <!-- Actions -->
-                    <div class="flex items-center gap-3">
-                        <button
-                            onclick="refreshData()"
-                            title="Refresh"
-                            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                       hover:bg-gray-200 transition">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-
                 </div>
             </div>
 
@@ -338,31 +326,6 @@ require_once __DIR__ . '/api_category.php';
                 console.error(message);
             }
         }
-
-        function refreshData() {
-            try {
-                showLoading('Refreshing data...');
-                localStorage.setItem('category_refreshed', '1');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 150);
-            } catch (error) {
-                if (typeof Swal !== 'undefined') Swal.close();
-                showError('Failed to refresh data');
-                console.error('Refresh error:', error);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                if (localStorage.getItem('category_refreshed')) {
-                    localStorage.removeItem('category_refreshed');
-                    showToast('Data refreshed!', 'success');
-                }
-            } catch (e) {
-                // ignore
-            }
-        });
     </script>
 </body>
 

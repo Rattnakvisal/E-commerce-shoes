@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../../config/conn.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -8,155 +11,125 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json; charset=utf-8');
 
 /* =====================================================
-   AUTH GUARD
+   HELPERS
 ===================================================== */
-if (
-    !isset($_SESSION['user_id'], $_SESSION['role']) ||
-    $_SESSION['role'] !== 'admin'
-) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Unauthorized']);
+function respond(array $data, int $status = 200): void
+{
+    http_response_code($status);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
+function jsonInput(): array
+{
+    return json_decode(file_get_contents('php://input'), true) ?? [];
+}
+
 /* =====================================================
-   INPUT
+   AUTH GUARD
 ===================================================== */
+if (
+    empty($_SESSION['user_id']) ||
+    !in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)
+) {
+    respond(['success' => false, 'error' => 'Unauthorized'], 403);
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
 /* =====================================================
-   ACTION: VIEW ORDER
-   GET ?action=view&order_id=1
+   VIEW ORDER
 ===================================================== */
 if ($method === 'GET' && $action === 'view') {
 
-    $order_id = (int)($_GET['order_id'] ?? 0);
-
-    if ($order_id <= 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid order id']);
-        exit;
+    $orderId = (int)($_GET['order_id'] ?? 0);
+    if ($orderId <= 0) {
+        respond(['success' => false, 'error' => 'Invalid order id'], 400);
     }
 
     try {
-        // Order header
         $stmt = $pdo->prepare("
             SELECT 
-                o.order_id,
-                o.user_id,
-                o.total,
-                o.order_status,
-                o.payment_status,
-                o.order_type,
-                o.created_at,
-                COALESCE(u.name, u.email, 'Guest') AS customer,
-                u.email
+                o.*,
+                COALESCE(u.name, u.email, 'Guest') AS customer_name,
+                u.email AS customer_email
             FROM orders o
             LEFT JOIN users u ON u.user_id = o.user_id
             WHERE o.order_id = ?
             LIMIT 1
         ");
-        $stmt->execute([$order_id]);
+        $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$order) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Order not found']);
-            exit;
+            respond(['ok' => false, 'success' => false, 'error' => 'Order not found'], 404);
         }
 
-        // Order items
         $stmt = $pdo->prepare("
             SELECT 
-                oi.product_id,
-                oi.quantity,
-                oi.price,
-                COALESCE(p.name,'') AS name,
-                COALESCE(p.image_url,'') AS image_url
+                oi.*,
+                COALESCE(p.name, 'Deleted Product') AS product_name,
+                COALESCE(p.image_url, '') AS product_image
             FROM order_items oi
             LEFT JOIN products p ON p.product_id = oi.product_id
             WHERE oi.order_id = ?
         ");
-        $stmt->execute([$order_id]);
+        $stmt->execute([$orderId]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Shipping (optional)
-        $stmt = $pdo->prepare("
-            SELECT * FROM shipping WHERE order_id = ? LIMIT 1
-        ");
-        $stmt->execute([$order_id]);
-        $shipping = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        echo json_encode([
-            'order'    => $order,
-            'items'    => $items,
-            'shipping' => $shipping
+        respond([
+            'ok' => true,
+            'success' => true,
+            'order'   => $order,
+            'items'   => $items,
+            'item_count' => count($items),
         ]);
-        exit;
     } catch (PDOException $e) {
-        error_log('[order_view] ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
-        exit;
+        error_log('[order:view] ' . $e->getMessage());
+        respond(['success' => false, 'error' => 'Server error'], 500);
     }
 }
 
 /* =====================================================
-   ACTION: COMPLETE ORDER
-   POST { order_id }
+   COMPLETE ORDER
 ===================================================== */
 if ($method === 'POST' && $action === 'complete') {
 
-    $input = json_decode(file_get_contents('php://input'), true);
-    $order_id = (int)($input['order_id'] ?? 0);
-
-    if ($order_id <= 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid order id']);
-        exit;
+    $orderId = (int)(jsonInput()['order_id'] ?? 0);
+    if ($orderId <= 0) {
+        respond(['success' => false, 'error' => 'Invalid order id'], 400);
     }
 
     try {
         $pdo->beginTransaction();
 
-        // Lock order row
         $stmt = $pdo->prepare("
             SELECT order_status
             FROM orders
             WHERE order_id = ?
             FOR UPDATE
         ");
-        $stmt->execute([$order_id]);
+        $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$order) {
             $pdo->rollBack();
-            http_response_code(404);
-            echo json_encode(['error' => 'Order not found']);
-            exit;
+            respond(['success' => false, 'error' => 'Order not found'], 404);
         }
 
-        // Prevent double completion
         if ($order['order_status'] === 'completed') {
             $pdo->rollBack();
-            echo json_encode([
-                'ok' => true,
-                'message' => 'Order already completed'
-            ]);
-            exit;
+            respond(['success' => true, 'message' => 'Order already completed']);
         }
 
-        // Fetch items
-        $stmt = $pdo->prepare("
+        $items = $pdo->prepare("
             SELECT product_id, quantity
             FROM order_items
             WHERE order_id = ?
         ");
-        $stmt->execute([$order_id]);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $items->execute([$orderId]);
 
-        // Prepare statements
         $updateStock = $pdo->prepare("
             UPDATE products
             SET stock = stock - ?
@@ -168,99 +141,37 @@ if ($method === 'POST' && $action === 'complete') {
             VALUES (?, ?, ?)
         ");
 
-        // Deduct stock
         foreach ($items as $item) {
             $qty = (int)$item['quantity'];
             $pid = (int)$item['product_id'];
 
-            $updateStock->execute([$qty, $pid]);
-            $logInventory->execute([
-                $pid,
-                -$qty,
-                'Order #' . $order_id . ' completed'
-            ]);
+            if ($qty > 0 && $pid > 0) {
+                $updateStock->execute([$qty, $pid]);
+                $logInventory->execute([
+                    $pid,
+                    -$qty,
+                    'Order #' . $orderId . ' completed'
+                ]);
+            }
         }
 
-        // Update order status
-        $stmt = $pdo->prepare("
+        $pdo->prepare(" 
             UPDATE orders
             SET order_status = 'completed'
             WHERE order_id = ?
-        ");
-        $stmt->execute([$order_id]);
+        ")->execute([$orderId]);
 
         $pdo->commit();
 
-        echo json_encode(['ok' => true]);
-        exit;
-    } catch (PDOException $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        error_log('[order_complete] ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
-        exit;
-    }
-}
-
-/* =====================================================
-   ACTION: CANCEL ORDER
-   POST { order_id }
-===================================================== */
-if ($method === 'POST' && $action === 'cancel') {
-
-    $input = json_decode(file_get_contents('php://input'), true);
-    $order_id = (int)($input['order_id'] ?? 0);
-
-    if ($order_id <= 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid order id']);
-        exit;
-    }
-
-    try {
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare("SELECT order_status FROM orders WHERE order_id = ? FOR UPDATE");
-        $stmt->execute([$order_id]);
-        $order = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$order) {
-            $pdo->rollBack();
-            http_response_code(404);
-            echo json_encode(['error' => 'Order not found']);
-            exit;
-        }
-
-        if ($order['order_status'] === 'cancelled') {
-            $pdo->rollBack();
-            echo json_encode([
-                'ok' => true,
-                'message' => 'Order already cancelled'
-            ]);
-            exit;
-        }
-
-        $stmt = $pdo->prepare("UPDATE orders SET order_status = 'cancelled' WHERE order_id = ?");
-        $stmt->execute([$order_id]);
-
-        $pdo->commit();
-
-        echo json_encode(['ok' => true]);
-        exit;
+        respond(['ok' => true, 'success' => true, 'message' => 'Order completed successfully']);
     } catch (PDOException $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
-        error_log('[order_cancel] ' . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Server error']);
-        exit;
+        error_log('[order:complete] ' . $e->getMessage());
+        respond(['ok' => false, 'success' => false, 'error' => 'Server error'], 500);
     }
 }
 
 /* =====================================================
    FALLBACK
 ===================================================== */
-http_response_code(400);
-echo json_encode(['error' => 'Invalid action']);
-exit;
+respond(['ok' => false, 'success' => false, 'error' => 'Invalid action or method'], 400);
