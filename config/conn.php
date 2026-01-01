@@ -15,5 +15,7 @@ try {
     );
     $conn = $pdo;
 } catch (PDOException $e) {
-    die("Could not connect to the database.");
+    // Don't terminate the whole script here — set $pdo to null and log the error
+    $pdo = null;
+    error_log('Database connection failed: ' . $e->getMessage());
 }

@@ -91,7 +91,6 @@ $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 
 $totalOrders = (int)$stats['total'];
 
-// Normalize and compute additional stats used in the template
 $stats['pending_count'] = (int)($stats['pending'] ?? 0);
 
 // Today's orders and revenue
@@ -113,7 +112,6 @@ $statusCounts = [
     'pending' => 0,
     'processing' => 0,
     'completed' => 0,
-    'cancelled' => 0,
 ];
 $scStmt = $pdo->prepare("SELECT order_status, COUNT(*) AS cnt FROM orders GROUP BY order_status");
 $scStmt->execute();
@@ -166,14 +164,15 @@ $totalPages = (int)ceil($totalOrders / $perPage);
 <body class="bg-gray-50">
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
 
-    <div class="md:ml-64 p-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
-            <p class="text-gray-600 mt-1">
-                Manage and track all customer orders
-            </p>
-        </div>
-        <main class="p-4 sm:p-6 lg:p-8">
+    <main class="md:ml-64 p-4 md:p-6">
+        <!-- Page Header -->
+        <div class="mb-6 animate-fade-in">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
+                <p class="text-gray-600 mt-1">
+                    Manage and track all customer orders
+                </p>
+            </div>
             <!-- Quick Stats -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
@@ -244,6 +243,10 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                         <a href="?status=completed"
                             class="filter-tab px-6 py-4 text-sm font-medium <?= $filters['status'] === 'completed' ? 'active' : '' ?>">
                             Completed <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs"><?= $statusCounts['completed'] ?></span>
+                        </a>
+                        <a href="?status=pending"
+                            class="filter-tab px-6 py-4 text-sm font-medium <?= $filters['status'] === 'pending' ? 'active' : '' ?>">
+                            Pending <span class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs"><?= $statusCounts['pending'] ?></span>
                         </a>
                     </nav>
                 </div>
@@ -437,8 +440,8 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                     </div>
                 </div>
             <?php endif; ?>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <script src="../../../assets/js/orders.js"></script>
 </body>

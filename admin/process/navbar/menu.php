@@ -275,19 +275,33 @@ require_once __DIR__ . '/../../../config/connection.php';
 
             <!-- Current Menu Structure -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-100">
-                <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                        <i class="fas fa-sitemap mr-2 text-indigo-600"></i>
-                        Current Menu Structure
-                    </h2>
-                    <p class="text-gray-500 mt-1">Hierarchical view of your navigation menu</p>
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-sitemap mr-2 text-indigo-600"></i>
+                            Current Menu Structure
+                        </h2>
+                        <p class="text-gray-500 mt-1 text-sm">
+                            Hierarchical view of your navigation menu
+                        </p>
+                    </div>
                 </div>
+
+                <!-- Content -->
                 <div class="p-6">
-                    <div id="menuStructure" class="space-y-4">
-                        <!-- Dynamic content will be loaded here -->
+                    <!-- Scroll wrapper -->
+                    <div class="max-h-[500px] overflow-y-auto pr-2">
+                        <div id="menuStructure" class="space-y-4">
+                            <div class="text-center py-10 text-gray-400">
+                                <i class="fas fa-folder-open text-3xl mb-3"></i>
+                                <p class="text-sm">No menu items yet</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
         <!-- Edit Modals -->
