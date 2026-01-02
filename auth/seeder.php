@@ -1,6 +1,5 @@
 <?php
-
-require_once __DIR__ . '/../config/conn.php';
+require_once __DIR__ . '/../config/conn.php'; // adjust path if needed
 
 // Admin details
 $name     = 'Admin';

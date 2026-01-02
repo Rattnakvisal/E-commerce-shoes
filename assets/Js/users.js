@@ -1,6 +1,16 @@
 const _segments = window.location.pathname.split("/").filter(Boolean);
 const APP_ROOT = _segments.length ? "/" + _segments[0] : "";
 const USERS_API_URL = `${APP_ROOT}/admin/process/users/users_api_fixed.php`;
+/* =========================================
+   MODAL CONTROLS
+========================================= */
+function openEditUserModal() {
+  document.getElementById("editUserModal").classList.remove("hidden");
+}
+
+function closeEditUserModal() {
+  document.getElementById("editUserModal").classList.add("hidden");
+}
 
 /* =========================================
    API HELPER
@@ -21,7 +31,6 @@ async function apiRequest(action, options = {}) {
     credentials: "same-origin",
   });
 
-  // Read raw text first (prevents 'body stream already read')
   const text = await res.text();
   let data = null;
   if (text) {
@@ -42,29 +51,10 @@ async function apiRequest(action, options = {}) {
 }
 
 /* =========================================
-   VIEW USER
-========================================= */
-async function viewUser(userId) {
-  try {
-    showLoading("Loading user...");
-    const { user } = await apiRequest("get_user", {
-      method: "GET",
-      params: { id: userId },
-    });
-    renderUserModal({ user });
-  } catch (e) {
-    showError(e.message);
-  } finally {
-    Swal.close();
-  }
-}
-
-/* =========================================
    EDIT USER
 ========================================= */
 async function editUser(userId) {
   try {
-    showLoading("Loading user...");
     const { user } = await apiRequest("get_user", {
       method: "GET",
       params: { id: userId },
@@ -72,33 +62,42 @@ async function editUser(userId) {
 
     Swal.close();
 
-    const result = await Swal.fire({
-      title: "Edit User",
-      html: userEditForm(user),
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: "Save",
-      preConfirm: () => ({
-        name: document.getElementById("editName").value.trim(),
-        email: document.getElementById("editEmail").value.trim(),
-        password: document.getElementById("editPassword").value,
-        role: document.getElementById("editRole").value,
-      }),
-    });
+    // Fill form
+    document.getElementById("edit_user_id").value = user.user_id;
+    document.getElementById("edit_name").value = user.name || "";
+    document.getElementById("edit_email").value = user.email || "";
+    document.getElementById("edit_phone").value = user.phone || "";
+    document.getElementById("edit_role").value = user.role || "customer";
+    document.getElementById("edit_status").value = user.status || "active";
+    document.getElementById("edit_password").value = "";
 
-    if (!result.isConfirmed) return;
-
-    await apiRequest("update", {
-      method: "POST",
-      body: formData({ user_id: userId, ...result.value }),
-    });
-
-    showSuccess("User updated");
-    setTimeout(() => location.reload(), 800);
+    openEditUserModal();
   } catch (e) {
     showError(e.message);
   }
 }
+
+document
+  .getElementById("editUserForm")
+  .addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const fd = new FormData(form);
+    fd.append("action", "update");
+
+    try {
+      await apiRequest("update", {
+        method: "POST",
+        body: fd,
+      });
+
+      showSuccess("User updated");
+      setTimeout(() => location.reload(), 800);
+    } catch (e) {
+      showError(e.message);
+    }
+  });
 
 /* =========================================
    DELETE USER

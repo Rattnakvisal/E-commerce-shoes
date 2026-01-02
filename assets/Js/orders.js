@@ -1,7 +1,7 @@
 /* =====================================================
   CONFIG
 ===================================================== */
-const API_BASE_URL = "/admin/process/orders/get_order.php";
+const API_BASE_URL = "get_order.php";
 
 /* =====================================================
    EVENT DELEGATION

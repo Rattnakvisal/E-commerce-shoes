@@ -13,56 +13,8 @@ require_once __DIR__ . '/products_api.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .card-hover:hover {
-            transform: translateY(-2px);
-            transition: transform 0.2s ease;
-        }
-
-        .status-active {
-            background-color: #10b981;
-            color: white;
-        }
-
-        .status-inactive {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .stock-low {
-            background-color: #f59e0b;
-            color: white;
-        }
-
-        .stock-out {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .swal2-container {
-            z-index: 99999 !important;
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../../assets/Css/products.css">
 </head>
 
 <body class="bg-gray-50">

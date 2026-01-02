@@ -87,9 +87,14 @@ try {
         if ($stmt->fetch()) respond(false, 'Email already exists', 400);
 
         $hasStatus = columnExists('status');
+        $status = post('status', 'active');
+        if (!in_array($status, ['active', 'inactive'], true)) {
+            $status = 'active';
+        }
+
         if ($hasStatus) {
-            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, status, created_at) VALUES (?, ?, ?, ?, 'active', NOW())");
-            $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT), $role]);
+            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT), $role, $status]);
         } else {
             $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())");
             $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT), $role]);
@@ -134,15 +139,8 @@ try {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user) respond(false, 'User not found', 404);
         if ($user['role'] === 'admin') respond(false, 'Cannot delete admin user', 400);
-
-        $hasStatus = columnExists('status');
-        $sets = [];
-        if ($hasStatus) $sets[] = "status = 'deleted'";
-        $sets[] = "email = CONCAT(email, '_deleted_', UNIX_TIMESTAMP())";
-
-        $sql = 'UPDATE users SET ' . implode(', ', $sets) . ' WHERE user_id = ?';
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$id]);
+        $delStmt = $pdo->prepare("DELETE FROM users WHERE user_id = ?");
+        $delStmt->execute([$id]);
 
         respond(true, 'User deleted');
     }

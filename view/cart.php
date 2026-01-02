@@ -12,7 +12,6 @@ $userId = $_SESSION['user_id'] ?? null;
 $cartSessionKey = $userId ? "cart_user_{$userId}" : 'cart_guest';
 if (!isset($_SESSION[$cartSessionKey])) $_SESSION[$cartSessionKey] = [];
 $cartRef = &$_SESSION[$cartSessionKey];
-// shipping location per-user
 $locSessionKey = $userId ? "shipping_location_user_{$userId}" : 'shipping_location_guest';
 if (!isset($_SESSION[$locSessionKey])) $_SESSION[$locSessionKey] = null;
 
@@ -49,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $existing = (int)($cartRef[$id] ?? 0);
             $newQty = $existing + max(1, $qty);
-            // do not exceed available stock
             if ($newQty > $stock) {
                 $newQty = $stock;
             }

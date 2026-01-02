@@ -231,6 +231,20 @@ try {
     }
 }
 
+// LAST RESORT: if no users were loaded by the queries above, run a simple select
+if (empty($users)) {
+    try {
+        $simpleStmt = $pdo->prepare("SELECT user_id, name, email, phone, role, status, created_at FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        $simpleStmt->execute([(int)$perPage, (int)$offset]);
+        $users = $simpleStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        if (empty($totalUsers) && !empty($users)) {
+            $totalUsers = count($users);
+        }
+    } catch (PDOException $e) {
+        error_log('[users_simple_fallback] ' . $e->getMessage());
+    }
+}
+
 /* =====================================================
    STATUS COUNTS FOR FILTER TABS
 ===================================================== */
@@ -495,71 +509,87 @@ try {
 
                 <!-- Filter Controls -->
                 <div class="p-4 border-b border-gray-200">
-                    <form method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <!-- Search -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                            <input type="text"
-                                name="search"
-                                value="<?= htmlspecialchars($filters['search']) ?>"
-                                placeholder="Name, Email, Phone..."
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                        </div>
+                    <!-- Filter Controls -->
+                    <div class="p-4">
+                        <form method="GET"
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
 
-                        <!-- Date Range -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                            <input type="date"
-                                name="date_from"
-                                value="<?= htmlspecialchars($filters['date_from']) ?>"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        </div>
+                            <!-- Search -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Search
+                                </label>
+                                <div class="relative">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    <input
+                                        type="text"
+                                        name="search"
+                                        value="<?= htmlspecialchars($filters['search']) ?>"
+                                        placeholder="Name, Email, Phone..."
+                                        class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                           transition">
+                                </div>
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                            <input type="date"
-                                name="date_to"
-                                value="<?= htmlspecialchars($filters['date_to']) ?>"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        </div>
+                            <!-- Role Filter -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Role
+                                </label>
+                                <select
+                                    name="role"
+                                    class="w-full px-3 py-2 rounded-lg border border-gray-300
+                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                       transition">
+                                    <option value="">All Roles</option>
+                                    <option value="admin" <?= $filters['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                    <option value="staff" <?= $filters['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
+                                    <option value="customer" <?= $filters['role'] === 'customer' ? 'selected' : '' ?>>Customer</option>
+                                </select>
+                            </div>
 
-                        <!-- Role Filter -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                            <select name="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <option value="">All Roles</option>
-                                <option value="admin" <?= $filters['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                <option value="staff" <?= $filters['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
-                                <option value="customer" <?= $filters['role'] === 'customer' ? 'selected' : '' ?>>Customer</option>
-                            </select>
-                        </div>
+                            <!-- Sort -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Sort By
+                                </label>
+                                <select
+                                    name="sort"
+                                    class="w-full px-3 py-2 rounded-lg border border-gray-300
+                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                       transition">
+                                    <option value="newest" <?= $filters['sort'] === 'newest' ? 'selected' : '' ?>>Newest First</option>
+                                    <option value="oldest" <?= $filters['sort'] === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+                                    <option value="name_asc" <?= $filters['sort'] === 'name_asc' ? 'selected' : '' ?>>Name (A-Z)</option>
+                                    <option value="name_desc" <?= $filters['sort'] === 'name_desc' ? 'selected' : '' ?>>Name (Z-A)</option>
+                                    <option value="email_asc" <?= $filters['sort'] === 'email_asc' ? 'selected' : '' ?>>Email (A-Z)</option>
+                                    <option value="email_desc" <?= $filters['sort'] === 'email_desc' ? 'selected' : '' ?>>Email (Z-A)</option>
+                                </select>
+                            </div>
 
-                        <!-- Sort -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                            <select name="sort" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <option value="newest" <?= $filters['sort'] === 'newest' ? 'selected' : '' ?>>Newest First</option>
-                                <option value="oldest" <?= $filters['sort'] === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
-                                <option value="name_asc" <?= $filters['sort'] === 'name_asc' ? 'selected' : '' ?>>Name (A-Z)</option>
-                                <option value="name_desc" <?= $filters['sort'] === 'name_desc' ? 'selected' : '' ?>>Name (Z-A)</option>
-                                <option value="email_asc" <?= $filters['sort'] === 'email_asc' ? 'selected' : '' ?>>Email (A-Z)</option>
-                                <option value="email_desc" <?= $filters['sort'] === 'email_desc' ? 'selected' : '' ?>>Email (Z-A)</option>
-                            </select>
-                        </div>
+                            <!-- Buttons -->
+                            <div class="lg:col-span-2 flex gap-2 justify-end">
+                                <button
+                                    type="reset"
+                                    onclick="window.location.href='users.php'"
+                                    class="px-4 py-2 rounded-lg border border-gray-300
+                       text-gray-700 bg-white hover:bg-gray-50
+                       transition active:scale-95">
+                                    Clear
+                                </button>
 
-                        <!-- Action Buttons -->
-                        <div class="md:col-span-3 lg:col-span-6 flex justify-end gap-2">
-                            <button type="reset"
-                                onclick="window.location.href='users.php'"
-                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-                                Clear Filters
-                            </button>
-                            <button type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-2"></i> Apply Filters
-                            </button>
-                        </div>
-                    </form>
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2 rounded-lg bg-indigo-600 text-white
+                       hover:bg-indigo-700 transition
+                       active:scale-95 inline-flex items-center">
+                                    <i class="fas fa-filter mr-2"></i>
+                                    Apply
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -670,7 +700,7 @@ try {
                                             <div class="flex flex-col sm:flex-row gap-2">
                                                 <button onclick="editUser(<?= $user['user_id'] ?>)"
                                                     class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
-                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                    <i class="fas fa-edit mr-2"></i>
                                                 </button>
 
                                                 <?php if (($user['role'] ?? '') !== 'admin' && $user['user_id'] !=
@@ -678,7 +708,7 @@ try {
                                                 ): ?>
                                                     <button onclick="deleteUser(<?= $user['user_id'] ?>)"
                                                         class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
-                                                        <i class="fas fa-trash mr-2"></i> Delete
+                                                        <i class="fas fa-trash mr-2"></i>
                                                     </button>
                                                 <?php endif; ?>
 
@@ -745,24 +775,6 @@ try {
 
         </main>
     </div>
-
-    <!-- User Details Modal -->
-    <div id="userDetailsModal" class="fixed inset-0 z-50 hidden modal-overlay">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold">User Details</h3>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]" id="userModalContent">
-                    <!-- Content loaded via JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Add User Modal -->
     <div id="addUserModal" class="fixed inset-0 z-50 hidden modal-overlay">
         <div class="flex items-center justify-center min-h-screen p-4">
@@ -832,19 +844,88 @@ try {
             </div>
         </div>
     </div>
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 z-50 hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Edit User</h3>
+                    <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                    <form id="editUserForm" class="space-y-4">
+                        <input type="hidden" name="user_id" id="edit_user_id">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                <input id="edit_name" name="name" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                <input id="edit_email" type="email" name="email" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <input id="edit_phone" name="phone"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                                <select id="edit_role" name="role"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="customer">Customer</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    New Password (optional)
+                                </label>
+                                <input id="edit_password" type="password" name="password"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="edit_status" name="status"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-2">
+                            <button type="button" onclick="closeEditUserModal()"
+                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="../../../assets/Js/users.js"></script>
 
     <script>
-        function exportUsers() {
-            Swal.fire({
-                title: 'Export Users',
-                text: 'This feature would export your users data',
-                icon: 'info',
-                confirmButtonText: 'OK'
-            });
-        }
-
         function showAddUserModal() {
             document.getElementById('addUserModal').classList.remove('hidden');
         }
