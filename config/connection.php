@@ -13,7 +13,6 @@ try {
         $pass,
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
-    // Provide a backwards-compatible variable name expected by the app
     $conn = $pdo;
 } catch (PDOException $e) {
     die("Could not connect to the database.");

@@ -97,7 +97,7 @@ $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Users (admin only) -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/process/user/user.php"
+            <a href="/E-commerce-shoes/admin/process/users/users.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                 <i class="fas fa-users mr-3 text-gray-500 w-5 text-center"></i>
                 Users
@@ -466,7 +466,7 @@ $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
             </a>
 
             <!-- Users -->
-            <a href="/E-commerce-shoes/admin/process/user/user.php"
+            <a href="/E-commerce-shoes/admin/process/users/users.php"
                 class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                 <i class="fas fa-users mr-3 text-gray-500 w-5 text-center"></i>
                 Users

@@ -121,6 +121,15 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
         .sidebar-transition {
             transition: all 0.3s ease-in-out;
         }
@@ -223,7 +232,7 @@ try {
             <!-- Dashboard Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Total Users -->
-                <div class="bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
+                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Total Users</p>
                         <p class="text-2xl font-bold text-gray-900 mt-2">
@@ -240,7 +249,7 @@ try {
                 </div>
 
                 <!-- Total Orders -->
-                <div class="bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
+                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Total Orders</p>
                         <p class="text-2xl font-bold text-gray-900 mt-2">
@@ -257,7 +266,7 @@ try {
                 </div>
 
                 <!-- Revenue -->
-                <div class="bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
+                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Revenue</p>
                         <p class="text-2xl font-bold text-gray-900 mt-2">
@@ -274,7 +283,7 @@ try {
                 </div>
 
                 <!-- Conversion Rate -->
-                <div class="bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
+                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Conversion Rate</p>
                         <p class="text-2xl font-bold text-gray-900 mt-2">

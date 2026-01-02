@@ -387,7 +387,7 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                                                 <i class="fas fa-eye mr-1"></i> View
                                             </button>
 
-                                            <?php if (!in_array($o['order_status'], ['completed', 'cancelled'], true)): ?>
+                                            <?php if (!in_array($o['order_status'], ['completed'], true)): ?>
                                                 <button
                                                     class="btn-complete px-3 py-2 bg-green-50 text-green-700 rounded"
                                                     data-id="<?= $o['order_id'] ?>">
@@ -443,7 +443,7 @@ $totalPages = (int)ceil($totalOrders / $perPage);
         </div>
     </main>
 
-    <script src="../../../assets/js/orders.js"></script>
+    <script src="../../../assets/Js/orders.js"></script>
 </body>
 
 </html>

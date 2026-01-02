@@ -16,7 +16,7 @@ header('Content-Type: application/json; charset=utf-8');
 function respond(array $data, int $status = 200): void
 {
     http_response_code($status);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    echo json_encode($data);
     exit;
 }
 
@@ -26,7 +26,7 @@ function jsonInput(): array
 }
 
 /* =====================================================
-   AUTH GUARD
+   AUTH
 ===================================================== */
 if (
     empty($_SESSION['user_id']) ||
@@ -37,6 +37,7 @@ if (
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
+$input  = jsonInput();
 
 /* =====================================================
    VIEW ORDER
@@ -50,43 +51,33 @@ if ($method === 'GET' && $action === 'view') {
 
     try {
         $stmt = $pdo->prepare("
-            SELECT 
-                o.*,
-                COALESCE(u.name, u.email, 'Guest') AS customer_name,
-                u.email AS customer_email
+            SELECT o.*, COALESCE(u.name, u.email, 'Guest') customer
             FROM orders o
             LEFT JOIN users u ON u.user_id = o.user_id
             WHERE o.order_id = ?
-            LIMIT 1
         ");
         $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$order) {
-            respond(['ok' => false, 'success' => false, 'error' => 'Order not found'], 404);
+            respond(['success' => false, 'error' => 'Order not found'], 404);
         }
 
-        $stmt = $pdo->prepare("
-            SELECT 
-                oi.*,
-                COALESCE(p.name, 'Deleted Product') AS product_name,
-                COALESCE(p.image_url, '') AS product_image
+        $items = $pdo->prepare("
+            SELECT oi.*, p.name product_name
             FROM order_items oi
             LEFT JOIN products p ON p.product_id = oi.product_id
             WHERE oi.order_id = ?
         ");
-        $stmt->execute([$orderId]);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $items->execute([$orderId]);
 
         respond([
-            'ok' => true,
             'success' => true,
             'order'   => $order,
-            'items'   => $items,
-            'item_count' => count($items),
+            'items'   => $items->fetchAll(PDO::FETCH_ASSOC)
         ]);
     } catch (PDOException $e) {
-        error_log('[order:view] ' . $e->getMessage());
+        error_log($e->getMessage());
         respond(['success' => false, 'error' => 'Server error'], 500);
     }
 }
@@ -96,7 +87,7 @@ if ($method === 'GET' && $action === 'view') {
 ===================================================== */
 if ($method === 'POST' && $action === 'complete') {
 
-    $orderId = (int)(jsonInput()['order_id'] ?? 0);
+    $orderId = (int)($input['order_id'] ?? 0);
     if ($orderId <= 0) {
         respond(['success' => false, 'error' => 'Invalid order id'], 400);
     }
@@ -104,12 +95,7 @@ if ($method === 'POST' && $action === 'complete') {
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("
-            SELECT order_status
-            FROM orders
-            WHERE order_id = ?
-            FOR UPDATE
-        ");
+        $stmt = $pdo->prepare("SELECT order_status FROM orders WHERE order_id = ? FOR UPDATE");
         $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -123,55 +109,32 @@ if ($method === 'POST' && $action === 'complete') {
             respond(['success' => true, 'message' => 'Order already completed']);
         }
 
-        $items = $pdo->prepare("
-            SELECT product_id, quantity
-            FROM order_items
-            WHERE order_id = ?
-        ");
+        $items = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
         $items->execute([$orderId]);
 
-        $updateStock = $pdo->prepare("
-            UPDATE products
-            SET stock = stock - ?
-            WHERE product_id = ?
-        ");
-
-        $logInventory = $pdo->prepare("
-            INSERT INTO inventory_logs (product_id, change_qty, reason)
-            VALUES (?, ?, ?)
-        ");
-
         foreach ($items as $item) {
-            $qty = (int)$item['quantity'];
-            $pid = (int)$item['product_id'];
-
-            if ($qty > 0 && $pid > 0) {
-                $updateStock->execute([$qty, $pid]);
-                $logInventory->execute([
-                    $pid,
-                    -$qty,
-                    'Order #' . $orderId . ' completed'
-                ]);
-            }
+            $pdo->prepare("
+                UPDATE products SET stock = stock - ?
+                WHERE product_id = ?
+            ")->execute([(int)$item['quantity'], (int)$item['product_id']]);
         }
 
-        $pdo->prepare(" 
-            UPDATE orders
-            SET order_status = 'completed'
+        $pdo->prepare("
+            UPDATE orders SET order_status = 'completed'
             WHERE order_id = ?
         ")->execute([$orderId]);
 
         $pdo->commit();
 
-        respond(['ok' => true, 'success' => true, 'message' => 'Order completed successfully']);
+        respond(['success' => true, 'message' => 'Order completed successfully']);
     } catch (PDOException $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
-        error_log('[order:complete] ' . $e->getMessage());
-        respond(['ok' => false, 'success' => false, 'error' => 'Server error'], 500);
+        $pdo->rollBack();
+        error_log($e->getMessage());
+        respond(['success' => false, 'error' => 'Server error'], 500);
     }
 }
 
 /* =====================================================
    FALLBACK
 ===================================================== */
-respond(['ok' => false, 'success' => false, 'error' => 'Invalid action or method'], 400);
+respond(['success' => false, 'error' => 'Invalid action'], 400);

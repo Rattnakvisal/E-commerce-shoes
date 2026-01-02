@@ -1,7 +1,7 @@
 <?php
 $host = 'localhost';
 $root = '3306';
-$db = 'pos_ecommerce';
+$db = 'ecommerce';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -15,7 +15,6 @@ try {
     );
     $conn = $pdo;
 } catch (PDOException $e) {
-    // Don't terminate the whole script here — set $pdo to null and log the error
     $pdo = null;
     error_log('Database connection failed: ' . $e->getMessage());
 }
