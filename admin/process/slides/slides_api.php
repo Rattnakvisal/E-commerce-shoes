@@ -10,8 +10,16 @@ $editData = [];
 /* ------------------------------
    UPLOAD CONFIG
 --------------------------------*/
-$uploadDirWeb = '/assets/Images/slides/';
-$uploadDirFs  = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . $uploadDirWeb;
+$projectRoot = realpath(__DIR__ . '/../../../');
+$docRoot = rtrim(realpath($_SERVER['DOCUMENT_ROOT']), '/\\');
+$webBase = '';
+if ($projectRoot !== false && strpos($projectRoot, $docRoot) === 0) {
+    $webBase = str_replace('\\', '/', substr($projectRoot, strlen($docRoot)));
+    $webBase = $webBase === '' ? '' : '/' . ltrim($webBase, '/');
+}
+
+$uploadDirWeb = $webBase . '/assets/Images/slides/';
+$uploadDirFs  = rtrim($projectRoot, '/\\') . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'Images' . DIRECTORY_SEPARATOR . 'slides' . DIRECTORY_SEPARATOR;
 
 if (!is_dir($uploadDirFs)) {
     mkdir($uploadDirFs, 0755, true);
@@ -28,8 +36,8 @@ if (isset($_GET['delete'])) {
     $row = $stmt->fetch();
 
     if ($row && $row['image_url']) {
-        $path = $_SERVER['DOCUMENT_ROOT'] . $row['image_url'];
-        if (file_exists($path)) unlink($path);
+        $fileFs = $uploadDirFs . basename($row['image_url']);
+        if (file_exists($fileFs)) unlink($fileFs);
     }
 
     $pdo->prepare("DELETE FROM slides WHERE slides_id=?")->execute([$id]);
@@ -95,22 +103,25 @@ if (isset($_POST['save_slide'])) {
     /* Image / Video upload */
     if (!empty($_FILES['image']['name'])) {
         $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4'];
-        $maxImageSize = 5 * 1024 * 1024;      // 5MB for images
-        $maxVideoSize = 50 * 1024 * 1024;     // 50MB for videos
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'mp4'];
+        $maxImageSize = 20 * 1024 * 1024;
+        $maxVideoSize = 100 * 1024 * 1024;
 
         if (!in_array($ext, $allowed)) {
-            $errors[] = "Only JPG, PNG, GIF, WebP images and MP4 videos are allowed";
+            $errors[] = "Only JPG, PNG, GIF, WebP, AVIF images and MP4 videos are allowed";
         } elseif ($ext === 'mp4' && $_FILES['image']['size'] > $maxVideoSize) {
-            $errors[] = "Video size must be less than 50MB";
+            $errors[] = "Video size must be less than 100MB";
         } elseif ($ext !== 'mp4' && $_FILES['image']['size'] > $maxImageSize) {
-            $errors[] = "Image size must be less than 5MB";
+            $errors[] = "Image size must be less than 20MB";
         } else {
             $newName = uniqid('slide_') . "." . $ext;
 
             if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadDirFs . $newName)) {
-                if (!empty($oldImagePath) && file_exists($_SERVER['DOCUMENT_ROOT'] . $oldImagePath)) {
-                    @unlink($_SERVER['DOCUMENT_ROOT'] . $oldImagePath);
+                if (!empty($oldImagePath)) {
+                    $oldFs = $uploadDirFs . basename($oldImagePath);
+                    if (file_exists($oldFs)) {
+                        @unlink($oldFs);
+                    }
                 }
                 $imageUrl = $uploadDirWeb . $newName;
             } else {
