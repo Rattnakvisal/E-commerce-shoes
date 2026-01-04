@@ -94,7 +94,6 @@ $totalUsers = 0;
 $stats = [];
 $perPage = 15;
 $offset = ($filters['page'] - 1) * $perPage;
-// Default total pages (avoid undefined variable if query fails)
 $totalPages = 1;
 
 try {
@@ -128,17 +127,6 @@ try {
             u.created_at,
             u.last_login,
             u.avatar_url,
-            (
-                SELECT COUNT(*) 
-                FROM orders o 
-                WHERE o.user_id = u.user_id
-            ) as order_count,
-            (
-                SELECT COALESCE(SUM(total), 0)
-                FROM orders o 
-                WHERE o.user_id = u.user_id 
-                AND o.payment_status = 'paid'
-            ) as total_spent
         FROM users u
         $whereSql
         ORDER BY $orderBy
@@ -231,7 +219,6 @@ try {
     }
 }
 
-// LAST RESORT: if no users were loaded by the queries above, run a simple select
 if (empty($users)) {
     try {
         $simpleStmt = $pdo->prepare("SELECT user_id, name, email, phone, role, status, created_at FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?");
@@ -287,118 +274,15 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users Management - Admin Panel</title>
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../../../assets/Css/users.css">
     <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        .stat-card {
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status-active {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        .status-inactive {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .role-badge {
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .role-admin {
-            background: #e0e7ff;
-            color: #4f46e5;
-        }
-
-        .role-staff {
-            background: #f0f9ff;
-            color: #0ea5e9;
-        }
-
-        .role-customer {
-            background: #f0fdf4;
-            color: #16a34a;
-        }
-
-        .filter-tab.active {
-            border-bottom: 2px solid #4f46e5;
-            color: #4f46e5;
-            font-weight: 600;
-        }
-
-        .empty-state {
-            padding: 3rem 1rem;
-            text-align: center;
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            color: #9ca3af;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state-description {
-            color: #6b7280;
-            margin-bottom: 1.5rem;
-        }
-
-        .pagination-active {
-            background: #4f46e5;
-            color: white;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-1px);
-            transition: transform 0.2s ease;
-        }
-
-        .avatar-placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-            border-radius: 9999px;
-        }
-
-        .modal-overlay {
-            background: rgba(0, 0, 0, 0.5);
-        }
-    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -487,22 +371,50 @@ try {
                     </div>
                 </div>
             </div>
+            <?php
+            $queryBase = $_GET;
+            unset($queryBase['status'], $queryBase['page']);
+            ?>
 
             <!-- Filter Tabs -->
             <div class="bg-white rounded-xl shadow-sm mb-6">
                 <div class="border-b border-gray-200">
-                    <nav class="flex overflow-x-auto">
-                        <a href="?status="
-                            class="filter-tab px-6 py-4 text-sm font-medium <?= empty($filters['status']) ? 'active' : '' ?>">
-                            All Users <span class="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs"><?= $statusCounts['all'] ?></span>
+                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+
+                        <!-- ALL USERS -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+              <?= empty($filters['status'])
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            All Users
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                                <?= $statusCounts['all'] ?>
+                            </span>
                         </a>
-                        <a href="?status=active"
-                            class="filter-tab px-6 py-4 text-sm font-medium <?= $filters['status'] === 'active' ? 'active' : '' ?>">
-                            Active <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs"><?= $statusCounts['active'] ?></span>
+
+                        <!-- ACTIVE -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+              <?= $filters['status'] === 'active'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Active
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                <?= $statusCounts['active'] ?>
+                            </span>
                         </a>
-                        <a href="?status=inactive"
-                            class="filter-tab px-6 py-4 text-sm font-medium <?= $filters['status'] === 'inactive' ? 'active' : '' ?>">
-                            Inactive <span class="ml-2 bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs"><?= $statusCounts['inactive'] ?></span>
+
+                        <!-- INACTIVE -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+              <?= $filters['status'] === 'inactive'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Inactive
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                <?= $statusCounts['inactive'] ?>
+                            </span>
                         </a>
                     </nav>
                 </div>
@@ -669,10 +581,16 @@ try {
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <?php $status = $user['status'] ?? 'unknown'; ?>
-                                            <span class="status-badge <?= 'status-' . htmlspecialchars($status) ?>">
-                                                <?= ucfirst(htmlspecialchars($status)) ?>
+                                            <?php
+                                            // Normalize status (NULL / invalid → active)
+                                            $status = in_array($user['status'] ?? '', ['active', 'inactive'], true)
+                                                ? $user['status']
+                                                : 'active';
+                                            ?>
+                                            <span class="status-badge status-<?= $status ?>">
+                                                <?= ucfirst($status) ?>
                                             </span>
+
                                             <?php $totalSpent = (float)($user['total_spent'] ?? 0); ?>
                                             <?php if ($totalSpent > 0): ?>
                                                 <div class="text-xs text-green-600 mt-1">
@@ -683,24 +601,21 @@ try {
 
                                         <td class="px-6 py-4">
                                             <div class="text-sm text-gray-900">
-                                                Joined <?= date('M j, Y', strtotime($user['created_at'])) ?>
+                                                Joined <?= !empty($user['created_at']) ? date('M j, Y', strtotime($user['created_at'])) : '-' ?>
                                             </div>
-                                            <?php if (!empty($user['last_login'])): ?>
-                                                <div class="text-xs text-gray-500">
-                                                    Last login: <?= date('M j, g:i A', strtotime($user['last_login'])) ?>
-                                                </div>
-                                            <?php else: ?>
-                                                <div class="text-xs text-gray-500">
-                                                    Never logged in
-                                                </div>
-                                            <?php endif; ?>
+
+                                            <div class="text-xs text-gray-500">
+                                                <?= !empty($user['last_login'])
+                                                    ? 'Last login: ' . date('M j, g:i A', strtotime($user['last_login']))
+                                                    : 'Never logged in' ?>
+                                            </div>
                                         </td>
 
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col sm:flex-row gap-2">
                                                 <button onclick="editUser(<?= $user['user_id'] ?>)"
                                                     class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
-                                                    <i class="fas fa-edit mr-2"></i>
+                                                    <i class="fas fa-edit mr-2"></i> Edit
                                                 </button>
 
                                                 <?php if (($user['role'] ?? '') !== 'admin' && $user['user_id'] !=
@@ -708,7 +623,7 @@ try {
                                                 ): ?>
                                                     <button onclick="deleteUser(<?= $user['user_id'] ?>)"
                                                         class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
-                                                        <i class="fas fa-trash mr-2"></i>
+                                                        <i class="fas fa-trash mr-2"></i> Delete
                                                     </button>
                                                 <?php endif; ?>
 

@@ -16,24 +16,29 @@ require_once __DIR__ . '/api_category.php';
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .card-hover:hover {
-            transform: translateY(-5px);
-            transition: transform 0.3s ease;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
+                transform: translateY(-10px);
             }
 
             to {
                 opacity: 1;
+                transform: translateY(0);
             }
+        }
+
+        .cart-hover {
+            transition: all 0.3s ease;
+        }
+
+        .cart-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .success-bg {
@@ -208,19 +213,18 @@ require_once __DIR__ . '/api_category.php';
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     <?php echo date('M d, Y', strtotime($category['created_at'])); ?>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
                                                     <div class="flex items-center space-x-2">
                                                         <!-- Edit Button -->
                                                         <button onclick="editCategory(<?php echo $category['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($category['category_name'])); ?>')"
-                                                            class="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50 transition duration-150"
-                                                            title="Edit Category">
-                                                            <i class="fas fa-edit"></i>
+                                                            class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
+                                                            <i class="fas fa-edit mr-2"></i> Edit
                                                         </button>
 
                                                         <!-- Delete Button -->
                                                         <button onclick="deleteCategory(<?php echo $category['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($category['category_name'])); ?>', <?php echo isset($productCounts[$category['category_id']]) ? $productCounts[$category['category_id']] : 0; ?>)"
-                                                            class="text-red-600 p-2 hover:text-red-900 transition">
-                                                            <i class="fas fa-trash"></i>
+                                                            class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
+                                                            <i class="fas fa-trash mr-2"></i> Delete
                                                         </button>
                                                     </div>
                                                 </td>

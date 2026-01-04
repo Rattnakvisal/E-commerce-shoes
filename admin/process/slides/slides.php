@@ -16,154 +16,255 @@ require_once __DIR__ . '/slides_api.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../../../assets/Css/slide.css">
+    <style>
+        /* Fade-in animation */
+        .animate-fade-in {
+            animation: fadeIn 0.35s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hover card effect */
+        .card-hover {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Accessibility: reduce motion */
+        @media (prefers-reduced-motion: reduce) {
+            .animate-fade-in {
+                animation: none;
+            }
+
+            .card-hover {
+                transition: none;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
     <!-- Include Admin Navbar -->
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
-    <main class="md:ml-64 p-4 md:p-6">
-        <!-- Page Header -->
-        <div class="mb-6 animate-fade-in">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-                <!-- Title -->
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">
-                        Slides Management
-                    </h1>
-                    <p class="text-gray-600 mt-1">
-                        Manage your home page slides
-                    </p>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center gap-3">
-
-                    <button
-                        onclick="openAddModal()"
-                        class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
-                       hover:bg-indigo-700 transition">
-                        <i class="fas fa-plus mr-2"></i>
-                        Add Slide
-                    </button>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div class="stat-card">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                        <i class="fas fa-images text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Total Slides</p>
-                        <p class="text-2xl font-bold text-gray-900"><?php echo $totalSlidesAll; ?></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
-                        <i class="fas fa-eye text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Active Slides</p>
-                        <p class="text-2xl font-bold text-gray-900"><?php echo $activeSlidesAll; ?></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
-                        <i class="fas fa-eye-slash text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Inactive Slides</p>
-                        <p class="text-2xl font-bold text-gray-900"><?php echo $inactiveSlidesAll; ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Slides Filters -->
-        <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    Filter Slides
-                </h3>
-
+    <main class="md:ml-64 min-h-screen">
+        <div class="p-4 sm:p-6 lg:p-8">
+            <div class="mb-6 animate-fade-in">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                    <!-- Search -->
-                    <form method="GET" class="flex-1 max-w-md">
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </span>
-                            <input
-                                type="text"
-                                name="q"
-                                value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
-                                placeholder="Search by title or description..."
-                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                    </form>
-
-                    <!-- Filters -->
-                    <div class="flex flex-wrap items-center gap-3">
-
-                        <!-- Status -->
-                        <select
-                            name="status"
-                            class="px-3 py-2 border border-gray-300 rounded-lg
-                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">All Status</option>
-                            <option value="active" <?= ($_GET['status'] ?? '') === 'active' ? 'selected' : '' ?>>
-                                Active
-                            </option>
-                            <option value="inactive" <?= ($_GET['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>
-                                Inactive
-                            </option>
-                        </select>
-
-                        <!-- Display Order -->
-                        <select
-                            name="order"
-                            class="px-3 py-2 border border-gray-300 rounded-lg
-                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Display Order</option>
-                            <option value="asc" <?= ($_GET['order'] ?? '') === 'asc' ? 'selected' : '' ?>>
-                                Lowest First
-                            </option>
-                            <option value="desc" <?= ($_GET['order'] ?? '') === 'desc' ? 'selected' : '' ?>>
-                                Highest First
-                            </option>
-                        </select>
-
-                        <!-- Actions -->
+                    <!-- Title -->
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Slides Management
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            Manage your homepage slides
+                        </p>
+                    </div>
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
                         <button
-                            type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg
-                           hover:bg-indigo-700 transition">
-                            Apply
+                            onclick="openAddModal()"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
+                       hover:bg-indigo-700 transition">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Slide
                         </button>
-
-                        <a
-                            href="slides.php"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                           hover:bg-gray-200 transition">
-                            Clear
-                        </a>
                     </div>
                 </div>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
+
+                <!-- TOTAL SLIDES -->
+                <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
+                            <i class="fas fa-images text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total Slides</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                <?= number_format((int)($statusCounts['all'] ?? 0)) ?>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIVE SLIDES -->
+                <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
+                            <i class="fas fa-eye text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Active Slides</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                <?= number_format((int)($statusCounts['active'] ?? 0)) ?>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INACTIVE SLIDES -->
+                <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
+                            <i class="fas fa-eye-slash text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Inactive Slides</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                <?= number_format((int)($statusCounts['inactive'] ?? 0)) ?>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <?php
+            $queryBase = $_GET;
+            unset($queryBase['status'], $queryBase['page']);
+            ?>
+            <div class="bg-white">
+                <div class="border-b border-gray-200">
+                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                        <!-- ALL SLIDES -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+              <?= empty($_GET['status'])
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            All Slides
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                                <span><?= $statusCounts['all'] ?></span>
+                            </span>
+                        </a>
+
+                        <!-- ACTIVE -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+              <?= ($_GET['status'] ?? '') === 'active'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Active
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                <span><?= $statusCounts['active'] ?></span>
+                            </span>
+                        </a>
+
+                        <!-- INACTIVE -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+              <?= ($_GET['status'] ?? '') === 'inactive'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Inactive
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                <span><?= $statusCounts['inactive'] ?></span>
+                            </span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <!-- Slides Filters -->
+            <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        Filter Slides
+                    </h3>
+
+                    <form method="GET"
+                        class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+
+                        <!-- Search -->
+                        <div class="flex-1 max-w-md">
+                            <label class="sr-only">Search</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    name="q"
+                                    value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
+                                    placeholder="Search by title or description..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="flex flex-wrap items-end gap-3">
+
+                            <!-- Status -->
+                            <div>
+                                <label class="sr-only">Status</label>
+                                <select
+                                    name="status"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">All Status</option>
+                                    <option value="active" <?= ($_GET['status'] ?? '') === 'active' ? 'selected' : '' ?>>
+                                        Active
+                                    </option>
+                                    <option value="inactive" <?= ($_GET['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>
+                                        Inactive
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Display Order -->
+                            <div>
+                                <label class="sr-only">Display Order</label>
+                                <select
+                                    name="order"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">Display Order</option>
+                                    <option value="asc" <?= ($_GET['order'] ?? '') === 'asc' ? 'selected' : '' ?>>
+                                        Lowest First
+                                    </option>
+                                    <option value="desc" <?= ($_GET['order'] ?? '') === 'desc' ? 'selected' : '' ?>>
+                                        Highest First
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <a href="slides.php"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                              hover:bg-gray-200 transition">
+                                    Clear
+                                </a>
+
+                                <button
+                                    type="submit"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg
+                               hover:bg-indigo-700 transition">
+                                    Apply
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <?php if ($totalSlides > 0): ?>
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -234,13 +335,13 @@ require_once __DIR__ . '/slides_api.php';
                                                 <?php echo $slide['is_active']; ?>,
                                                 '<?php echo addslashes($slide['image_url']); ?>'
                                             )"
-                                                class="text-indigo-600 p-2 hover:text-indigo-900 transition">
-                                                <i class="fas fa-edit"></i>
+                                                class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
+                                                <i class="fas fa-edit mr-2"></i> Edit
                                             </button>
                                             <a href="?delete=<?php echo $slide['slides_id']; ?>"
                                                 onclick="return confirmDelete('<?php echo addslashes($slide['title']); ?>')"
-                                                class="text-red-600 p-2 hover:text-red-900 transition">
-                                                <i class="fas fa-trash"></i>
+                                                class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
+                                                <i class="fas fa-trash mr-2"></i> Delete
                                             </a>
                                         </div>
                                     </td>
@@ -249,467 +350,462 @@ require_once __DIR__ . '/slides_api.php';
                         </tbody>
                     </table>
                 </div>
+                <!-- Table Footer -->
+                <div class="px-6 py-4 border-t bg-gray-50">
+                    <div class="text-sm text-gray-500">
+                        Showing <?php echo $totalSlides; ?> slide<?php echo $totalSlides !== 1 ? 's' : ''; ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="py-12 text-center">
+                    <i class="fas fa-images text-4xl text-gray-300 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No slides found</h3>
+                    <p class="text-gray-500 mb-4">Get started by adding your first slide</p>
+                </div>
+            <?php endif; ?>
         </div>
     </main>
-    <!-- Table Footer -->
-    <div class="px-6 py-4 border-t bg-gray-50">
-        <div class="text-sm text-gray-500">
-            Showing <?php echo $totalSlides; ?> slide<?php echo $totalSlides !== 1 ? 's' : ''; ?>
-        </div>
-    </div>
-<?php else: ?>
-    <div class="py-12 text-center">
-        <i class="fas fa-images text-4xl text-gray-300 mb-4"></i>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No slides found</h3>
-        <p class="text-gray-500 mb-4">Get started by adding your first slide</p>
-    </div>
-<?php endif; ?>
-</div>
-</main>
 
-<!-- Modal Overlay -->
-<div id="modalOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
-<!-- Slide Modal -->
-<div id="slideModal"
-    class="fixed inset-0 z-50 hidden flex items-center justify-center overflow-y-auto">
-    <div class="bg-white w-full max-w-2xl mx-4 rounded-xl shadow-xl animate-fade-in">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b">
-            <h3 id="modalTitle" class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide
-            </h3>
-            <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-        </div>
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
+    <!-- Slide Modal -->
+    <div id="slideModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center overflow-y-auto">
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-xl shadow-xl animate-fade-in">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b">
+                <h3 id="modalTitle" class="text-lg font-semibold text-gray-800">
+                    <i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide
+                </h3>
+                <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
 
-        <!-- Body -->
-        <form id="slideForm" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="slide_id" id="slideId">
-            <input type="hidden" name="old_image" id="oldImage">
-            <div class="p-6 space-y-5">
-                <!-- Title -->
-                <div>
-                    <label for="modalTitleInput" class="block text-sm font-medium text-gray-700 mb-1">
-                        Title <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        id="modalTitleInput"
-                        name="title"
-                        type="text"
-                        required
-                        placeholder="Enter slide title"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label for="modalDescription" class="block text-sm font-medium text-gray-700 mb-1">
-                        Description
-                    </label>
-                    <textarea
-                        id="modalDescription"
-                        name="description"
-                        rows="3"
-                        placeholder="Enter slide description"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                </div>
-
-                <!-- Link & Button -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Body -->
+            <form id="slideForm" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="slide_id" id="slideId">
+                <input type="hidden" name="old_image" id="oldImage">
+                <div class="p-6 space-y-5">
+                    <!-- Title -->
                     <div>
-                        <label for="modalLinkUrl" class="block text-sm font-medium text-gray-700 mb-1">
-                            Link URL
+                        <label for="modalTitleInput" class="block text-sm font-medium text-gray-700 mb-1">
+                            Title <span class="text-red-500">*</span>
                         </label>
                         <input
-                            id="modalLinkUrl"
-                            name="link_url"
-                            type="url"
-                            placeholder="https://example.com"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
-                    </div>
-
-                    <div>
-                        <label for="modalButtonText" class="block text-sm font-medium text-gray-700 mb-1">
-                            Button Text
-                        </label>
-                        <input
-                            id="modalButtonText"
-                            name="button_text"
+                            id="modalTitleInput"
+                            name="title"
                             type="text"
-                            placeholder="Learn More"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
+                            required
+                            placeholder="Enter slide title"
+                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
-                </div>
 
-                <!-- Order & Status -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Description -->
                     <div>
-                        <label for="modalDisplayOrder" class="block text-sm font-medium text-gray-700 mb-1">
-                            Display Order
+                        <label for="modalDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                            Description
+                        </label>
+                        <textarea
+                            id="modalDescription"
+                            name="description"
+                            rows="3"
+                            placeholder="Enter slide description"
+                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    </div>
+
+                    <!-- Link & Button -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="modalLinkUrl" class="block text-sm font-medium text-gray-700 mb-1">
+                                Link URL
+                            </label>
+                            <input
+                                id="modalLinkUrl"
+                                name="link_url"
+                                type="url"
+                                placeholder="https://example.com"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2
+                                   focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="modalButtonText" class="block text-sm font-medium text-gray-700 mb-1">
+                                Button Text
+                            </label>
+                            <input
+                                id="modalButtonText"
+                                name="button_text"
+                                type="text"
+                                placeholder="Learn More"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2
+                                   focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Order & Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="modalDisplayOrder" class="block text-sm font-medium text-gray-700 mb-1">
+                                Display Order
+                            </label>
+                            <input
+                                id="modalDisplayOrder"
+                                name="display_order"
+                                type="number"
+                                min="1"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2
+                                   focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="modalIsActive" class="block text-sm font-medium text-gray-700 mb-1">
+                                Status
+                            </label>
+                            <select
+                                id="modalIsActive"
+                                name="is_active"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2
+                                   focus:ring-2 focus:ring-indigo-500">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Current Image -->
+                    <div id="currentImageContainer" class="hidden">
+                        <p class="text-sm text-gray-600 mb-2">Current Image</p>
+                        <img id="currentImagePreview" class="rounded-lg border max-h-40">
+                        <video id="currentVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
+                    </div>
+
+                    <!-- Upload -->
+                    <div>
+                        <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-1">
+                            Slide Image
                         </label>
                         <input
-                            id="modalDisplayOrder"
-                            name="display_order"
-                            type="number"
-                            min="1"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
-                    </div>
-
-                    <div>
-                        <label for="modalIsActive" class="block text-sm font-medium text-gray-700 mb-1">
-                            Status
-                        </label>
-                        <select
-                            id="modalIsActive"
-                            name="is_active"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Current Image -->
-                <div id="currentImageContainer" class="hidden">
-                    <p class="text-sm text-gray-600 mb-2">Current Image</p>
-                    <img id="currentImagePreview" class="rounded-lg border max-h-40">
-                    <video id="currentVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
-                </div>
-
-                <!-- Upload -->
-                <div>
-                    <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-1">
-                        Slide Image
-                    </label>
-                    <input
-                        id="imageUpload"
-                        name="image"
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.gif,.webp"
-                        onchange="previewNewImage(this)"
-                        class="block w-full text-sm text-gray-600
+                            id="imageUpload"
+                            name="image"
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.gif,.webp"
+                            onchange="previewNewImage(this)"
+                            class="block w-full text-sm text-gray-600
                                file:mr-4 file:py-2 file:px-4
                                file:rounded-lg file:border-0
                                file:text-sm file:font-semibold
                                file:bg-indigo-50 file:text-indigo-600
                                hover:file:bg-indigo-100">
-                    <p class="text-xs text-gray-500 mt-1">
-                        Max size: 5MB. JPG, PNG, GIF, WebP
-                    </p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Max size: 5MB. JPG, PNG, GIF, WebP
+                        </p>
+                    </div>
+
+                    <!-- New Preview -->
+                    <div id="newImageContainer" class="hidden">
+                        <p class="text-sm text-gray-600 mb-2">New Image Preview</p>
+                        <img id="newImagePreview" class="rounded-lg border max-h-40">
+                        <video id="newVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
+                    </div>
+
                 </div>
 
-                <!-- New Preview -->
-                <div id="newImageContainer" class="hidden">
-                    <p class="text-sm text-gray-600 mb-2">New Image Preview</p>
-                    <img id="newImagePreview" class="rounded-lg border max-h-40">
-                    <video id="newVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
+                <!-- Footer -->
+                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+                    <button type="button"
+                        onclick="closeModal()"
+                        class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        name="save_slide"
+                        class="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                        Save Slide
+                    </button>
                 </div>
-
-            </div>
-
-            <!-- Footer -->
-            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl">
-                <button type="button"
-                    onclick="closeModal()"
-                    class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
-                    Cancel
-                </button>
-                <button type="submit"
-                    name="save_slide"
-                    class="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
-                    Save Slide
-                </button>
-            </div>
-
-        </form>
+            </form>
+        </div>
     </div>
-</div>
+    <script>
+        // Modal Functions
+        function openAddModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide';
+            document.getElementById('slideId').value = '0';
+            document.getElementById('oldImage').value = '';
+            document.getElementById('modalTitleInput').value = '';
+            document.getElementById('modalDescription').value = '';
+            document.getElementById('modalLinkUrl').value = '';
+            document.getElementById('modalButtonText').value = '';
+            document.getElementById('modalDisplayOrder').value = '<?php echo $totalSlides + 1; ?>';
+            const statusEl = document.getElementById('modalIsActive');
+            if (statusEl) statusEl.value = '1';
 
-</div>
-<script>
-    // Modal Functions
-    function openAddModal() {
-        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide';
-        document.getElementById('slideId').value = '0';
-        document.getElementById('oldImage').value = '';
-        document.getElementById('modalTitleInput').value = '';
-        document.getElementById('modalDescription').value = '';
-        document.getElementById('modalLinkUrl').value = '';
-        document.getElementById('modalButtonText').value = '';
-        document.getElementById('modalDisplayOrder').value = '<?php echo $totalSlides + 1; ?>';
-        const statusEl = document.getElementById('modalIsActive');
-        if (statusEl) statusEl.value = '1';
-
-        // Hide current image
-        document.getElementById('currentImageContainer').classList.add('hidden');
-        document.getElementById('newImageContainer').classList.add('hidden');
-
-        openModal();
-    }
-
-    function openEditModal(id, title, description, linkUrl, buttonText, displayOrder, isActive, imageUrl) {
-        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit mr-2 text-yellow-600"></i> Edit Slide';
-        document.getElementById('slideId').value = id;
-        document.getElementById('oldImage').value = imageUrl;
-        document.getElementById('modalTitleInput').value = title;
-        document.getElementById('modalDescription').value = description;
-        document.getElementById('modalLinkUrl').value = linkUrl;
-        document.getElementById('modalButtonText').value = buttonText;
-        document.getElementById('modalDisplayOrder').value = displayOrder;
-        const statusEl = document.getElementById('modalIsActive');
-        if (statusEl) statusEl.value = isActive == 1 ? '1' : '0';
-
-        if (imageUrl) {
-            var currentImgEl = document.getElementById('currentImagePreview');
-            var currentVideoEl = document.getElementById('currentVideoPreview');
-            if (/\.(mp4)(\?.*)?$/i.test(imageUrl)) {
-                // show video preview
-                if (currentVideoEl) {
-                    currentVideoEl.src = imageUrl;
-                    currentVideoEl.classList.remove('hidden');
-                }
-                if (currentImgEl) {
-                    currentImgEl.classList.add('hidden');
-                    currentImgEl.removeAttribute('src');
-                }
-            } else {
-                if (currentImgEl) {
-                    currentImgEl.src = imageUrl;
-                    currentImgEl.classList.remove('hidden');
-                }
-                if (currentVideoEl) {
-                    currentVideoEl.classList.add('hidden');
-                    currentVideoEl.src = '';
-                }
-            }
-            document.getElementById('currentImageContainer').classList.remove('hidden');
-        } else {
+            // Hide current image
             document.getElementById('currentImageContainer').classList.add('hidden');
+            document.getElementById('newImageContainer').classList.add('hidden');
+
+            openModal();
         }
 
-        // Hide new image preview
-        document.getElementById('newImageContainer').classList.add('hidden');
+        function openEditModal(id, title, description, linkUrl, buttonText, displayOrder, isActive, imageUrl) {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit mr-2 text-yellow-600"></i> Edit Slide';
+            document.getElementById('slideId').value = id;
+            document.getElementById('oldImage').value = imageUrl;
+            document.getElementById('modalTitleInput').value = title;
+            document.getElementById('modalDescription').value = description;
+            document.getElementById('modalLinkUrl').value = linkUrl;
+            document.getElementById('modalButtonText').value = buttonText;
+            document.getElementById('modalDisplayOrder').value = displayOrder;
+            const statusEl = document.getElementById('modalIsActive');
+            if (statusEl) statusEl.value = isActive == 1 ? '1' : '0';
 
-        openModal();
-    }
-
-    function openModal() {
-        const slideModal = document.getElementById('slideModal');
-        const overlay = document.getElementById('modalOverlay');
-        if (slideModal) {
-            slideModal.classList.remove('hidden');
-            slideModal.classList.add('flex');
-        }
-        if (overlay) {
-            overlay.classList.remove('hidden');
-        }
-        // prevent background scroll
-        document.documentElement.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-        const slideModal = document.getElementById('slideModal');
-        const overlay = document.getElementById('modalOverlay');
-        if (slideModal) {
-            slideModal.classList.add('hidden');
-            slideModal.classList.remove('flex');
-        }
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
-        document.documentElement.style.overflow = '';
-        const img = document.getElementById('imageUpload');
-        if (img) img.value = '';
-    }
-
-    // Close modal when clicking overlay
-    document.getElementById('modalOverlay').addEventListener('click', closeModal);
-
-    // Image preview
-    function previewNewImage(input) {
-        const newImageContainer = document.getElementById('newImageContainer');
-        const newImagePreview = document.getElementById('newImagePreview');
-
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                newImagePreview.src = e.target.result;
-                newImageContainer.classList.remove('hidden');
+            if (imageUrl) {
+                var currentImgEl = document.getElementById('currentImagePreview');
+                var currentVideoEl = document.getElementById('currentVideoPreview');
+                if (/\.(mp4)(\?.*)?$/i.test(imageUrl)) {
+                    // show video preview
+                    if (currentVideoEl) {
+                        currentVideoEl.src = imageUrl;
+                        currentVideoEl.classList.remove('hidden');
+                    }
+                    if (currentImgEl) {
+                        currentImgEl.classList.add('hidden');
+                        currentImgEl.removeAttribute('src');
+                    }
+                } else {
+                    if (currentImgEl) {
+                        currentImgEl.src = imageUrl;
+                        currentImgEl.classList.remove('hidden');
+                    }
+                    if (currentVideoEl) {
+                        currentVideoEl.classList.add('hidden');
+                        currentVideoEl.src = '';
+                    }
+                }
+                document.getElementById('currentImageContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('currentImageContainer').classList.add('hidden');
             }
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            newImageContainer.classList.add('hidden');
+
+            // Hide new image preview
+            document.getElementById('newImageContainer').classList.add('hidden');
+
+            openModal();
         }
-    }
 
-    // Delete confirmation
-    function confirmDelete(title) {
-        event.preventDefault();
-        const url = event.currentTarget.href;
-
-        Swal.fire({
-            title: 'Delete Slide?',
-            html: `Are you sure you want to delete <strong>"${title}"</strong>?<br><br>This action cannot be undone.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
+        function openModal() {
+            const slideModal = document.getElementById('slideModal');
+            const overlay = document.getElementById('modalOverlay');
+            if (slideModal) {
+                slideModal.classList.remove('hidden');
+                slideModal.classList.add('flex');
             }
-        });
+            if (overlay) {
+                overlay.classList.remove('hidden');
+            }
+            // prevent background scroll
+            document.documentElement.style.overflow = 'hidden';
+        }
 
-        return false;
-    }
+        function closeModal() {
+            const slideModal = document.getElementById('slideModal');
+            const overlay = document.getElementById('modalOverlay');
+            if (slideModal) {
+                slideModal.classList.add('hidden');
+                slideModal.classList.remove('flex');
+            }
+            if (overlay) {
+                overlay.classList.add('hidden');
+            }
+            document.documentElement.style.overflow = '';
+            const img = document.getElementById('imageUpload');
+            if (img) img.value = '';
+        }
 
-    // Form validation
-    document.getElementById('slideForm').addEventListener('submit', function(e) {
-        const title = document.getElementById('modalTitleInput').value.trim();
-        const image = document.getElementById('imageUpload').files.length;
-        const slideId = document.getElementById('slideId').value;
-        const isEditMode = slideId !== '0';
+        // Close modal when clicking overlay
+        document.getElementById('modalOverlay').addEventListener('click', closeModal);
 
-        if (!title) {
-            e.preventDefault();
+        // Image preview
+        function previewNewImage(input) {
+            const newImageContainer = document.getElementById('newImageContainer');
+            const newImagePreview = document.getElementById('newImagePreview');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newImagePreview.src = e.target.result;
+                    newImageContainer.classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                newImageContainer.classList.add('hidden');
+            }
+        }
+
+        // Delete confirmation
+        function confirmDelete(title) {
+            event.preventDefault();
+            const url = event.currentTarget.href;
+
             Swal.fire({
-                title: 'Missing Title',
-                text: 'Please enter a slide title',
+                title: 'Delete Slide?',
+                html: `Are you sure you want to delete <strong>"${title}"</strong>?<br><br>This action cannot be undone.`,
                 icon: 'warning',
-                confirmButtonColor: '#3b82f6'
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
             });
+
             return false;
         }
 
-        if (!isEditMode && !image) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Missing Image',
-                text: 'Please upload an image for the slide',
-                icon: 'warning',
-                confirmButtonColor: '#3b82f6'
-            });
-            return false;
-        }
+        // Form validation
+        document.getElementById('slideForm').addEventListener('submit', function(e) {
+            const title = document.getElementById('modalTitleInput').value.trim();
+            const image = document.getElementById('imageUpload').files.length;
+            const slideId = document.getElementById('slideId').value;
+            const isEditMode = slideId !== '0';
 
-        // Show loading animation
-        Swal.fire({
-            title: 'Saving...',
-            text: 'Please wait while we save your slide',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
+            if (!title) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Missing Title',
+                    text: 'Please enter a slide title',
+                    icon: 'warning',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return false;
             }
-        });
-    });
 
-    // Small UI helpers used by refresh and other actions
-    function showLoading(message = 'Loading...') {
-        if (typeof Swal !== 'undefined') {
+            if (!isEditMode && !image) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Missing Image',
+                    text: 'Please upload an image for the slide',
+                    icon: 'warning',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return false;
+            }
+
+            // Show loading animation
             Swal.fire({
-                title: message,
+                title: 'Saving...',
+                text: 'Please wait while we save your slide',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
             });
-        } else {
-            console.log('Loading:', message);
-        }
-    }
+        });
 
-    function showError(message) {
-        if (typeof Swal !== 'undefined') {
+        // Small UI helpers used by refresh and other actions
+        function showLoading(message = 'Loading...') {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: message,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            } else {
+                console.log('Loading:', message);
+            }
+        }
+
+        function showError(message) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message,
+                    confirmButtonColor: '#3b82f6'
+                });
+            } else {
+                console.error(message);
+            }
+        }
+
+        function showToast(message, icon = 'success') {
+            if (typeof Swal !== 'undefined') {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: icon,
+                    title: message
+                });
+            } else {
+                console.log(message);
+            }
+        }
+
+        /* =====================================================
+           REFRESH FUNCTION
+        ===================================================== */
+        function refreshData() {
+            try {
+                showLoading('Refreshing data...');
+                // mark for post-reload success message
+                localStorage.setItem('menu_refreshed', '1');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 150);
+            } catch (error) {
+                Swal.close();
+                showError('Failed to refresh data');
+                console.error('Refresh error:', error);
+            }
+        }
+
+        // After reload, show a short toast if refresh was requested
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (localStorage.getItem('menu_refreshed')) {
+                    localStorage.removeItem('menu_refreshed');
+                    showToast('Data refreshed!', 'success');
+                }
+            } catch (e) {
+                // ignore
+            }
+        });
+
+
+        // Flash message handling
+        <?php if (isset($_SESSION['flash_message'])): ?>
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: message,
-                confirmButtonColor: '#3b82f6'
-            });
-        } else {
-            console.error(message);
-        }
-    }
-
-    function showToast(message, icon = 'success') {
-        if (typeof Swal !== 'undefined') {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
+                icon: '<?php echo $_SESSION['flash_message']['type']; ?>',
+                title: '<?php echo $_SESSION['flash_message']['type'] === 'success' ? 'Success!' : 'Error!'; ?>',
+                text: '<?php echo addslashes($_SESSION['flash_message']['text']); ?>',
+                confirmButtonColor: '#3b82f6',
                 timer: 3000,
                 timerProgressBar: true
             });
-            Toast.fire({
-                icon: icon,
-                title: message
+            <?php unset($_SESSION['flash_message']); ?>
+        <?php endif; ?>
+
+        // Error handling
+        <?php if (!empty($errors)): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                html: '<?php echo implode("<br>", array_map('addslashes', $errors)); ?>',
+                confirmButtonColor: '#3b82f6'
             });
-        } else {
-            console.log(message);
-        }
-    }
-
-    /* =====================================================
-       REFRESH FUNCTION
-    ===================================================== */
-    function refreshData() {
-        try {
-            showLoading('Refreshing data...');
-            // mark for post-reload success message
-            localStorage.setItem('menu_refreshed', '1');
-            setTimeout(() => {
-                window.location.reload();
-            }, 150);
-        } catch (error) {
-            Swal.close();
-            showError('Failed to refresh data');
-            console.error('Refresh error:', error);
-        }
-    }
-
-    // After reload, show a short toast if refresh was requested
-    document.addEventListener('DOMContentLoaded', () => {
-        try {
-            if (localStorage.getItem('menu_refreshed')) {
-                localStorage.removeItem('menu_refreshed');
-                showToast('Data refreshed!', 'success');
-            }
-        } catch (e) {
-            // ignore
-        }
-    });
-
-
-    // Flash message handling
-    <?php if (isset($_SESSION['flash_message'])): ?>
-        Swal.fire({
-            icon: '<?php echo $_SESSION['flash_message']['type']; ?>',
-            title: '<?php echo $_SESSION['flash_message']['type'] === 'success' ? 'Success!' : 'Error!'; ?>',
-            text: '<?php echo addslashes($_SESSION['flash_message']['text']); ?>',
-            confirmButtonColor: '#3b82f6',
-            timer: 3000,
-            timerProgressBar: true
-        });
-        <?php unset($_SESSION['flash_message']); ?>
-    <?php endif; ?>
-
-    // Error handling
-    <?php if (!empty($errors)): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: '<?php echo implode("<br>", array_map('addslashes', $errors)); ?>',
-            confirmButtonColor: '#3b82f6'
-        });
-    <?php endif; ?>
-</script>
+        <?php endif; ?>
+    </script>
 </body>
 
 </html>

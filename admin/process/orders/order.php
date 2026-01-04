@@ -159,94 +159,164 @@ $totalPages = (int)ceil($totalOrders / $perPage);
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .cart-hover {
+            transition: all 0.3s ease;
+        }
+
+        .cart-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
 
-    <main class="md:ml-64 p-4 md:p-6">
-        <!-- Page Header -->
-        <div class="mb-6 animate-fade-in">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
-                <p class="text-gray-600 mt-1">
-                    Manage and track all customer orders
-                </p>
+    <!-- Main Content -->
+    <main class="md:ml-64 min-h-screen">
+        <div class="p-4 sm:p-6 lg:p-8">
+            <div class="mb-6 animate-fade-in">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+                    <!-- Title -->
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Orders Management
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            Manage and track customer orders
+                        </p>
+                    </div>
+                </div>
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-6 mb-8 animate-fade-in">
+                    <!-- TOTAL ORDERS -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Total Orders</p>
+                                <p class="text-2xl font-bold mt-1">
+                                    <?= number_format((int)$totalOrders) ?>
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">All time</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-shopping-cart text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TODAY ORDERS -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Today's Orders</p>
+                                <p class="text-2xl font-bold mt-1">
+                                    <?= number_format((int)$todayOrders) ?>
+                                </p>
+                                <p class="text-xs mt-1 <?= $todayOrders > 0 ? 'text-green-600' : 'text-gray-500' ?>">
+                                    $<?= number_format((float)$todayRevenue, 2) ?> revenue
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-calendar-day text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOTAL REVENUE -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Total Revenue</p>
+                                <p class="text-2xl font-bold mt-1">
+                                    $<?= number_format((float)$totalRevenue, 2) ?>
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">Paid orders only</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-purple-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PENDING ORDERS -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Pending Orders</p>
+                                <p class="text-2xl font-bold mt-1">
+                                    <?= number_format((int)($stats['pending_count'] ?? 0)) ?>
+                                </p>
+                                <p class="text-xs mt-1 <?= ($stats['pending_count'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
+                                    Needs attention
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-yellow-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-500">Total Orders</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($totalOrders) ?></p>
-                            <p class="text-xs text-gray-500 mt-1">All time</p>
-                        </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-shopping-cart text-blue-600"></i>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-500">Today's Orders</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($todayOrders) ?></p>
-                            <p class="text-xs <?= $todayOrders > 0 ? 'text-green-600' : 'text-gray-500' ?> mt-1">
-                                $<?= number_format($todayRevenue, 2) ?> revenue
-                            </p>
-                        </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-calendar-day text-green-600"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-500">Total Revenue</p>
-                            <p class="text-2xl font-bold mt-1">$<?= number_format($totalRevenue, 2) ?></p>
-                            <p class="text-xs text-gray-500 mt-1">Paid orders only</p>
-                        </div>
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-dollar-sign text-purple-600"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-500">Pending Orders</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['pending_count'] ?? 0) ?></p>
-                            <p class="text-xs <?= ($stats['pending_count'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?> mt-1">
-                                Needs attention
-                            </p>
-                        </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php
+            // Preserve filters when switching order status tabs
+            $queryBase = $_GET;
+            unset($queryBase['status'], $queryBase['page']);
+            ?>
 
             <!-- Filter Tabs -->
             <div class="bg-white rounded-xl shadow-sm mb-6">
                 <div class="border-b border-gray-200">
-                    <nav class="flex overflow-x-auto">
-                        <a href="?status="
-                            class="filter-tab px-6 py-4 text-sm font-medium <?= empty($filters['status']) ? 'active' : '' ?>">
-                            All Orders <span class="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs"><?= $statusCounts['all'] ?></span>
+                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+
+                        <!-- ALL ORDERS -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
+                            class="filter-tab text-sm font-medium flex items-center gap-2
+              <?= empty($filters['status']) ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
+                            All Orders
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                                <?= $statusCounts['all'] ?>
+                            </span>
                         </a>
-                        <a href="?status=completed"
-                            class="filter-tab px-6 py-4 text-sm font-medium <?= $filters['status'] === 'completed' ? 'active' : '' ?>">
-                            Completed <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs"><?= $statusCounts['completed'] ?></span>
+
+                        <!-- COMPLETED -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'completed'])) ?>"
+                            class="filter-tab text-sm font-medium flex items-center gap-2
+              <?= $filters['status'] === 'completed' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
+                            Completed
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                <?= $statusCounts['completed'] ?>
+                            </span>
                         </a>
-                        <a href="?status=pending"
-                            class="filter-tab px-6 py-4 text-sm font-medium <?= $filters['status'] === 'pending' ? 'active' : '' ?>">
-                            Pending <span class="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs"><?= $statusCounts['pending'] ?></span>
+
+                        <!-- PENDING -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'pending'])) ?>"
+                            class="filter-tab text-sm font-medium flex items-center gap-2
+              <?= $filters['status'] === 'pending' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
+                            Pending
+                            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+                                <?= $statusCounts['pending'] ?>
+                            </span>
                         </a>
                     </nav>
                 </div>
@@ -320,11 +390,11 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                             <button type="reset"
                                 onclick="window.location.href='order.php'"
                                 class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-                                Clear Filters
+                                Clear
                             </button>
                             <button type="submit"
                                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                <i class="fas fa-filter mr-2"></i> Apply Filters
+                                Apply
                             </button>
                         </div>
                     </form>
