@@ -250,19 +250,46 @@ if (empty($users)) {
 /* =====================================================
    STATUS COUNTS FOR FILTER TABS
 ===================================================== */
+
+/* ------------------- GLOBAL (UNFILTERED) STATS ------------------- */
+try {
+    $globalStmt = $pdo->query(
+        "SELECT
+            COUNT(*) as total_count,
+            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_count,
+            SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive_count,
+            SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admin_count,
+            SUM(CASE WHEN role = 'staff' THEN 1 ELSE 0 END) as staff_count,
+            SUM(CASE WHEN role = 'customer' THEN 1 ELSE 0 END) as customer_count
+        FROM users"
+    );
+    $global = $globalStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+    error_log('[global_users_stats] ' . $e->getMessage());
+    $global = [];
+}
+
+$globalTotal = (int)($global['total_count'] ?? 0);
+$globalActive = (int)($global['active_count'] ?? 0);
+$globalInactive = (int)($global['inactive_count'] ?? 0);
+$globalAdmins = (int)($global['admin_count'] ?? 0);
+$globalStaff = (int)($global['staff_count'] ?? 0);
+$globalCustomers = (int)($global['customer_count'] ?? 0);
+
+/* Status counts for tabs should show global (unfiltered) totals */
 $statusCounts = [
-    'all' => $totalUsers,
-    'active' => $stats['active_count'] ?? 0,
-    'inactive' => $stats['inactive_count'] ?? 0,
+    'all' => $globalTotal,
+    'active' => $globalActive,
+    'inactive' => $globalInactive,
 ];
 
 /* =====================================================
    ROLE COUNTS
 ===================================================== */
 $roleCounts = [
-    'admin' => $stats['admin_count'] ?? 0,
-    'staff' => $stats['staff_count'] ?? 0,
-    'customer' => $stats['customer_count'] ?? 0,
+    'admin' => $globalAdmins,
+    'staff' => $globalStaff,
+    'customer' => $globalCustomers,
 ];
 
 /* =====================================================
@@ -332,7 +359,7 @@ try {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Total Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($totalUsers) ?></p>
+                            <p class="text-2xl font-bold mt-1"><?= number_format($globalTotal) ?></p>
                             <p class="text-xs text-gray-500 mt-1">All accounts</p>
                         </div>
                         <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -360,9 +387,9 @@ try {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Active Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['active_count'] ?? 0) ?></p>
+                            <p class="text-2xl font-bold mt-1"><?= number_format($globalActive) ?></p>
                             <p class="text-xs text-green-600 mt-1">
-                                <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>% of total
+                                <?= round($globalActive / max($globalTotal, 1) * 100, 1) ?>% of total
                             </p>
                         </div>
                         <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -375,9 +402,9 @@ try {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Admins</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['admin_count'] ?? 0) ?></p>
+                            <p class="text-2xl font-bold mt-1"><?= number_format($globalAdmins) ?></p>
                             <p class="text-xs text-purple-600 mt-1">
-                                <?= number_format($stats['staff_count'] ?? 0) ?> staff members
+                                <?= number_format($globalStaff) ?> staff members
                             </p>
                         </div>
                         <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">

@@ -120,6 +120,7 @@ try {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/Css/dasboard.css">
 </head>
@@ -213,41 +214,55 @@ try {
                     </div>
                 </div>
             </div>
+
             <!-- ================= TOP & LOW STOCK ================= -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                <div class="bg-white p-6 rounded-xl shadow">
-                    <h3 class="font-semibold mb-4">Top Products</h3>
-                    <ul class="space-y-3">
+                <!-- ================= TOP PRODUCTS ================= -->
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-lg">Top Products</h3>
+                        <span class="text-xs text-gray-400">Units Sold</span>
+                    </div>
+
+                    <div class="h-56 mb-6">
+                        <canvas id="topProductsChart"></canvas>
+                    </div>
+
+                    <ul class="space-y-3 max-h-44 overflow-y-auto pr-2">
                         <?php if (!$topProducts): ?>
-                            <li class="text-gray-500">No data available.</li>
+                            <li class="text-gray-500 text-sm">No data available.</li>
                             <?php else: foreach ($topProducts as $p): ?>
-                                <li class="flex justify-between">
+                                <li class="flex justify-between items-center">
                                     <div>
-                                        <div class="font-medium"><?= htmlspecialchars($p['name']) ?></div>
-                                        <div class="text-sm text-gray-500">
-                                            Sold: <?= (int)$p['total_quantity'] ?>
-                                        </div>
+                                        <p class="font-medium text-sm"><?= htmlspecialchars($p['name']) ?></p>
+                                        <p class="text-xs text-gray-500">Sold: <?= (int)$p['total_quantity'] ?></p>
                                     </div>
                                     <div class="text-right">
-                                        <div class="font-semibold">$<?= number_format((float)$p['price'], 2) ?></div>
-                                        <div class="text-xs text-gray-400">
-                                            Stock: <?= (int)$p['stock'] ?>
-                                        </div>
+                                        <p class="font-semibold text-sm">$<?= number_format($p['price'], 2) ?></p>
+                                        <p class="text-xs text-gray-400">Stock: <?= (int)$p['stock'] ?></p>
                                     </div>
                                 </li>
                         <?php endforeach;
                         endif; ?>
                     </ul>
                 </div>
+                <!-- ================= LOW STOCK PRODUCTS ================= -->
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-lg text-red-600">Low Stock Products</h3>
+                        <span class="text-xs text-red-400">Critical</span>
+                    </div>
 
-                <div class="bg-white p-6 rounded-xl shadow">
-                    <h3 class="font-semibold mb-4 text-red-600">Low Stock Products</h3>
-                    <ul class="space-y-3">
+                    <div class="h-56 mb-6">
+                        <canvas id="lowStockChart"></canvas>
+                    </div>
+
+                    <ul class="space-y-3 max-h-44 overflow-y-auto pr-2">
                         <?php if (!$lowStockProducts): ?>
-                            <li class="text-gray-500">No low stock items.</li>
+                            <li class="text-gray-500 text-sm">No low stock items.</li>
                             <?php else: foreach ($lowStockProducts as $p): ?>
-                                <li class="flex justify-between">
-                                    <span><?= htmlspecialchars($p['name']) ?></span>
+                                <li class="flex justify-between items-center">
+                                    <span class="text-sm"><?= htmlspecialchars($p['name']) ?></span>
                                     <span class="text-red-600 font-bold"><?= (int)$p['stock'] ?></span>
                                 </li>
                         <?php endforeach;
@@ -301,6 +316,97 @@ try {
 
     <script src="/assets/Js/notifications.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            /* ================= TOP PRODUCTS ================= */
+            const topLabels = <?= json_encode(array_column($topProducts, 'name')) ?> || [];
+            const topData = <?= json_encode(array_map('intval', array_column($topProducts, 'total_quantity'))) ?> || [];
+
+            if (topLabels.length) {
+                const ctx = document.getElementById('topProductsChart').getContext('2d');
+
+                const blueGradient = ctx.createLinearGradient(0, 0, 400, 0);
+                blueGradient.addColorStop(0, 'rgba(59,130,246,0.9)');
+                blueGradient.addColorStop(1, 'rgba(99,102,241,0.9)');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: topLabels,
+                        datasets: [{
+                            data: topData,
+                            backgroundColor: blueGradient,
+                            borderRadius: 10,
+                            barThickness: 14
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            /* ================= LOW STOCK ================= */
+            const lowLabels = <?= json_encode(array_column($lowStockProducts, 'name')) ?> || [];
+            const lowData = <?= json_encode(array_map('intval', array_column($lowStockProducts, 'stock'))) ?> || [];
+
+            if (lowLabels.length) {
+                const ctx = document.getElementById('lowStockChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: lowLabels,
+                        datasets: [{
+                            data: lowData,
+                            backgroundColor: 'rgba(239,68,68,0.85)',
+                            borderRadius: 10,
+                            barThickness: 14
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ` Stock: ${ctx.raw}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
         /* ================================
            ORDER DETAIL MODAL
         ================================ */
@@ -330,55 +436,6 @@ try {
                     }
                 });
             });
-        });
-    </script>
-    <script>
-        /* ================================
-   TOAST & LOADING HELPERS
-================================ */
-
-        function showToast(message, icon = 'success') {
-            Swal.fire({
-                toast: true,
-                icon,
-                title: message,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2500,
-                timerProgressBar: true
-            });
-        }
-
-        function showLoading(title = 'Loading...') {
-            Swal.fire({
-                title,
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => Swal.showLoading()
-            });
-        }
-
-        /* ================================
-           REFRESH HANDLER
-        ================================ */
-
-        function refreshData() {
-            showLoading('Refreshing data...');
-            setTimeout(() => {
-                localStorage.setItem('dashboard_refreshed', '1');
-                window.location.reload();
-            }, 300);
-        }
-
-        /* ================================
-           SHOW TOAST AFTER RELOAD
-        ================================ */
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('dashboard_refreshed')) {
-                localStorage.removeItem('dashboard_refreshed');
-                showToast('Data refreshed!', 'success');
-            }
         });
     </script>
 </body>

@@ -85,247 +85,246 @@ require_once __DIR__ . '/slides_api.php';
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
 
-                <!-- TOTAL SLIDES -->
-                <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                            <i class="fas fa-images text-xl"></i>
+                    <!-- TOTAL SLIDES -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
+                                <i class="fas fa-images text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Total Slides</p>
+                                <p class="text-2xl font-bold text-gray-900">
+                                    <?= number_format((int)($statusCounts['all'] ?? 0)) ?>
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Total Slides</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                <?= number_format((int)($statusCounts['all'] ?? 0)) ?>
-                            </p>
+                    </div>
+
+                    <!-- ACTIVE SLIDES -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
+                                <i class="fas fa-eye text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Active Slides</p>
+                                <p class="text-2xl font-bold text-gray-900">
+                                    <?= number_format((int)($statusCounts['active'] ?? 0)) ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INACTIVE SLIDES -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
+                                <i class="fas fa-eye-slash text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Inactive Slides</p>
+                                <p class="text-2xl font-bold text-gray-900">
+                                    <?= number_format((int)($statusCounts['inactive'] ?? 0)) ?>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ACTIVE SLIDES -->
-                <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
-                            <i class="fas fa-eye text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Active Slides</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                <?= number_format((int)($statusCounts['active'] ?? 0)) ?>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- INACTIVE SLIDES -->
-                <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
-                            <i class="fas fa-eye-slash text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Inactive Slides</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                <?= number_format((int)($statusCounts['inactive'] ?? 0)) ?>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <?php
-            $queryBase = $_GET;
-            unset($queryBase['status'], $queryBase['page']);
-            ?>
-            <div class="bg-white">
-                <div class="border-b border-gray-200">
-                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
-                        <!-- ALL SLIDES -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                <?php
+                $queryBase = $_GET;
+                unset($queryBase['status'], $queryBase['page']);
+                ?>
+                <div class="bg-white">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                            <!-- ALL SLIDES -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
               <?= empty($_GET['status'])
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
-                            All Slides
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                <span><?= $statusCounts['all'] ?></span>
-                            </span>
-                        </a>
+                                All Slides
+                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                                    <span><?= $statusCounts['all'] ?></span>
+                                </span>
+                            </a>
 
-                        <!-- ACTIVE -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                            <!-- ACTIVE -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
               <?= ($_GET['status'] ?? '') === 'active'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
-                            Active
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                <span><?= $statusCounts['active'] ?></span>
-                            </span>
-                        </a>
+                                Active
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                    <span><?= $statusCounts['active'] ?></span>
+                                </span>
+                            </a>
 
-                        <!-- INACTIVE -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                            <!-- INACTIVE -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
               <?= ($_GET['status'] ?? '') === 'inactive'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
-                            Inactive
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                <span><?= $statusCounts['inactive'] ?></span>
-                            </span>
-                        </a>
-                    </nav>
-                </div>
-            </div>
-            <!-- Slides Filters -->
-            <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                        Filter Slides
-                    </h3>
-
-                    <form method="GET"
-                        class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-
-                        <!-- Search -->
-                        <div class="flex-1 max-w-md">
-                            <label class="sr-only">Search</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
+                                Inactive
+                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                    <span><?= $statusCounts['inactive'] ?></span>
                                 </span>
-                                <input
-                                    type="text"
-                                    name="q"
-                                    value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
-                                    placeholder="Search by title or description..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-
-                        <!-- Filters -->
-                        <div class="flex flex-wrap items-end gap-3">
-
-                            <!-- Status -->
-                            <div>
-                                <label class="sr-only">Status</label>
-                                <select
-                                    name="status"
-                                    class="px-3 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">All Status</option>
-                                    <option value="active" <?= ($_GET['status'] ?? '') === 'active' ? 'selected' : '' ?>>
-                                        Active
-                                    </option>
-                                    <option value="inactive" <?= ($_GET['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>
-                                        Inactive
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Display Order -->
-                            <div>
-                                <label class="sr-only">Display Order</label>
-                                <select
-                                    name="order"
-                                    class="px-3 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">Display Order</option>
-                                    <option value="asc" <?= ($_GET['order'] ?? '') === 'asc' ? 'selected' : '' ?>>
-                                        Lowest First
-                                    </option>
-                                    <option value="desc" <?= ($_GET['order'] ?? '') === 'desc' ? 'selected' : '' ?>>
-                                        Highest First
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="flex gap-2">
-                                <a href="slides.php"
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                              hover:bg-gray-200 transition">
-                                    Clear
-                                </a>
-
-                                <button
-                                    type="submit"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg
-                               hover:bg-indigo-700 transition">
-                                    Apply
-                                </button>
-                            </div>
-
-                        </div>
-                    </form>
+                            </a>
+                        </nav>
+                    </div>
                 </div>
-            </div>
+                <!-- Slides Filters -->
+                <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            Filter Slides
+                        </h3>
 
-            <?php if ($totalSlides > 0): ?>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-gray-50 border-b">
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ID</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">TITLE</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ORDER</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">BUTTON</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">STATUS</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">IMAGE</th>
-                                <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ACTIONS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($slides as $slide): ?>
-                                <tr class="table-row">
-                                    <td class="py-4 px-6">
-                                        <span class="text-sm font-medium text-gray-900"><?php echo $slide['slides_id']; ?></span>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <div class="max-w-xs">
-                                            <div class="font-medium text-gray-900 truncate">
-                                                <?php echo htmlspecialchars($slide['title']); ?>
-                                            </div>
-                                            <?php if (!empty($slide['description'])): ?>
-                                                <div class="text-sm text-gray-500 truncate mt-1">
-                                                    <?php echo htmlspecialchars(substr($slide['description'], 0, 60)); ?>
-                                                    <?php if (strlen($slide['description']) > 60): ?>...<?php endif; ?>
+                        <form method="GET"
+                            class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+
+                            <!-- Search -->
+                            <div class="flex-1 max-w-md">
+                                <label class="sr-only">Search</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        name="q"
+                                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
+                                        placeholder="Search by title or description..."
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
+
+                            <!-- Filters -->
+                            <div class="flex flex-wrap items-end gap-3">
+
+                                <!-- Status -->
+                                <div>
+                                    <label class="sr-only">Status</label>
+                                    <select
+                                        name="status"
+                                        class="px-3 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">All Status</option>
+                                        <option value="active" <?= ($_GET['status'] ?? '') === 'active' ? 'selected' : '' ?>>
+                                            Active
+                                        </option>
+                                        <option value="inactive" <?= ($_GET['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>
+                                            Inactive
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Display Order -->
+                                <div>
+                                    <label class="sr-only">Display Order</label>
+                                    <select
+                                        name="order"
+                                        class="px-3 py-2 border border-gray-300 rounded-lg
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">Display Order</option>
+                                        <option value="asc" <?= ($_GET['order'] ?? '') === 'asc' ? 'selected' : '' ?>>
+                                            Lowest First
+                                        </option>
+                                        <option value="desc" <?= ($_GET['order'] ?? '') === 'desc' ? 'selected' : '' ?>>
+                                            Highest First
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex gap-2">
+                                    <a href="slides.php"
+                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
+                              hover:bg-gray-200 transition">
+                                        Clear
+                                    </a>
+
+                                    <button
+                                        type="submit"
+                                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg
+                               hover:bg-indigo-700 transition">
+                                        Apply
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <?php if ($totalSlides > 0): ?>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50 border-b">
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ID</th>
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">TITLE</th>
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ORDER</th>
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">BUTTON</th>
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">STATUS</th>
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">IMAGE</th>
+                                    <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($slides as $slide): ?>
+                                    <tr class="table-row">
+                                        <td class="py-4 px-6">
+                                            <span class="text-sm font-medium text-gray-900"><?php echo $slide['slides_id']; ?></span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="max-w-xs">
+                                                <div class="font-medium text-gray-900 truncate">
+                                                    <?php echo htmlspecialchars($slide['title']); ?>
                                                 </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">
-                                            <?php echo $slide['display_order']; ?>
-                                        </span>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <?php if (!empty($slide['button_text'])): ?>
-                                            <span class="text-sm text-blue-600 font-medium">
-                                                <?php echo htmlspecialchars($slide['button_text']); ?>
+                                                <?php if (!empty($slide['description'])): ?>
+                                                    <div class="text-sm text-gray-500 truncate mt-1">
+                                                        <?php echo htmlspecialchars(substr($slide['description'], 0, 60)); ?>
+                                                        <?php if (strlen($slide['description']) > 60): ?>...<?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">
+                                                <?php echo $slide['display_order']; ?>
                                             </span>
-                                        <?php else: ?>
-                                            <span class="text-sm text-gray-400">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <a href="?toggle=<?php echo $slide['slides_id']; ?>"
-                                            class="status-badge <?php echo $slide['is_active'] ? 'status-active' : 'status-inactive'; ?>">
-                                            <?php echo $slide['is_active'] ? 'Active' : 'Inactive'; ?>
-                                        </a>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <img src="<?php echo $slide['image_url']; ?>"
-                                            alt="<?php echo htmlspecialchars($slide['title']); ?>"
-                                            class="thumbnail">
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <div class="flex space-x-2">
-                                            <button onclick="openEditModal(
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <?php if (!empty($slide['button_text'])): ?>
+                                                <span class="text-sm text-blue-600 font-medium">
+                                                    <?php echo htmlspecialchars($slide['button_text']); ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="text-sm text-gray-400">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <a href="?toggle=<?php echo $slide['slides_id']; ?>"
+                                                class="status-badge <?php echo $slide['is_active'] ? 'status-active' : 'status-inactive'; ?>">
+                                                <?php echo $slide['is_active'] ? 'Active' : 'Inactive'; ?>
+                                            </a>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <img src="<?php echo $slide['image_url']; ?>"
+                                                alt="<?php echo htmlspecialchars($slide['title']); ?>"
+                                                class="thumbnail">
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex space-x-2">
+                                                <button onclick="openEditModal(
                                                 <?php echo $slide['slides_id']; ?>,
                                                 '<?php echo addslashes($slide['title']); ?>',
                                                 '<?php echo addslashes($slide['description']); ?>',
@@ -335,34 +334,35 @@ require_once __DIR__ . '/slides_api.php';
                                                 <?php echo $slide['is_active']; ?>,
                                                 '<?php echo addslashes($slide['image_url']); ?>'
                                             )"
-                                                class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
-                                                <i class="fas fa-edit mr-2"></i> Edit
-                                            </button>
-                                            <a href="?delete=<?php echo $slide['slides_id']; ?>"
-                                                onclick="return confirmDelete('<?php echo addslashes($slide['title']); ?>')"
-                                                class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
-                                                <i class="fas fa-trash mr-2"></i> Delete
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Table Footer -->
-                <div class="px-6 py-4 border-t bg-gray-50">
-                    <div class="text-sm text-gray-500">
-                        Showing <?php echo $totalSlides; ?> slide<?php echo $totalSlides !== 1 ? 's' : ''; ?>
+                                                    class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
+                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                </button>
+                                                <a href="?delete=<?php echo $slide['slides_id']; ?>"
+                                                    onclick="return confirmDelete('<?php echo addslashes($slide['title']); ?>')"
+                                                    class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
+                                                    <i class="fas fa-trash mr-2"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            <?php else: ?>
-                <div class="py-12 text-center">
-                    <i class="fas fa-images text-4xl text-gray-300 mb-4"></i>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No slides found</h3>
-                    <p class="text-gray-500 mb-4">Get started by adding your first slide</p>
-                </div>
-            <?php endif; ?>
+                    <!-- Table Footer -->
+                    <div class="px-6 py-4 border-t bg-gray-50">
+                        <div class="text-sm text-gray-500">
+                            Showing <?php echo $totalSlides; ?> slide<?php echo $totalSlides !== 1 ? 's' : ''; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="py-12 text-center">
+                        <i class="fas fa-images text-4xl text-gray-300 mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No slides found</h3>
+                        <p class="text-gray-500 mb-4">Get started by adding your first slide</p>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </main>
 

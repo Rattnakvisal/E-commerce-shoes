@@ -1,20 +1,16 @@
-const _segments = window.location.pathname.split("/").filter(Boolean);
-const APP_ROOT = _segments.length ? "/" + _segments[0] : "";
-const USERS_API_URL = `${APP_ROOT}/admin/process/users/users_api_fixed.php`;
-/* =========================================
-   MODAL CONTROLS
-========================================= */
-function openEditUserModal() {
-  document.getElementById("editUserModal").classList.remove("hidden");
-}
+/* =====================================================
+   CONFIG
+===================================================== */
 
-function closeEditUserModal() {
-  document.getElementById("editUserModal").classList.add("hidden");
-}
+// ⚠️ CHANGE ONLY THIS IF PROJECT ROOT CHANGES
+const BASE_URL = "/E-commerce-shoes";
 
-/* =========================================
+// USERS API
+const USERS_API_URL = `${BASE_URL}/admin/process/users/users_api.php`;
+
+/* =====================================================
    API HELPER
-========================================= */
+===================================================== */
 async function apiRequest(action, options = {}) {
   const method = options.method || "GET";
 
@@ -32,15 +28,12 @@ async function apiRequest(action, options = {}) {
   });
 
   const text = await res.text();
-  let data = null;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      throw new Error(`Server error: ${text.slice(0, 150)}`);
-    }
-  } else {
-    data = {};
+
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error("Server returned invalid JSON");
   }
 
   if (!res.ok || data.success === false) {
@@ -50,19 +43,61 @@ async function apiRequest(action, options = {}) {
   return data;
 }
 
-/* =========================================
+/* =====================================================
+   MODAL CONTROLS
+===================================================== */
+function openEditUserModal() {
+  document.getElementById("editUserModal")?.classList.remove("hidden");
+}
+
+function closeEditUserModal() {
+  document.getElementById("editUserModal")?.classList.add("hidden");
+}
+
+/* =====================================================
+   VIEW USER
+===================================================== */
+async function viewUser(userId) {
+  try {
+    showLoading("Loading user...");
+
+    const { user } = await apiRequest("get_user", {
+      params: { id: userId },
+    });
+
+    Swal.fire({
+      title: esc(user.name),
+      html: `
+        <div class="text-left space-y-2">
+          <p><strong>Email:</strong> ${esc(user.email)}</p>
+          <p><strong>Phone:</strong> ${esc(user.phone || "-")}</p>
+          <p><strong>Role:</strong> ${esc(user.role)}</p>
+          <p><strong>Status:</strong> ${esc(user.status)}</p>
+          <p><strong>Joined:</strong> ${new Date(
+            user.created_at
+          ).toLocaleDateString()}</p>
+        </div>
+      `,
+      confirmButtonText: "Close",
+    });
+  } catch (e) {
+    showError(e.message);
+  }
+}
+
+/* =====================================================
    EDIT USER
-========================================= */
+===================================================== */
 async function editUser(userId) {
   try {
+    showLoading("Loading user...");
+
     const { user } = await apiRequest("get_user", {
-      method: "GET",
       params: { id: userId },
     });
 
     Swal.close();
 
-    // Fill form
     document.getElementById("edit_user_id").value = user.user_id;
     document.getElementById("edit_name").value = user.name || "";
     document.getElementById("edit_email").value = user.email || "";
@@ -77,13 +112,15 @@ async function editUser(userId) {
   }
 }
 
+/* =====================================================
+   EDIT FORM SUBMIT
+===================================================== */
 document
   .getElementById("editUserForm")
-  .addEventListener("submit", async (e) => {
+  ?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const form = e.target;
-    const fd = new FormData(form);
+    const fd = new FormData(e.target);
     fd.append("action", "update");
 
     try {
@@ -99,9 +136,9 @@ document
     }
   });
 
-/* =========================================
+/* =====================================================
    DELETE USER
-========================================= */
+===================================================== */
 async function deleteUser(userId) {
   const confirm = await Swal.fire({
     title: "Delete user?",
@@ -126,9 +163,9 @@ async function deleteUser(userId) {
   }
 }
 
-/* =========================================
-   ROLE CHANGE
-========================================= */
+/* =====================================================
+   UPDATE ROLE
+===================================================== */
 async function updateUserRole(userId, role) {
   try {
     await apiRequest("update_role", {
@@ -143,9 +180,9 @@ async function updateUserRole(userId, role) {
   }
 }
 
-/* =========================================
-   STATUS CHANGE (FIXED)
-========================================= */
+/* =====================================================
+   TOGGLE STATUS
+===================================================== */
 async function toggleUserStatus(userId, action) {
   const status = action === "deactivate" ? "inactive" : "active";
 
@@ -162,54 +199,9 @@ async function toggleUserStatus(userId, action) {
   }
 }
 
-/* =========================================
-   MODAL RENDER
-========================================= */
-function renderUserModal({ user }) {
-  Swal.fire({
-    title: esc(user.name),
-    html: `
-      <div class="text-left space-y-2">
-        <p><strong>Email:</strong> ${esc(user.email)}</p>
-        <p><strong>Role:</strong> ${esc(user.role)}</p>
-        <p><strong>Status:</strong> ${esc(user.status)}</p>
-        <p><strong>Joined:</strong> ${new Date(
-          user.created_at
-        ).toLocaleDateString()}</p>
-      </div>
-    `,
-    confirmButtonText: "Close",
-  });
-}
-
-/* =========================================
-   FORM TEMPLATES
-========================================= */
-function userEditForm(user) {
-  return `
-    <input id="editName" class="swal2-input" placeholder="Name" value="${esc(
-      user.name
-    )}">
-    <input id="editEmail" class="swal2-input" placeholder="Email" value="${esc(
-      user.email
-    )}">
-    <input id="editPassword" type="password" class="swal2-input" placeholder="New password (optional)">
-    <select id="editRole" class="swal2-select">
-      ${["customer", "staff", "admin"]
-        .map(
-          (r) =>
-            `<option value="${r}" ${user.role === r ? "selected" : ""}>
-              ${r}
-            </option>`
-        )
-        .join("")}
-    </select>
-  `;
-}
-
-/* =========================================
+/* =====================================================
    HELPERS
-========================================= */
+===================================================== */
 function formData(obj) {
   const fd = new FormData();
   Object.entries(obj).forEach(([k, v]) => fd.append(k, v));
@@ -222,9 +214,9 @@ function esc(text = "") {
   return div.innerHTML;
 }
 
-/* =========================================
-   ALERT HELPERS
-========================================= */
+/* =====================================================
+   ALERTS
+===================================================== */
 function showLoading(msg = "Loading...") {
   Swal.fire({
     title: msg,
@@ -243,12 +235,16 @@ function showSuccess(msg) {
 }
 
 function showError(msg) {
-  Swal.fire({ icon: "error", title: "Error", text: msg });
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: msg,
+  });
 }
 
-/* =========================================
+/* =====================================================
    GLOBAL EXPORTS
-========================================= */
+===================================================== */
 window.viewUser = viewUser;
 window.editUser = editUser;
 window.deleteUser = deleteUser;

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
+
 if (!isset($pdo) && isset($conn)) {
     $pdo = $conn;
 }
@@ -14,7 +15,7 @@ if (!isset($_SESSION['user_id'], $_SESSION['role']) || $_SESSION['role'] !== 'ad
     exit;
 }
 
-/* ================= FLASH MESSAGE ================= */
+/* ================= FLASH ================= */
 $message = $_SESSION['message'] ?? '';
 unset($_SESSION['message']);
 $error = '';
@@ -52,28 +53,30 @@ try {
     $params = [];
 
     if ($search !== '') {
-        $where[] = "(p.name LIKE :search OR p.description LIKE :search)";
-        $params[':search'] = "%{$search}%";
+        $where[] = "(p.name LIKE ? OR p.description LIKE ?)";
+        $s = "%{$search}%";
+        $params[] = $s;
+        $params[] = $s;
     }
 
     if ($category_id !== '') {
-        $where[] = "p.category_id = :category_id";
-        $params[':category_id'] = $category_id;
+        $where[] = "p.category_id = ?";
+        $params[] = $category_id;
     }
 
     if (in_array($status, ['active', 'inactive'], true)) {
-        $where[] = "p.status = :status";
-        $params[':status'] = $status;
+        $where[] = "p.status = ?";
+        $params[] = $status;
     }
 
     if ($date_from) {
-        $where[] = "p.created_at >= :date_from";
-        $params[':date_from'] = $date_from . ' 00:00:00';
+        $where[] = "p.created_at >= ?";
+        $params[] = $date_from . ' 00:00:00';
     }
 
     if ($date_to) {
-        $where[] = "p.created_at <= :date_to";
-        $params[':date_to'] = $date_to . ' 23:59:59';
+        $where[] = "p.created_at <= ?";
+        $params[] = $date_to . ' 23:59:59';
     }
 
     $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -86,14 +89,21 @@ try {
         default      => 'p.created_at DESC',
     };
 
-    /* ================= COUNT (FILTERED) ================= */
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products p $whereSql");
+    /* ================= COUNT ================= */
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM products p
+        $whereSql
+    ");
     $stmt->execute($params);
     $totalProducts = (int)$stmt->fetchColumn();
     $totalPages = max(1, (int)ceil($totalProducts / $limit));
 
     /* ================= PRODUCTS ================= */
-    $stmt = $pdo->prepare("
+    $limitInt  = (int)$limit;
+    $offsetInt = (int)$offset;
+
+    $sql = "
         SELECT
             p.*,
             c.category_name,
@@ -102,24 +112,19 @@ try {
         LEFT JOIN categories c ON p.category_id = c.category_id
         $whereSql
         ORDER BY $orderBy
-        LIMIT :limit OFFSET :offset
-    ");
+        LIMIT $limitInt OFFSET $offsetInt
+    ";
 
-    foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v);
-    }
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
-    $stmt->execute();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     /* ================= STATS (GLOBAL) ================= */
     $stats = $pdo->query("
         SELECT
             COUNT(*) total,
-            SUM(status = 'active') active,
-            SUM(status = 'inactive') inactive,
+            SUM(status='active') active,
+            SUM(status='inactive') inactive,
             COALESCE(SUM(stock),0) total_stock
         FROM products
     ")->fetch(PDO::FETCH_ASSOC);
@@ -127,7 +132,7 @@ try {
     $stats = array_map('intval', $stats);
 } catch (PDOException $e) {
     $error = 'Database error';
-    error_log('[products] ' . $e->getMessage());
+    error_log('[products.php] ' . $e->getMessage());
 }
 
 /* ================= STATUS COUNTS ================= */
