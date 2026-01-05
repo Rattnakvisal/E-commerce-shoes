@@ -41,10 +41,29 @@ $filters = [
 $whereClauses = [];
 $params = [];
 
-// Status filter
-if ($filters['status'] && in_array($filters['status'], ['active', 'inactive'])) {
+// helper to check for optional columns
+function columnExists(string $col): bool
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SHOW COLUMNS FROM users LIKE ?");
+        $stmt->execute([$col]);
+        return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+// Status filter (only apply if `status` column exists)
+$hasStatus = columnExists('status');
+if ($hasStatus && $filters['status'] && in_array($filters['status'], ['active', 'inactive'])) {
     $whereClauses[] = "u.status = ?";
     $params[] = $filters['status'];
+} else {
+    // If the schema doesn't have status, ignore status filter
+    if (!$hasStatus) {
+        $filters['status'] = '';
+    }
 }
 
 // Role filter
@@ -97,41 +116,37 @@ $offset = ($filters['page'] - 1) * $perPage;
 $totalPages = 1;
 
 try {
-    // Get total count and statistics
-    $countQuery = "
-        SELECT 
-            COUNT(*) as total_count,
-            SUM(CASE WHEN u.status = 'active' THEN 1 ELSE 0 END) as active_count,
-            SUM(CASE WHEN u.status = 'inactive' THEN 1 ELSE 0 END) as inactive_count,
-            SUM(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) as admin_count,
-            SUM(CASE WHEN u.role = 'staff' THEN 1 ELSE 0 END) as staff_count,
-            SUM(CASE WHEN u.role = 'customer' THEN 1 ELSE 0 END) as customer_count
-        FROM users u
-        $whereSql
-    ";
+    $countSelect = ["COUNT(*) as total_count"];
+    if ($hasStatus) {
+        $countSelect[] = "SUM(CASE WHEN u.status = 'active' THEN 1 ELSE 0 END) as active_count";
+        $countSelect[] = "SUM(CASE WHEN u.status = 'inactive' THEN 1 ELSE 0 END) as inactive_count";
+    } else {
+        $countSelect[] = "0 as active_count";
+        $countSelect[] = "0 as inactive_count";
+    }
+    $countSelect[] = "SUM(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) as admin_count";
+    $countSelect[] = "SUM(CASE WHEN u.role = 'staff' THEN 1 ELSE 0 END) as staff_count";
+    $countSelect[] = "SUM(CASE WHEN u.role = 'customer' THEN 1 ELSE 0 END) as customer_count";
+
+    $countQuery = "SELECT\n            " . implode(",\n            ", $countSelect) . "\n        FROM users u\n        $whereSql\n    ";
 
     $countStmt = $pdo->prepare($countQuery);
     $countStmt->execute($params);
-    $stats = $countStmt->fetch(PDO::FETCH_ASSOC);
+    $stats = $countStmt->fetch(PDO::FETCH_ASSOC) ?: [];
     $totalUsers = $stats['total_count'] ?? 0;
 
-    // Fetch users with pagination
-    $query = "
-        SELECT 
-            u.user_id,
-            u.name,
-            u.email,
-            u.phone,
-            u.role,
-            u.status,
-            u.created_at,
-            u.last_login,
-            u.avatar_url,
-        FROM users u
-        $whereSql
-        ORDER BY $orderBy
-        LIMIT $perPage OFFSET $offset
-    ";
+    // Fetch users with pagination. Only select optional columns if they exist.
+    $hasLastLogin = columnExists('last_login');
+    $hasAvatar = columnExists('avatar_url');
+
+    $selectExtras = [];
+    if ($hasStatus) $selectExtras[] = 'u.status';
+    if ($hasLastLogin) $selectExtras[] = 'u.last_login';
+    if ($hasAvatar) $selectExtras[] = 'u.avatar_url';
+
+    $selectSql = "u.user_id, u.name, u.email, u.phone, u.role" . (empty($selectExtras) ? '' : ', ' . implode(', ', $selectExtras)) . ', u.created_at';
+
+    $query = "SELECT $selectSql FROM users u\n        $whereSql\n        ORDER BY $orderBy\n        LIMIT $perPage OFFSET $offset";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);

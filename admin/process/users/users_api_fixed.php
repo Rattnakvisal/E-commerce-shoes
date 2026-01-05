@@ -168,7 +168,6 @@ try {
         $stmt->execute([$id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$user) respond(false, 'User not found', 404);
-        if ($user['role'] === 'admin') respond(false, 'Cannot change status of admin user', 400);
 
         $stmt = $pdo->prepare("UPDATE users SET status = ? WHERE user_id = ?");
         $stmt->execute([$status, $id]);
