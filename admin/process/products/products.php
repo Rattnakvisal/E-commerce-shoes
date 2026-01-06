@@ -485,7 +485,7 @@ require_once __DIR__ . '/products_api.php';
             </div>
         <?php endif; ?>
     </main>
-    <script src="../../../assets/Js/products.js"></script>
+    <script src="../../../assets/js/products.js"></script>
     <script>
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {

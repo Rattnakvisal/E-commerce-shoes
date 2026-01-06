@@ -22,21 +22,6 @@ require_once __DIR__ . '/featured_api.php';
 
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
-            <!-- Flash Messages -->
-            <?php if ($flash): ?>
-                <div class="mb-6 p-4 rounded-lg <?= $flash['type'] === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' ?>">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <i class="fas <?= $flash['type'] === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' ?>"></i>
-                            <span><?= htmlspecialchars($flash['text']) ?></span>
-                        </div>
-                        <button onclick="this.parentElement.parentElement.remove()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-            <?php endif; ?>
-
             <!-- Errors -->
             <?php if (!empty($errors)): ?>
                 <div class="mb-6 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
@@ -450,24 +435,26 @@ require_once __DIR__ . '/featured_api.php';
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
 
 
 
-            <script src="../../../assets/Js/featured.js"></script>
-            <script>
-                // Auto-fill featured image when a product is selected
-                const productsMap = <?= json_encode(array_column($products, null, 'product_id')) ?>;
-                const productSelect = document.getElementById('productId');
+    <script src="../../../assets/Js/featured.js"></script>
+    <script>
+        // Auto-fill featured image when a product is selected
+        const productsMap = <?= json_encode(array_column($products, null, 'product_id')) ?>;
+        const productSelect = document.getElementById('productId');
 
-                function updatePreviewForProduct() {
-                    const pid = productSelect.value;
-                    const previewContainer = document.getElementById('imagePreviewContainer');
-                    const oldImageInput = document.getElementById('oldImage');
+        function updatePreviewForProduct() {
+            const pid = productSelect.value;
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const oldImageInput = document.getElementById('oldImage');
 
-                    if (pid && productsMap[pid] && productsMap[pid].image_url) {
-                        const img = productsMap[pid].image_url;
-                        oldImageInput.value = img;
-                        previewContainer.innerHTML = `
+            if (pid && productsMap[pid] && productsMap[pid].image_url) {
+                const img = productsMap[pid].image_url;
+                oldImageInput.value = img;
+                previewContainer.innerHTML = `
                     <div class="relative">
                         <img src="${img}" alt="Product image" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
                         <div class="absolute top-2 right-2 bg-white/80 rounded-full p-2">
@@ -475,22 +462,43 @@ require_once __DIR__ . '/featured_api.php';
                         </div>
                     </div>
                 `;
-                    } else {
-                        // if no product image, clear old_image but keep any current featured image
-                        oldImageInput.value = '';
-                        if (!document.getElementById('newImagePreview') || document.getElementById('newImagePreview').classList.contains('hidden')) {
-                            previewContainer.innerHTML = '<p class="text-sm text-gray-500">No image currently set</p>';
-                        }
-                    }
+            } else {
+                // if no product image, clear old_image but keep any current featured image
+                oldImageInput.value = '';
+                if (!document.getElementById('newImagePreview') || document.getElementById('newImagePreview').classList.contains('hidden')) {
+                    previewContainer.innerHTML = '<p class="text-sm text-gray-500">No image currently set</p>';
                 }
+            }
+        }
 
-                productSelect?.addEventListener('change', updatePreviewForProduct);
+        productSelect?.addEventListener('change', updatePreviewForProduct);
 
-                // if modal opened for add and product already selected, update preview
-                productSelect?.addEventListener('focus', function() {
-                    /* no-op placeholder */
+        // if modal opened for add and product already selected, update preview
+        productSelect?.addEventListener('focus', function() {
+            /* no-op placeholder */
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if (!empty($flash) && ($flash['type'] ?? '') === 'success'): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '<?= addslashes($flash['text']) ?>',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3085d6'
                 });
-            </script>
+            <?php elseif (!empty($flash) && ($flash['type'] ?? '') === 'error'): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '<?= addslashes($flash['text']) ?>',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#d33'
+                });
+            <?php endif; ?>
+        });
+    </script>
 </body>
 
 </html>

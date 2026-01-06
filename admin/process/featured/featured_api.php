@@ -188,7 +188,6 @@ $featured = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $totalFeatured = count($featured);
 
 /* ================= GET PRODUCTS FOR DROPDOWN ================= */
-// include product image so UI can autofill featured image when product selected
 $products = $pdo->query("SELECT product_id, name, image_url FROM products WHERE status = 'active' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
 /* ================= PRESERVE FILTERS ================= */

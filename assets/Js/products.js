@@ -54,6 +54,20 @@ function confirmDelete(title, text) {
   });
 }
 
+function confirmEdit(title, text) {
+  return Swal.fire({
+    title: title || "Edit product?",
+    text: text || "Open editor for this product.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Edit",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#6b46c1",
+    cancelButtonColor: "#6b7280",
+    reverseButtons: false,
+  });
+}
+
 // DOM Elements
 const productModal = document.getElementById("productModal");
 const modalTitle = document.getElementById("modalTitle");
@@ -75,45 +89,58 @@ const submitText = document.getElementById("submitText");
 
 // Modal Functions
 function openModal() {
+  if (!productModal) return;
   productModal.classList.remove("hidden");
   productModal.classList.add("flex");
 }
 
 function closeModal() {
-  productModal.classList.add("hidden");
-  productModal.classList.remove("flex");
+  if (productModal) {
+    productModal.classList.add("hidden");
+    productModal.classList.remove("flex");
+  }
   resetForm();
 }
 
 function resetForm() {
-  productForm.reset();
-  productId.value = "";
-  formAction.value = "add";
-  modalTitle.textContent = "Add Product";
-  submitText.textContent = "Add Product";
-  submitBtn.className =
-    "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition";
-  imagePreview.classList.add("hidden");
+  if (productForm) productForm.reset();
+  if (productId) productId.value = "";
+  if (formAction) formAction.value = "add";
+  if (modalTitle) modalTitle.textContent = "Add Product";
+  if (submitText) submitText.textContent = "Add Product";
+  if (submitBtn)
+    submitBtn.className =
+      "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition";
+  if (imagePreview && imagePreview.classList)
+    imagePreview.classList.add("hidden");
 }
 
 // Image Preview
-productImage.addEventListener("change", function (e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      previewImage.src = e.target.result;
-      imagePreview.classList.remove("hidden");
-    };
-    reader.readAsDataURL(file);
-  } else {
-    imagePreview.classList.add("hidden");
-  }
-});
+if (productImage) {
+  productImage.addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        if (previewImage) previewImage.src = e.target.result;
+        if (imagePreview && imagePreview.classList)
+          imagePreview.classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    } else {
+      if (imagePreview && imagePreview.classList)
+        imagePreview.classList.add("hidden");
+    }
+  });
+}
 
 // Edit Product
 async function editProduct(id) {
-  showLoading("Loading product details...");
+  const confirmed = await confirmEdit(
+    "Edit product?",
+    "Open editor for this product."
+  );
+  if (!confirmed.isConfirmed) return;
 
   try {
     const response = await fetch("add-product.php?action=get_one&id=" + id);
@@ -123,30 +150,38 @@ async function editProduct(id) {
 
     if (data.success) {
       const product = data.data;
-      productId.value =
-        product.product_id ?? product.product_id ?? product.id ?? "";
-      productName.value = product.name ?? product.NAME ?? "";
-      productDescription.value =
-        product.description ?? product.DESCRIPTION ?? "";
-      productCategory.value = product.category_id ?? product.category_id ?? "";
-      productPrice.value = product.price ?? product.PRICE ?? "";
-      productCost.value = product.cost ?? product.COST ?? "";
-      productStock.value = product.stock ?? product.STOCK ?? "";
-      productStatus.value = product.status ?? product.STATUS ?? "";
+      if (productId) productId.value = product.product_id ?? product.id ?? "";
+      if (productName) productName.value = product.name ?? product.NAME ?? "";
+      if (productDescription)
+        productDescription.value =
+          product.description ?? product.DESCRIPTION ?? "";
+      if (productCategory)
+        productCategory.value =
+          product.category_id ?? product.category_id ?? "";
+      if (productPrice)
+        productPrice.value = product.price ?? product.PRICE ?? "";
+      if (productCost) productCost.value = product.cost ?? product.COST ?? "";
+      if (productStock)
+        productStock.value = product.stock ?? product.STOCK ?? "";
+      if (productStatus)
+        productStatus.value = product.status ?? product.STATUS ?? "";
 
       // Handle image preview
       if (product.image_url) {
-        previewImage.src = product.image_url;
-        imagePreview.classList.remove("hidden");
+        if (previewImage) previewImage.src = product.image_url;
+        if (imagePreview && imagePreview.classList)
+          imagePreview.classList.remove("hidden");
       } else {
-        imagePreview.classList.add("hidden");
+        if (imagePreview && imagePreview.classList)
+          imagePreview.classList.add("hidden");
       }
 
-      formAction.value = "update";
-      modalTitle.textContent = "Edit Product";
-      submitText.textContent = "Update Product";
-      submitBtn.className =
-        "px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition";
+      if (formAction) formAction.value = "update";
+      if (modalTitle) modalTitle.textContent = "Edit Product";
+      if (submitText) submitText.textContent = "Update Product";
+      if (submitBtn)
+        submitBtn.className =
+          "px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition";
 
       openModal();
     } else {
@@ -208,99 +243,129 @@ async function deleteProduct(id) {
 }
 
 // Form Submission
-productForm.addEventListener("submit", async function (e) {
-  e.preventDefault();
+if (productForm) {
+  productForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-  if (!productName.value.trim()) {
-    showError("Product name is required");
-    return;
-  }
-
-  if (!productPrice.value || parseFloat(productPrice.value) <= 0) {
-    showError("Price must be greater than 0");
-    return;
-  }
-
-  if (!productStock.value || parseInt(productStock.value) < 0) {
-    showError("Stock must be 0 or greater");
-    return;
-  }
-
-  // Show loading state
-  submitBtn.disabled = true;
-  submitText.textContent =
-    formAction.value === "add" ? "Adding..." : "Updating...";
-
-  try {
-    const fd = new FormData();
-    const act =
-      formAction.value === "add"
-        ? "create"
-        : formAction.value === "update"
-        ? "update"
-        : formAction.value;
-    fd.append("action", act);
-    if (formAction.value === "update" && productId.value)
-      fd.append("product_id", productId.value);
-    fd.append("NAME", productName.value);
-    fd.append("DESCRIPTION", productDescription.value);
-    fd.append("category_id", productCategory.value);
-    fd.append("price", productPrice.value);
-    fd.append("cost", productCost.value);
-    fd.append("stock", productStock.value);
-    fd.append("STATUS", productStatus.value);
-    // include image file if selected
-    if (productImage.files && productImage.files[0]) {
-      fd.append("image", productImage.files[0]);
+    if (!productName || !productName.value || !productName.value.trim()) {
+      showError("Product name is required");
+      return;
     }
 
-    const response = await fetch("add-product.php", {
-      method: "POST",
-      body: fd,
-    });
-
-    const data = await response.json();
-
-    // Reset button state
-    submitBtn.disabled = false;
-    submitText.textContent =
-      formAction.value === "add" ? "Add Product" : "Update Product";
-
-    if (data.success) {
-      await showSuccess(
-        formAction.value === "add" ? "Product Added!" : "Product Updated!",
-        data.message
-      );
-
-      closeModal();
-      // Refresh page
-      window.location.reload();
-    } else {
-      showError(data.message || "Operation failed");
+    if (
+      !productPrice ||
+      !productPrice.value ||
+      parseFloat(productPrice.value) <= 0
+    ) {
+      showError("Price must be greater than 0");
+      return;
     }
-  } catch (error) {
-    // Reset button state
-    submitBtn.disabled = false;
-    submitText.textContent =
-      formAction.value === "add" ? "Add Product" : "Update Product";
 
-    showError("Network error. Please try again.");
-    console.error("Form submission error:", error);
-  }
-});
+    if (
+      !productStock ||
+      !productStock.value ||
+      parseInt(productStock.value) < 0
+    ) {
+      showError("Stock must be 0 or greater");
+      return;
+    }
+
+    // Show loading state
+    if (submitBtn) submitBtn.disabled = true;
+    if (submitText)
+      submitText.textContent =
+        formAction && formAction.value === "add" ? "Adding..." : "Updating...";
+
+    try {
+      const fd = new FormData();
+      const act =
+        formAction.value === "add"
+          ? "create"
+          : formAction.value === "update"
+          ? "update"
+          : formAction.value;
+      fd.append("action", act);
+      if (
+        formAction &&
+        formAction.value === "update" &&
+        productId &&
+        productId.value
+      )
+        fd.append("product_id", productId.value);
+      fd.append("NAME", productName.value);
+      fd.append("DESCRIPTION", productDescription.value);
+      fd.append("category_id", productCategory.value);
+      fd.append("price", productPrice.value);
+      fd.append("cost", productCost.value);
+      fd.append("stock", productStock.value);
+      fd.append("STATUS", productStatus.value);
+      // include image file if selected
+      if (productImage && productImage.files && productImage.files[0]) {
+        fd.append("image", productImage.files[0]);
+      }
+
+      const response = await fetch("add-product.php", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await response.json();
+
+      // Reset button state
+      if (submitBtn) submitBtn.disabled = false;
+      if (submitText)
+        submitText.textContent =
+          formAction && formAction.value === "add"
+            ? "Add Product"
+            : "Update Product";
+
+      if (data.success) {
+        await showSuccess(
+          formAction.value === "add" ? "Product Added!" : "Product Updated!",
+          data.message
+        );
+
+        closeModal();
+        // Refresh page
+        window.location.reload();
+      } else {
+        showError(data.message || "Operation failed");
+      }
+    } catch (error) {
+      // Reset button state
+      if (submitBtn) submitBtn.disabled = false;
+      if (submitText)
+        submitText.textContent =
+          formAction && formAction.value === "add"
+            ? "Add Product"
+            : "Update Product";
+
+      showError("Network error. Please try again.");
+      console.error("Form submission error:", error);
+    }
+  });
+}
 
 // Event Listeners
-document.getElementById("openAddProduct").addEventListener("click", () => {
-  resetForm();
-  openModal();
-});
+const openAddBtn = document.getElementById("openAddProduct");
+const closeModalBtn = document.getElementById("closeModal");
+const cancelBtnEl = document.getElementById("cancelBtn");
 
-document.getElementById("closeModal").addEventListener("click", closeModal);
-document.getElementById("cancelBtn").addEventListener("click", closeModal);
+if (openAddBtn) {
+  openAddBtn.addEventListener("click", () => {
+    resetForm();
+    openModal();
+  });
+}
+
+if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
+if (cancelBtnEl) cancelBtnEl.addEventListener("click", closeModal);
 
 // Close modal when clicking outside
-productModal.addEventListener("click", (e) => {
-  if (e.target === productModal) {
-    closeModal();
-  }
-});
+if (productModal) {
+  productModal.addEventListener("click", (e) => {
+    if (e.target === productModal) {
+      closeModal();
+    }
+  });
+}

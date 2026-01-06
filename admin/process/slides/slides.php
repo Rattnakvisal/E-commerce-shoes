@@ -290,7 +290,7 @@ require_once __DIR__ . '/slides_api.php';
                                         </td>
                                         <td class="py-4 px-6">
                                             <div class="flex space-x-2">
-                                                <button onclick="openEditModal(
+                                                <button onclick="confirmEditSlide(
                                                 <?php echo $slide['slides_id']; ?>,
                                                 '<?php echo addslashes($slide['title']); ?>',
                                                 '<?php echo addslashes($slide['description']); ?>',
@@ -636,6 +636,24 @@ require_once __DIR__ . '/slides_api.php';
             });
 
             return false;
+        }
+
+        // Edit confirmation (open editor after confirmation)
+        function confirmEditSlide(id, title, description, linkUrl, buttonText, displayOrder, isActive, imageUrl) {
+            Swal.fire({
+                title: 'Edit slide?',
+                html: `Open editor for <strong>"${title}"</strong>.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#6d28d9',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Edit',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    openEditModal(id, title, description, linkUrl, buttonText, displayOrder, isActive, imageUrl);
+                }
+            });
         }
 
         // Form validation

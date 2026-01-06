@@ -81,10 +81,29 @@ async function viewUser(userId) {
   }
 }
 
+function confirmEdit(title, text) {
+  return Swal.fire({
+    title: title || "Edit user?",
+    text: text || "Open editor for this user.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Edit",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#6b46c1",
+    cancelButtonColor: "#6b7280",
+    reverseButtons: false,
+  });
+}
+
 /* =====================================================
    EDIT USER
 ===================================================== */
 async function editUser(userId) {
+  const confirmed = await confirmEdit(
+    "Edit user?",
+    "Open editor for this user."
+  );
+  if (!confirmed || !confirmed.isConfirmed) return;
   try {
     if (typeof Swal !== "undefined") Swal.close();
 
