@@ -35,11 +35,8 @@ try {
 </head>
 
 <body class="bg-white">
-
     <?php if (!empty($slides)): ?>
-
-        <div class="relative overflow-hidden">
-
+        <div class="max-w-7xl mx-auto relative overflow-hidden">
             <!-- Slides Track -->
             <div id="sliderTrack" class="flex transition-transform duration-700 ease-in-out">
 

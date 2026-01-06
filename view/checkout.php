@@ -172,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once __DIR__ . '/../includes/navbar.php';
     ?>
 
-    <main class="max-w-6xl mx-auto px-4 py-10">
+    <main class="max-w-7xl mx-auto px-4 py-10">
 
         <!-- Page Title -->
         <h1 class="text-3xl font-bold text-gray-800 mb-8">Checkout</h1>

@@ -134,7 +134,7 @@ $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
                     <!-- Dropdown Menu -->
                     <div class="itemDropdown hidden mt-1 ml-8 space-y-1">
 
-                        <a href="/E-commerce-shoes/admin/products.php"
+                        <a href="/E-commerce-shoes/admin/process/featured/featured.php"
                             class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                             <i class="fa-solid fa-star mr-3 text-gray-500 w-5 text-center"></i>
                             Featured

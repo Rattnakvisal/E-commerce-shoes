@@ -48,11 +48,9 @@ $totalHours = '8:00';
 </head>
 
 <body class="bg-gray-100">
-
     <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
     <main class="min-h-screen flex items-center justify-center px-4">
-
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden">
 
             <!-- ================= LEFT : SUCCESS ================= -->

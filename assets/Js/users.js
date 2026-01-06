@@ -1,8 +1,6 @@
 /* =====================================================
    CONFIG
 ===================================================== */
-
-// ⚠️ CHANGE ONLY THIS IF PROJECT ROOT CHANGES
 const BASE_URL = "/E-commerce-shoes";
 
 // USERS API
@@ -59,8 +57,6 @@ function closeEditUserModal() {
 ===================================================== */
 async function viewUser(userId) {
   try {
-    showLoading("Loading user...");
-
     const { user } = await apiRequest("get_user", {
       params: { id: userId },
     });
@@ -90,13 +86,11 @@ async function viewUser(userId) {
 ===================================================== */
 async function editUser(userId) {
   try {
-    showLoading("Loading user...");
+    if (typeof Swal !== "undefined") Swal.close();
 
     const { user } = await apiRequest("get_user", {
       params: { id: userId },
     });
-
-    Swal.close();
 
     document.getElementById("edit_user_id").value = user.user_id;
     document.getElementById("edit_name").value = user.name || "";

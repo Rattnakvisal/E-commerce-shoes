@@ -105,87 +105,117 @@ require_once __DIR__ . '/products_api.php';
                 </div>
 
                 <!-- Add/Edit Product Modal -->
-                <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center">
-                    <div class="absolute inset-0 bg-black opacity-50 modal-overlay"></div>
-                    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-2xl z-10 overflow-y-auto max-h-[90vh]">
-                        <div class="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white">
+                <div id="productModal" class="fixed inset-0 hidden z-50 p-4 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-black/50 modal-overlay"></div>
+                    <div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                        <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
                             <h3 id="modalTitle" class="text-lg font-semibold">Add Product</h3>
-                            <button id="closeModal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                            <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
                         </div>
-                        <form id="productForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4" method="POST" enctype="multipart/form-data">
+                        <form id="productForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="action" id="formAction" value="add">
                             <input type="hidden" name="product_id" id="productId" value="">
 
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                                <input type="text" name="name" id="productName" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <!-- Left column: fields -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                    <input type="text" name="name" id="productName" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea name="description" id="productDescription" rows="4"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                                        <select name="category_id" id="productCategory" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="">-- Select Category --</option>
+                                            <?php foreach ($categories as $cat): ?>
+                                                <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                                        <input type="number" name="price" id="productPrice" step="0.01" min="0" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+                                        <input type="number" name="cost" id="productCost" step="0.01" min="0"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
+                                        <input type="number" name="stock" id="productStock" min="0" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                                    <select name="status" id="productStatus" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+
+                                <div class="pt-2 border-t"></div>
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea name="description" id="productDescription" rows="3"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                            </div>
-
+                            <!-- Right column: image upload + preview -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                <select name="category_id" id="productCategory" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">-- Select Category --</option>
-                                    <?php foreach ($categories as $cat): ?>
-                                        <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-                                <input type="number" name="price" id="productPrice" step="0.01" min="0" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Cost</label>
-                                <input type="number" name="cost" id="productCost" step="0.01" min="0"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
-                                <input type="number" name="stock" id="productStock" min="0" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
-                                <select name="status" id="productStatus" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                            </div>
-
-                            <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                                <input type="file" name="image" id="productImage" accept="image/*"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                <div id="imagePreview" class="mt-2 hidden">
-                                    <img id="previewImage" class="h-32 w-32 object-cover rounded-lg border">
+
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition">
+                                    <input type="file" name="image" id="productImage" accept="image/*"
+                                        class="hidden">
+                                    <label for="productImage" class="cursor-pointer">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-12 h-12 mb-3 flex items-center justify-center bg-indigo-50 rounded-full">
+                                                <i class="fas fa-cloud-upload-alt text-indigo-600 text-xl"></i>
+                                            </div>
+                                            <p class="text-sm font-medium text-gray-700 mb-1">Upload Image</p>
+                                            <p class="text-xs text-gray-500">Click to browse or drag and drop</p>
+                                            <p class="text-xs text-gray-400 mt-2">PNG, JPG up to 2MB</p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Preview -->
+                                <div id="imagePreview" class="mt-4 hidden">
+                                    <div class="relative">
+                                        <img id="previewImage" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
+                                    </div>
                                 </div>
                                 <small class="text-gray-500">Max size: 2MB. Supported formats: JPG, PNG, GIF</small>
-                            </div>
 
-                            <div class="md:col-span-2 flex justify-end space-x-2 pt-4 border-t">
-                                <button type="button" id="cancelBtn"
-                                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-                                    Cancel
-                                </button>
-                                <button type="submit" id="submitBtn"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                                    <span id="submitText">Add Product</span>
-                                    <i id="loadingSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
-                                </button>
+                                <!-- Actions placed under preview on right column when modal wide -->
+                                <div class="mt-6 md:mt-12 flex justify-end gap-2">
+                                    <button type="button" id="cancelBtn"
+                                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" id="submitBtn"
+                                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+                                        <i class="fas fa-save"></i>
+                                        <span id="submitText">Add Product</span>
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -454,8 +484,6 @@ require_once __DIR__ . '/products_api.php';
                 </div>
             </div>
         <?php endif; ?>
-        </div>
-        </div>
     </main>
     <script src="../../../assets/Js/products.js"></script>
     <script>

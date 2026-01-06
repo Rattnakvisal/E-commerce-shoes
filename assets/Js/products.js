@@ -72,7 +72,6 @@ const imagePreview = document.getElementById("imagePreview");
 const previewImage = document.getElementById("previewImage");
 const submitBtn = document.getElementById("submitBtn");
 const submitText = document.getElementById("submitText");
-const loadingSpinner = document.getElementById("loadingSpinner");
 
 // Modal Functions
 function openModal() {
@@ -231,7 +230,6 @@ productForm.addEventListener("submit", async function (e) {
   submitBtn.disabled = true;
   submitText.textContent =
     formAction.value === "add" ? "Adding..." : "Updating...";
-  loadingSpinner.classList.remove("hidden");
 
   try {
     const fd = new FormData();
@@ -267,7 +265,6 @@ productForm.addEventListener("submit", async function (e) {
     submitBtn.disabled = false;
     submitText.textContent =
       formAction.value === "add" ? "Add Product" : "Update Product";
-    loadingSpinner.classList.add("hidden");
 
     if (data.success) {
       await showSuccess(
@@ -286,7 +283,6 @@ productForm.addEventListener("submit", async function (e) {
     submitBtn.disabled = false;
     submitText.textContent =
       formAction.value === "add" ? "Add Product" : "Update Product";
-    loadingSpinner.classList.add("hidden");
 
     showError("Network error. Please try again.");
     console.error("Form submission error:", error);

@@ -154,7 +154,7 @@ function e($string): string
     require_once '../includes/topbar.php';
     require_once '../includes/navbar.php';
     ?>
-    <div class="max-w-[1440px] mx-auto px-4 py-6">
+    <div class="max-w-7xl mx-auto px-4 py-6">
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- DESKTOP FILTER SIDEBAR (hidden on mobile) -->
             <aside class="hidden lg:block lg:w-72 flex-shrink-0">
@@ -167,7 +167,6 @@ function e($string): string
                     </div>
 
                     <form id="desktopFiltersForm" method="GET" class="filter-section space-y-8 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
-                        <!-- Filter content here (same as before) -->
                         <!-- Pick Up Today -->
                         <section>
                             <h3 class="font-bold mb-4 flex items-center justify-between">

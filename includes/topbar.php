@@ -94,7 +94,6 @@ $user_name = $_SESSION['name'] ?? $_SESSION['NAME'] ?? $_SESSION['user_name'] ??
      Top Bar Slideshow
 =============================== -->
     <div id="topBar" class="topbar">
-
         <div class="topbar-slide is-active">
             <i class="fas fa-truck"></i>
             <span>Free Shipping on Orders Over $50</span>

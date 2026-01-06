@@ -178,90 +178,57 @@ require_once __DIR__ . '/slides_api.php';
                         </nav>
                     </div>
                 </div>
-                <!-- Slides Filters -->
-                <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                            Filter Slides
-                        </h3>
+                <!-- Slides Filters (products-style) -->
+                <form method="GET" class="bg-white rounded-xl shadow mb-8 p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 items-end">
 
-                        <form method="GET"
-                            class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-
-                            <!-- Search -->
-                            <div class="flex-1 max-w-md">
-                                <label class="sr-only">Search</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
-                                    </span>
-                                    <input
-                                        type="text"
-                                        name="q"
-                                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
-                                        placeholder="Search by title or description..."
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                </div>
+                        <!-- Search -->
+                        <div class="lg:col-span-2">
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Search</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    name="q"
+                                    value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
+                                    placeholder="Search by title or description..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
+                        </div>
 
-                            <!-- Filters -->
-                            <div class="flex flex-wrap items-end gap-3">
+                        <!-- Status -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Status</label>
+                            <select
+                                name="status"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">All Status</option>
+                                <option value="active" <?= ($_GET['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
+                                <option value="inactive" <?= ($_GET['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                            </select>
+                        </div>
 
-                                <!-- Status -->
-                                <div>
-                                    <label class="sr-only">Status</label>
-                                    <select
-                                        name="status"
-                                        class="px-3 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">All Status</option>
-                                        <option value="active" <?= ($_GET['status'] ?? '') === 'active' ? 'selected' : '' ?>>
-                                            Active
-                                        </option>
-                                        <option value="inactive" <?= ($_GET['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>
-                                            Inactive
-                                        </option>
-                                    </select>
-                                </div>
+                        <!-- Display Order -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Display Order</label>
+                            <select
+                                name="order"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Display Order</option>
+                                <option value="asc" <?= ($_GET['order'] ?? '') === 'asc' ? 'selected' : '' ?>>Lowest First</option>
+                                <option value="desc" <?= ($_GET['order'] ?? '') === 'desc' ? 'selected' : '' ?>>Highest First</option>
+                            </select>
+                        </div>
 
-                                <!-- Display Order -->
-                                <div>
-                                    <label class="sr-only">Display Order</label>
-                                    <select
-                                        name="order"
-                                        class="px-3 py-2 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">Display Order</option>
-                                        <option value="asc" <?= ($_GET['order'] ?? '') === 'asc' ? 'selected' : '' ?>>
-                                            Lowest First
-                                        </option>
-                                        <option value="desc" <?= ($_GET['order'] ?? '') === 'desc' ? 'selected' : '' ?>>
-                                            Highest First
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="flex gap-2">
-                                    <a href="slides.php"
-                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg
-                              hover:bg-gray-200 transition">
-                                        Clear
-                                    </a>
-
-                                    <button
-                                        type="submit"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg
-                               hover:bg-indigo-700 transition">
-                                        Apply
-                                    </button>
-                                </div>
-
-                            </div>
-                        </form>
+                        <!-- Actions -->
+                        <div class="flex gap-2 justify-end lg:col-span-2">
+                            <a href="slides.php" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Clear</a>
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Apply</button>
+                        </div>
                     </div>
-                </div>
+                </form>
 
                 <?php if ($totalSlides > 0): ?>
                     <div class="overflow-x-auto">
@@ -368,8 +335,7 @@ require_once __DIR__ . '/slides_api.php';
     <!-- Modal Overlay -->
     <div id="modalOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
     <!-- Slide Modal -->
-    <div id="slideModal"
-        class="fixed inset-0 z-50 hidden flex items-center justify-center overflow-y-auto">
+    <div id="slideModal" class="fixed inset-0 z-50 hidden flex items-center justify-center overflow-y-auto">
         <div class="bg-white w-full max-w-2xl mx-4 rounded-xl shadow-xl animate-fade-in">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b">
@@ -385,143 +351,150 @@ require_once __DIR__ . '/slides_api.php';
             <form id="slideForm" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="slide_id" id="slideId">
                 <input type="hidden" name="old_image" id="oldImage">
-                <div class="p-6 space-y-5">
-                    <!-- Title -->
-                    <div>
-                        <label for="modalTitleInput" class="block text-sm font-medium text-gray-700 mb-1">
-                            Title <span class="text-red-500">*</span>
-                        </label>
-                        <input
-                            id="modalTitleInput"
-                            name="title"
-                            type="text"
-                            required
-                            placeholder="Enter slide title"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
 
-                    <!-- Description -->
-                    <div>
-                        <label for="modalDescription" class="block text-sm font-medium text-gray-700 mb-1">
-                            Description
-                        </label>
-                        <textarea
-                            id="modalDescription"
-                            name="description"
-                            rows="3"
-                            placeholder="Enter slide description"
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                    </div>
-
-                    <!-- Link & Button -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left column: fields -->
+                    <div class="space-y-5">
+                        <!-- Title -->
                         <div>
-                            <label for="modalLinkUrl" class="block text-sm font-medium text-gray-700 mb-1">
-                                Link URL
+                            <label for="modalTitleInput" class="block text-sm font-medium text-gray-700 mb-1">
+                                Title <span class="text-red-500">*</span>
                             </label>
                             <input
-                                id="modalLinkUrl"
-                                name="link_url"
-                                type="url"
-                                placeholder="https://example.com"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
-                        </div>
-
-                        <div>
-                            <label for="modalButtonText" class="block text-sm font-medium text-gray-700 mb-1">
-                                Button Text
-                            </label>
-                            <input
-                                id="modalButtonText"
-                                name="button_text"
+                                id="modalTitleInput"
+                                name="title"
                                 type="text"
-                                placeholder="Learn More"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
+                                required
+                                placeholder="Enter slide title"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
-                    </div>
 
-                    <!-- Order & Status -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Description -->
                         <div>
-                            <label for="modalDisplayOrder" class="block text-sm font-medium text-gray-700 mb-1">
-                                Display Order
+                            <label for="modalDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                                Description
                             </label>
-                            <input
-                                id="modalDisplayOrder"
-                                name="display_order"
-                                type="number"
-                                min="1"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
+                            <textarea
+                                id="modalDescription"
+                                name="description"
+                                rows="3"
+                                placeholder="Enter slide description"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                         </div>
 
-                        <div>
-                            <label for="modalIsActive" class="block text-sm font-medium text-gray-700 mb-1">
-                                Status
-                            </label>
-                            <select
-                                id="modalIsActive"
-                                name="is_active"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                   focus:ring-2 focus:ring-indigo-500">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
+                        <!-- Link & Button -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="modalLinkUrl" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Link URL
+                                </label>
+                                <input
+                                    id="modalLinkUrl"
+                                    name="link_url"
+                                    type="url"
+                                    placeholder="https://example.com"
+                                    class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label for="modalButtonText" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Button Text
+                                </label>
+                                <input
+                                    id="modalButtonText"
+                                    name="button_text"
+                                    type="text"
+                                    placeholder="Learn More"
+                                    class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+
+                        <!-- Order & Status -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="modalDisplayOrder" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Display Order
+                                </label>
+                                <input
+                                    id="modalDisplayOrder"
+                                    name="display_order"
+                                    type="number"
+                                    min="1"
+                                    class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label for="modalIsActive" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Status
+                                </label>
+                                <select
+                                    id="modalIsActive"
+                                    name="is_active"
+                                    class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Current Image -->
-                    <div id="currentImageContainer" class="hidden">
-                        <p class="text-sm text-gray-600 mb-2">Current Image</p>
-                        <img id="currentImagePreview" class="rounded-lg border max-h-40">
-                        <video id="currentVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
-                    </div>
-
-                    <!-- Upload -->
+                    <!-- Right column: current image, upload, preview, actions -->
                     <div>
-                        <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-1">
-                            Slide Image
-                        </label>
-                        <input
-                            id="imageUpload"
-                            name="image"
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.gif,.webp"
-                            onchange="previewNewImage(this)"
-                            class="block w-full text-sm text-gray-600
-                               file:mr-4 file:py-2 file:px-4
-                               file:rounded-lg file:border-0
-                               file:text-sm file:font-semibold
-                               file:bg-indigo-50 file:text-indigo-600
-                               hover:file:bg-indigo-100">
-                        <p class="text-xs text-gray-500 mt-1">
-                            Max size: 5MB. JPG, PNG, GIF, WebP
-                        </p>
+                        <!-- Current Image -->
+                        <div id="currentImageContainer" class="hidden">
+                            <p class="text-sm text-gray-600 mb-2">Current Image</p>
+                            <img id="currentImagePreview" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
+                            <video id="currentVideoPreview" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300 hidden" controls muted playsinline></video>
+                        </div>
+
+                        <!-- Upload -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Slide Image</label>
+
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition">
+                                <input
+                                    id="imageUpload"
+                                    name="image"
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.gif,.webp"
+                                    onchange="previewNewImage(this)"
+                                    class="hidden">
+                                <label for="imageUpload" class="cursor-pointer">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-12 h-12 mb-3 flex items-center justify-center bg-indigo-50 rounded-full">
+                                            <i class="fas fa-cloud-upload-alt text-indigo-600 text-xl"></i>
+                                        </div>
+                                        <p class="text-sm font-medium text-gray-700 mb-1">Upload Image</p>
+                                        <p class="text-xs text-gray-500">Click to browse or drag and drop</p>
+                                        <p class="text-xs text-gray-400 mt-2">JPG, PNG, GIF, WebP up to 5MB</p>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <p class="text-xs text-gray-500 mt-2">Max size: 5MB. JPG, PNG, GIF, WebP</p>
+                        </div>
+
+                        <!-- New Preview -->
+                        <div id="newImageContainer" class="hidden mt-4">
+                            <p class="text-sm text-gray-600 mb-2">New Image Preview</p>
+                            <img id="newImagePreview" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
+                            <video id="newVideoPreview" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300 hidden" controls muted playsinline></video>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-6 md:mt-12 flex justify-end gap-3">
+                            <button type="button"
+                                onclick="closeModal()"
+                                class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                name="save_slide"
+                                class="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                                Save Slide
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- New Preview -->
-                    <div id="newImageContainer" class="hidden">
-                        <p class="text-sm text-gray-600 mb-2">New Image Preview</p>
-                        <img id="newImagePreview" class="rounded-lg border max-h-40">
-                        <video id="newVideoPreview" class="rounded-lg border max-h-40 hidden" controls muted playsinline></video>
-                    </div>
-
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl">
-                    <button type="button"
-                        onclick="closeModal()"
-                        class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        name="save_slide"
-                        class="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
-                        Save Slide
-                    </button>
                 </div>
             </form>
         </div>

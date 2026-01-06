@@ -142,6 +142,30 @@ CREATE TABLE shipping (
         ON DELETE CASCADE
 ) ENGINE=INNODB;
 
+CREATE TABLE featured_items (
+    featured_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    product_id INT UNSIGNED NOT NULL,
+    title VARCHAR(150),
+    image_url VARCHAR(255) NOT NULL,
+    POSITION INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
+) ENGINE=INNODB;
+
+
+
+CREATE TABLE contact_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    NAME VARCHAR(100),
+    email VARCHAR(100),
+    message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 /* =========================================================
    NOTIFICATIONS
 ========================================================= */

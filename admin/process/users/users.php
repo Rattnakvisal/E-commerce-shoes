@@ -624,7 +624,6 @@ try {
 
                                         <td class="px-6 py-4">
                                             <?php
-                                            // Normalize status (NULL / invalid → active)
                                             $status = in_array($user['status'] ?? '', ['active', 'inactive'], true)
                                                 ? $user['status']
                                                 : 'active';
