@@ -167,7 +167,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body class="bg-white">
-    <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
+    <?php
+    require_once __DIR__ . '/../includes/topbar.php';
+    require_once __DIR__ . '/../includes/navbar.php';
+    ?>
 
     <main class="max-w-6xl mx-auto px-4 py-10">
 
@@ -325,8 +328,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
             </aside>
-
         </div>
+    </main>
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 
 </html>

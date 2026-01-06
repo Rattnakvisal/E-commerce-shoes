@@ -586,9 +586,7 @@ function e($string): string
             </main>
         </div>
     </div>
-    <?php
-    require_once '../includes/footer.php';
-    ?>
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
     <script src="../view/assets/Js/prodcuts.js"></script>
     <script>
         document

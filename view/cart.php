@@ -118,7 +118,10 @@ $total = $subtotal + $tax;
 
 <body class="bg-white">
 
-    <?php require_once '../includes/navbar.php'; ?>
+    <?php
+    require_once '../includes/topbar.php';
+    require_once '../includes/navbar.php';
+    ?>
 
     <main class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-12">
 
@@ -198,8 +201,9 @@ $total = $subtotal + $tax;
                                     <i class="fas fa-trash"></i>
                                 </button>
 
-                                <button title="Save">
-                                    <i class="far fa-heart"></i>
+                                <button
+                                    onclick="addToWishlist(<?= $p['product_id'] ?>)">
+                                    <i class="far fa-heart text-sm"></i>
                                 </button>
                             </div>
 
@@ -263,57 +267,13 @@ $total = $subtotal + $tax;
                 class="w-full mt-8 bg-black text-white py-4 rounded-full text-lg font-semibold">
                 Checkout
             </button>
-
-            <button
-                class="w-full mt-4 border py-4 rounded-full text-lg font-semibold">
-
-                PayPal
-            </button>
         </aside>
 
     </main>
-
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
+    <script src="../view/assets/Js/prodcuts.js"></script>
+    <script src="../view/assets/Js/cart.js"></script>
     <script>
-        function changeQty(id, delta) {
-            const input = document.querySelector(`input[data-id="${id}"]`);
-            let qty = parseInt(input.value) + delta;
-            qty = Math.max(1, Math.min(qty, input.max));
-            input.value = qty;
-            updateCart(id, qty);
-        }
-
-        function updateCart(id, qty) {
-            fetch('cart.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    action: 'update',
-                    product_id: id,
-                    quantity: qty
-                })
-            }).then(r => r.json()).then(d => {
-                document.getElementById('summarySubtotal').textContent = d.subtotal.toFixed(2);
-                document.getElementById('summaryTax').textContent = d.tax.toFixed(2);
-                document.getElementById('summaryTotal').textContent = d.total.toFixed(2);
-            });
-        }
-
-        function removeItem(id) {
-            if (!confirm('Remove this item?')) return;
-            fetch('cart.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    action: 'remove',
-                    product_id: id
-                })
-            }).then(() => location.reload());
-        }
-
         function checkout() {
             if (<?= count($cart) ?> === 0) alert('Cart is empty');
             else location.href = 'checkout.php';
@@ -326,7 +286,6 @@ $total = $subtotal + $tax;
             };
         });
     </script>
-
 </body>
 
 </html>

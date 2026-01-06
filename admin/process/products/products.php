@@ -26,7 +26,7 @@ require_once __DIR__ . '/products_api.php';
         <div class="p-4 sm:p-6 lg:p-8">
             <!-- Page Header -->
             <div class="mb-6 animate-fade-in">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
 
                     <!-- Title -->
                     <div>

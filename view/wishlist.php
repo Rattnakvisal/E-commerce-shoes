@@ -83,7 +83,10 @@ if ($wishlist) {
 
 <body class="bg-white">
 
-    <?php require_once '../includes/navbar.php'; ?>
+    <?php
+    require_once '../includes/topbar.php';
+    require_once '../includes/navbar.php';
+    ?>
 
     <main class="max-w-7xl mx-auto px-6 py-10">
 
@@ -156,7 +159,7 @@ if ($wishlist) {
         <?php endif; ?>
 
     </main>
-
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
     <script>
         function removeItem(id) {
             fetch('wishlist.php', {
