@@ -119,6 +119,20 @@ try {
     $stmt->execute($params);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    foreach ($products as &$p) {
+        $p['name']         = $p['name'] ?? $p['NAME'] ?? $p['Name'] ?? '';
+        $p['description']  = $p['description'] ?? $p['DESCRIPTION'] ?? '';
+        $p['sku']          = $p['sku'] ?? $p['SKU'] ?? '';
+        $p['price']        = isset($p['price']) ? $p['price'] : (isset($p['PRICE']) ? $p['PRICE'] : 0);
+        $p['cost']         = $p['cost'] ?? $p['COST'] ?? null;
+        $p['stock']        = isset($p['stock']) ? (int)$p['stock'] : (isset($p['STOCK']) ? (int)$p['STOCK'] : 0);
+        $p['category_id']  = $p['category_id'] ?? $p['CATEGORY_ID'] ?? null;
+        $p['category_name'] = $p['category_name'] ?? $p['CATEGORY_NAME'] ?? null;
+        $p['status']       = isset($p['status']) ? $p['status'] : (isset($p['STATUS']) ? $p['STATUS'] : 'inactive');
+        $p['image_url']    = $p['image_url'] ?? $p['IMAGE_URL'] ?? null;
+    }
+    unset($p);
+
     /* ================= STATS (GLOBAL) ================= */
     $stats = $pdo->query("
         SELECT

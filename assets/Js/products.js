@@ -11,46 +11,40 @@ function showToast(title, icon = "success") {
   });
 }
 
-function showLoading(title = "Processing...") {
+function showLoading(msg = "Loading...") {
   Swal.fire({
-    title: title,
+    title: msg,
     allowOutsideClick: false,
-    showConfirmButton: false,
-    willOpen: () => Swal.showLoading(),
+    didOpen: () => Swal.showLoading(),
   });
 }
 
 function showSuccess(title, text = "") {
+  // Always show a brief auto-closing success without an OK button
   return Swal.fire({
     icon: "success",
     title: title,
-    text: text,
-    confirmButtonText: "OK",
-    confirmButtonColor: "#3085d6",
+    text: text || undefined,
+    timer: 1200,
+    showConfirmButton: false,
   });
 }
 
-function showError(text) {
-  return Swal.fire({
+function showError(msg) {
+  Swal.fire({
     icon: "error",
     title: "Error",
-    text: text,
-    confirmButtonText: "OK",
-    confirmButtonColor: "#d33",
+    text: msg,
   });
 }
 
 function confirmDelete(title, text) {
   return Swal.fire({
-    title: title || "Are you sure?",
-    text: text || "You won't be able to revert this!",
+    title: title || "Delete item?",
+    text: text || "This action cannot be undone",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    reverseButtons: true,
+    confirmButtonColor: "#dc2626",
   });
 }
 
@@ -77,6 +71,7 @@ const productId = document.getElementById("productId");
 const productName = document.getElementById("productName");
 const productDescription = document.getElementById("productDescription");
 const productCategory = document.getElementById("productCategory");
+const productSku = document.getElementById("productSku");
 const productPrice = document.getElementById("productPrice");
 const productCost = document.getElementById("productCost");
 const productStock = document.getElementById("productStock");
@@ -368,4 +363,17 @@ if (productModal) {
       closeModal();
     }
   });
+}
+
+// Utility helpers from users.js for consistent behavior
+function formData(obj) {
+  const fd = new FormData();
+  Object.entries(obj).forEach(([k, v]) => fd.append(k, v));
+  return fd;
+}
+
+function esc(text = "") {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }

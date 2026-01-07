@@ -36,6 +36,7 @@ try {
 if ($action === 'create') {
     try {
         $NAME = trim($_POST['NAME'] ?? '');
+        $sku = trim($_POST['SKU'] ?? $_POST['sku'] ?? '');
         $DESCRIPTION = trim($_POST['DESCRIPTION'] ?? '');
         $category_id = $_POST['category_id'] ?? null;
         $price = $_POST['price'] ?? null;
@@ -48,17 +49,24 @@ if ($action === 'create') {
             exit;
         }
 
+        // If sku not provided, generate one. Ensure it's unique.
+        if ($sku === '') {
+            $sku = generateSku($pdo);
+        } else {
+            // sanitize sku
+            $sku = preg_replace('/\s+/', '-', $sku);
+        }
+
+        // Ensure sku is unique (if collision, append suffix)
+        $sku = ensureUniqueSku($pdo, $sku);
+
         $image_url = uploadImage($_FILES['image'] ?? null);
 
-        $stmt = $pdo->prepare("
-            INSERT INTO products
-            (NAME, image_url, DESCRIPTION, price, cost, stock, category_id, STATUS)
-            VALUES
-            (:NAME, :image_url, :DESCRIPTION, :price, :cost, :stock, :category_id, :STATUS)
-        ");
+        $stmt = $pdo->prepare("\n            INSERT INTO products\n            (NAME, sku, image_url, DESCRIPTION, price, cost, stock, category_id, STATUS)\n            VALUES\n            (:NAME, :sku, :image_url, :DESCRIPTION, :price, :cost, :stock, :category_id, :STATUS)\n        ");
 
         bindProduct($stmt, compact(
             'NAME',
+            'sku',
             'image_url',
             'DESCRIPTION',
             'price',
@@ -102,6 +110,7 @@ if ($action === 'update') {
     try {
         $id = (int)$_POST['product_id'];
         $NAME = trim($_POST['NAME']);
+        $sku = trim($_POST['SKU'] ?? $_POST['sku'] ?? '');
         $DESCRIPTION = trim($_POST['DESCRIPTION'] ?? '');
         $category_id = $_POST['category_id'] ?? null;
         $price = $_POST['price'];
@@ -119,21 +128,24 @@ if ($action === 'update') {
             $image_url = uploadImage($_FILES['image']);
         }
 
-        $stmt = $pdo->prepare("
-            UPDATE products SET
-                NAME=:NAME,
-                image_url=:image_url,
-                DESCRIPTION=:DESCRIPTION,
-                price=:price,
-                cost=:cost,
-                stock=:stock,
-                category_id=:category_id,
-                STATUS=:STATUS
-            WHERE product_id=:id
-        ");
+        // Validate SKU uniqueness for update (exclude current product)
+        if ($sku !== '') {
+            $conf = $pdo->prepare("SELECT COUNT(*) FROM products WHERE sku = :sku AND product_id != :id");
+            $conf->execute([':sku' => $sku, ':id' => $id]);
+            if ($conf->fetchColumn() > 0) {
+                echo json_encode(['success' => false, 'message' => 'SKU already in use by another product']);
+                exit;
+            }
+        } else {
+            // if sku blank on update, generate one
+            $sku = generateSku($pdo);
+        }
+
+        $stmt = $pdo->prepare("\n            UPDATE products SET\n                NAME=:NAME,\n                sku=:sku,\n                image_url=:image_url,\n                DESCRIPTION=:DESCRIPTION,\n                price=:price,\n                cost=:cost,\n                stock=:stock,\n                category_id=:category_id,\n                STATUS=:STATUS\n            WHERE product_id=:id\n        ");
 
         bindProduct($stmt, compact(
             'NAME',
+            'sku',
             'image_url',
             'DESCRIPTION',
             'price',
@@ -198,9 +210,38 @@ function uploadImage($file)
     return '/E-commerce-shoes/assets/Images/products/' . $name;
 }
 
+/**
+ * Generate a base SKU string.
+ */
+function generateSku(PDO $pdo)
+{
+    return 'SKU' . time() . '_' . bin2hex(random_bytes(3));
+}
+
+function ensureUniqueSku(PDO $pdo, $sku)
+{
+    $base = $sku;
+    $i = 0;
+    while (true) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE sku = :sku");
+        $stmt->execute([':sku' => $sku]);
+        if ($stmt->fetchColumn() == 0) {
+            return $sku;
+        }
+        $i++;
+        $sku = $base . '-' . substr(bin2hex(random_bytes(2)), 0, 4);
+        if ($i > 10) {
+            // fallback
+            $sku = $base . '-' . uniqid();
+            return $sku;
+        }
+    }
+}
+
 function bindProduct(PDOStatement $stmt, array $data)
 {
     $stmt->bindValue(':NAME', $data['NAME']);
+    $stmt->bindValue(':sku', $data['sku']);
     $stmt->bindValue(':image_url', $data['image_url']);
     $stmt->bindValue(':DESCRIPTION', $data['DESCRIPTION'] ?: null);
     $stmt->bindValue(':price', $data['price']);

@@ -255,6 +255,84 @@ function showError(msg) {
   });
 }
 
+function showAddUserModal() {
+  document.getElementById("addUserModal").classList.remove("hidden");
+}
+
+function closeAddUserModal() {
+  document.getElementById("addUserModal").classList.add("hidden");
+}
+
+function closeModal() {
+  document.getElementById("userDetailsModal").classList.add("hidden");
+}
+
+// Handle add user form submission -> call users API
+document
+  .getElementById("addUserForm")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const form = this;
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    const confirm_password = form.confirm_password.value;
+    const role = form.role.value;
+    const phone = form.phone.value || "";
+    const status = form.status.value || "active";
+
+    if (password !== confirm_password) {
+      Swal.fire("Error", "Passwords do not match", "error");
+      return;
+    }
+
+    try {
+      showLoading("Creating user...");
+      await apiRequest("create", {
+        method: "POST",
+        body: formData({
+          name,
+          email,
+          password,
+          role,
+          phone,
+          status,
+        }),
+      });
+
+      Swal.close();
+      showSuccess("User created");
+      closeAddUserModal();
+      form.reset();
+      setTimeout(() => location.reload(), 800);
+    } catch (err) {
+      Swal.close();
+      showError(err.message);
+    }
+  });
+
+// Close modals on escape key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeModal();
+    closeAddUserModal();
+  }
+});
+
+// Close modals on overlay click
+document.getElementById("userDetailsModal").addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal-overlay")) {
+    closeModal();
+  }
+});
+
+document.getElementById("addUserModal").addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal-overlay")) {
+    closeAddUserModal();
+  }
+});
+
 /* =====================================================
    GLOBAL EXPORTS
 ===================================================== */

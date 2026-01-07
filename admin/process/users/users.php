@@ -1,313 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
-if (!isset($pdo) && isset($conn)) {
-    $pdo = $conn;
-}
-
-/* =====================================================
-   SESSION & AUTH
-===================================================== */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id'], $_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../auth/login.php');
-    exit;
-}
-
-/* =====================================================
-   ADMIN INFO
-===================================================== */
-$adminName = $_SESSION['name'] ?? $_SESSION['email'] ?? 'Admin';
-$adminFirstName = htmlspecialchars(explode(' ', trim($adminName))[0]);
-
-/* =====================================================
-   GET FILTERS FROM URL
-===================================================== */
-$filters = [
-    'status' => $_GET['status'] ?? '',
-    'role' => $_GET['role'] ?? '',
-    'date_from' => $_GET['date_from'] ?? '',
-    'date_to' => $_GET['date_to'] ?? '',
-    'search' => $_GET['search'] ?? '',
-    'sort' => $_GET['sort'] ?? 'newest',
-    'page' => isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1
-];
-
-/* =====================================================
-   BUILD SQL QUERY WITH FILTERS
-===================================================== */
-$whereClauses = [];
-$params = [];
-
-// helper to check for optional columns
-function columnExists(string $col): bool
-{
-    global $pdo;
-    try {
-        $stmt = $pdo->prepare("SHOW COLUMNS FROM users LIKE ?");
-        $stmt->execute([$col]);
-        return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (Throwable $e) {
-        return false;
-    }
-}
-
-// Status filter (only apply if `status` column exists)
-$hasStatus = columnExists('status');
-if ($hasStatus && $filters['status'] && in_array($filters['status'], ['active', 'inactive'])) {
-    $whereClauses[] = "u.status = ?";
-    $params[] = $filters['status'];
-} else {
-    // If the schema doesn't have status, ignore status filter
-    if (!$hasStatus) {
-        $filters['status'] = '';
-    }
-}
-
-// Role filter
-if ($filters['role'] && in_array($filters['role'], ['admin', 'staff', 'customer'])) {
-    $whereClauses[] = "u.role = ?";
-    $params[] = $filters['role'];
-}
-
-// Date range filter
-if ($filters['date_from']) {
-    $whereClauses[] = "DATE(u.created_at) >= ?";
-    $params[] = $filters['date_from'];
-}
-if ($filters['date_to']) {
-    $whereClauses[] = "DATE(u.created_at) <= ?";
-    $params[] = $filters['date_to'];
-}
-
-// Search filter
-if ($filters['search']) {
-    $whereClauses[] = "(u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ? OR u.user_id LIKE ?)";
-    $searchTerm = "%{$filters['search']}%";
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-}
-
-// Build WHERE clause
-$whereSql = $whereClauses ? "WHERE " . implode(" AND ", $whereClauses) : "";
-
-// Sorting
-$orderBy = match ($filters['sort']) {
-    'oldest' => "u.created_at ASC",
-    'name_asc' => "u.name ASC",
-    'name_desc' => "u.name DESC",
-    'email_asc' => "u.email ASC",
-    'email_desc' => "u.email DESC",
-    default => "u.created_at DESC"
-};
-
-/* =====================================================
-   FETCH USERS WITH FILTERS
-===================================================== */
-$users = [];
-$totalUsers = 0;
-$stats = [];
-$perPage = 15;
-$offset = ($filters['page'] - 1) * $perPage;
-$totalPages = 1;
-
-try {
-    $countSelect = ["COUNT(*) as total_count"];
-    if ($hasStatus) {
-        $countSelect[] = "SUM(CASE WHEN u.status = 'active' THEN 1 ELSE 0 END) as active_count";
-        $countSelect[] = "SUM(CASE WHEN u.status = 'inactive' THEN 1 ELSE 0 END) as inactive_count";
-    } else {
-        $countSelect[] = "0 as active_count";
-        $countSelect[] = "0 as inactive_count";
-    }
-    $countSelect[] = "SUM(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) as admin_count";
-    $countSelect[] = "SUM(CASE WHEN u.role = 'staff' THEN 1 ELSE 0 END) as staff_count";
-    $countSelect[] = "SUM(CASE WHEN u.role = 'customer' THEN 1 ELSE 0 END) as customer_count";
-
-    $countQuery = "SELECT\n            " . implode(",\n            ", $countSelect) . "\n        FROM users u\n        $whereSql\n    ";
-
-    $countStmt = $pdo->prepare($countQuery);
-    $countStmt->execute($params);
-    $stats = $countStmt->fetch(PDO::FETCH_ASSOC) ?: [];
-    $totalUsers = $stats['total_count'] ?? 0;
-
-    // Fetch users with pagination. Only select optional columns if they exist.
-    $hasLastLogin = columnExists('last_login');
-    $hasAvatar = columnExists('avatar_url');
-
-    $selectExtras = [];
-    if ($hasStatus) $selectExtras[] = 'u.status';
-    if ($hasLastLogin) $selectExtras[] = 'u.last_login';
-    if ($hasAvatar) $selectExtras[] = 'u.avatar_url';
-
-    $selectSql = "u.user_id, u.name, u.email, u.phone, u.role" . (empty($selectExtras) ? '' : ', ' . implode(', ', $selectExtras)) . ', u.created_at';
-
-    $query = "SELECT $selectSql FROM users u\n        $whereSql\n        ORDER BY $orderBy\n        LIMIT $perPage OFFSET $offset";
-
-    $stmt = $pdo->prepare($query);
-    $stmt->execute($params);
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if (empty($totalUsers) && !empty($users)) {
-        $totalUsers = count($users);
-    }
-
-    // Calculate total pages (ensure at least 1)
-    $totalPages = max(1, (int)ceil($totalUsers / $perPage));
-} catch (PDOException $e) {
-    error_log('[users_list] ' . $e->getMessage());
-
-    try {
-        $fallbackWhere = [];
-        $fallbackParams = [];
-
-        // Role filter (still supported)
-        if ($filters['role'] && in_array($filters['role'], ['admin', 'staff', 'customer'])) {
-            $fallbackWhere[] = "u.role = ?";
-            $fallbackParams[] = $filters['role'];
-        }
-
-        // Date range filter
-        if ($filters['date_from']) {
-            $fallbackWhere[] = "DATE(u.created_at) >= ?";
-            $fallbackParams[] = $filters['date_from'];
-        }
-        if ($filters['date_to']) {
-            $fallbackWhere[] = "DATE(u.created_at) <= ?";
-            $fallbackParams[] = $filters['date_to'];
-        }
-
-        // Search filter
-        if ($filters['search']) {
-            $fallbackWhere[] = "(u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ? OR u.user_id LIKE ?)";
-            $s = "%{$filters['search']}%";
-            $fallbackParams[] = $s;
-            $fallbackParams[] = $s;
-            $fallbackParams[] = $s;
-            $fallbackParams[] = $s;
-        }
-
-        $fallbackWhereSql = $fallbackWhere ? "WHERE " . implode(' AND ', $fallbackWhere) : '';
-
-        // Simple count
-        $countSql = "SELECT COUNT(*) as total_count FROM users u $fallbackWhereSql";
-        $countStmt = $pdo->prepare($countSql);
-        $countStmt->execute($fallbackParams);
-        $countData = $countStmt->fetch(PDO::FETCH_ASSOC);
-        $totalUsers = $countData['total_count'] ?? 0;
-
-        // Simple select without optional columns
-        $query = "
-            SELECT u.user_id, u.name, u.email, u.phone, u.role, u.created_at
-            FROM users u
-            $fallbackWhereSql
-            ORDER BY " . ($orderBy ?: 'u.created_at DESC') . "
-            LIMIT $perPage OFFSET $offset
-        ";
-
-        $stmt = $pdo->prepare($query);
-        $stmt->execute($fallbackParams);
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Derive totals and pages
-        if (empty($totalUsers) && !empty($users)) {
-            $totalUsers = count($users);
-        }
-        $totalPages = max(1, (int)ceil($totalUsers / $perPage));
-
-        // minimal stats
-        $stats = [
-            'total_count' => $totalUsers,
-            'active_count' => 0,
-            'inactive_count' => 0,
-            'admin_count' => 0,
-            'staff_count' => 0,
-            'customer_count' => 0
-        ];
-    } catch (PDOException $e2) {
-        error_log('[users_list_fallback] ' . $e2->getMessage());
-        $users = [];
-    }
-}
-
-if (empty($users)) {
-    try {
-        $simpleStmt = $pdo->prepare("SELECT user_id, name, email, phone, role, status, created_at FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?");
-        $simpleStmt->execute([(int)$perPage, (int)$offset]);
-        $users = $simpleStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        if (empty($totalUsers) && !empty($users)) {
-            $totalUsers = count($users);
-        }
-    } catch (PDOException $e) {
-        error_log('[users_simple_fallback] ' . $e->getMessage());
-    }
-}
-
-/* =====================================================
-   STATUS COUNTS FOR FILTER TABS
-===================================================== */
-
-/* ------------------- GLOBAL (UNFILTERED) STATS ------------------- */
-try {
-    $globalStmt = $pdo->query(
-        "SELECT
-            COUNT(*) as total_count,
-            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_count,
-            SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive_count,
-            SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admin_count,
-            SUM(CASE WHEN role = 'staff' THEN 1 ELSE 0 END) as staff_count,
-            SUM(CASE WHEN role = 'customer' THEN 1 ELSE 0 END) as customer_count
-        FROM users"
-    );
-    $global = $globalStmt->fetch(PDO::FETCH_ASSOC) ?: [];
-} catch (PDOException $e) {
-    error_log('[global_users_stats] ' . $e->getMessage());
-    $global = [];
-}
-
-$globalTotal = (int)($global['total_count'] ?? 0);
-$globalActive = (int)($global['active_count'] ?? 0);
-$globalInactive = (int)($global['inactive_count'] ?? 0);
-$globalAdmins = (int)($global['admin_count'] ?? 0);
-$globalStaff = (int)($global['staff_count'] ?? 0);
-$globalCustomers = (int)($global['customer_count'] ?? 0);
-
-/* Status counts for tabs should show global (unfiltered) totals */
-$statusCounts = [
-    'all' => $globalTotal,
-    'active' => $globalActive,
-    'inactive' => $globalInactive,
-];
-
-/* =====================================================
-   ROLE COUNTS
-===================================================== */
-$roleCounts = [
-    'admin' => $globalAdmins,
-    'staff' => $globalStaff,
-    'customer' => $globalCustomers,
-];
-
-/* =====================================================
-   GET TODAY'S NEW USERS
-===================================================== */
-$todayUsers = 0;
-
-try {
-    $todayStmt = $pdo->query("
-        SELECT COUNT(*) as count
-        FROM users 
-        WHERE DATE(created_at) = CURDATE()
-    ");
-    $todayData = $todayStmt->fetch(PDO::FETCH_ASSOC);
-    $todayUsers = $todayData['count'] ?? 0;
-} catch (PDOException $e) {
-    error_log($e->getMessage());
-}
+require_once __DIR__ . '/process.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -359,7 +52,7 @@ try {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Total Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($globalTotal) ?></p>
+                            <p class="text-2xl font-bold mt-1"><?= number_format($totalUsers) ?></p>
                             <p class="text-xs text-gray-500 mt-1">All accounts</p>
                         </div>
                         <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -387,9 +80,9 @@ try {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Active Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($globalActive) ?></p>
+                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['active_count'] ?? 0) ?></p>
                             <p class="text-xs text-green-600 mt-1">
-                                <?= round($globalActive / max($globalTotal, 1) * 100, 1) ?>% of total
+                                <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>% of total
                             </p>
                         </div>
                         <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -402,9 +95,9 @@ try {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Admins</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($globalAdmins) ?></p>
+                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['admin_count'] ?? 0) ?></p>
                             <p class="text-xs text-purple-600 mt-1">
-                                <?= number_format($globalStaff) ?> staff members
+                                <?= number_format($stats['staff_count'] ?? 0) ?> staff members
                             </p>
                         </div>
                         <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -624,6 +317,7 @@ try {
 
                                         <td class="px-6 py-4">
                                             <?php
+                                            // Normalize status (NULL / invalid → active)
                                             $status = in_array($user['status'] ?? '', ['active', 'inactive'], true)
                                                 ? $user['status']
                                                 : 'active';
@@ -882,81 +576,7 @@ try {
     <script src="../../../assets/Js/users.js"></script>
 
     <script>
-        function showAddUserModal() {
-            document.getElementById('addUserModal').classList.remove('hidden');
-        }
 
-        function closeAddUserModal() {
-            document.getElementById('addUserModal').classList.add('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('userDetailsModal').classList.add('hidden');
-        }
-
-        // Handle add user form submission -> call users API
-        document.getElementById('addUserForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const form = this;
-            const name = form.name.value.trim();
-            const email = form.email.value.trim();
-            const password = form.password.value;
-            const confirm_password = form.confirm_password.value;
-            const role = form.role.value;
-            const phone = form.phone.value || '';
-            const status = form.status.value || 'active';
-
-            if (password !== confirm_password) {
-                Swal.fire('Error', 'Passwords do not match', 'error');
-                return;
-            }
-
-            try {
-                showLoading('Creating user...');
-                await apiRequest('create', {
-                    method: 'POST',
-                    body: formData({
-                        name,
-                        email,
-                        password,
-                        role,
-                        phone,
-                        status
-                    })
-                });
-
-                Swal.close();
-                showSuccess('User created');
-                closeAddUserModal();
-                form.reset();
-                setTimeout(() => location.reload(), 800);
-            } catch (err) {
-                Swal.close();
-                showError(err.message);
-            }
-        });
-
-        // Close modals on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeModal();
-                closeAddUserModal();
-            }
-        });
-
-        // Close modals on overlay click
-        document.getElementById('userDetailsModal').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeModal();
-            }
-        });
-
-        document.getElementById('addUserModal').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeAddUserModal();
-            }
-        });
     </script>
 
 </body>

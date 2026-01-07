@@ -427,8 +427,8 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <?= htmlspecialchars($o['customer_name']) ?><br>
-                                            <span class="text-xs text-gray-500"><?= htmlspecialchars($o['customer_email']) ?></span>
+                                            <?= htmlspecialchars((string)($o['customer_name'] ?? 'Guest')) ?><br>
+                                            <span class="text-xs text-gray-500"><?= htmlspecialchars((string)($o['customer_email'] ?? '')) ?></span>
                                         </td>
 
                                         <td class="px-6 py-4 font-semibold">
