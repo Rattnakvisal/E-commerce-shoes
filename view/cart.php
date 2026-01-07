@@ -8,93 +8,134 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/* ===============================
+   SESSION KEYS
+================================ */
 $userId = $_SESSION['user_id'] ?? null;
-$cartSessionKey = $userId ? "cart_user_{$userId}" : 'cart_guest';
-if (!isset($_SESSION[$cartSessionKey])) $_SESSION[$cartSessionKey] = [];
-$cartRef = &$_SESSION[$cartSessionKey];
-$locSessionKey = $userId ? "shipping_location_user_{$userId}" : 'shipping_location_guest';
-if (!isset($_SESSION[$locSessionKey])) $_SESSION[$locSessionKey] = null;
+
+$cartKey = $userId ? "cart_user_$userId" : 'cart_guest';
+$locationKey = $userId ? "shipping_location_user_$userId" : 'shipping_location_guest';
+
+$_SESSION[$cartKey] ??= [];
+$_SESSION[$locationKey] ??= null;
+
+$cart = &$_SESSION[$cartKey];
 
 /* ===============================
-   CART ACTIONS (AJAX)
+   HELPER: CALCULATE TOTALS
 ================================ */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $id     = (int)($_POST['product_id'] ?? 0);
-    $qty    = (int)($_POST['quantity'] ?? 1);
-
-    if ($action === 'update') {
-        if ($qty > 0) $cartRef[$id] = $qty;
-        else unset($cartRef[$id]);
+function calculateCartTotals(PDO $pdo, array $cart): array
+{
+    if (empty($cart)) {
+        return [
+            'count' => 0,
+            'subtotal' => 0,
+            'tax' => 0,
+            'total' => 0,
+        ];
     }
 
-    if ($action === 'add') {
-        if ($id > 0) {
-            // verify stock before adding
-            $pstmt = $pdo->prepare('SELECT stock FROM products WHERE product_id = ?');
-            $pstmt->execute([$id]);
-            $prod = $pstmt->fetch(PDO::FETCH_ASSOC);
-            $stock = (int)($prod['stock'] ?? 0);
+    $ids = array_keys($cart);
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+    $stmt = $pdo->prepare(
+        "SELECT product_id, price FROM products WHERE product_id IN ($placeholders)"
+    );
+    $stmt->execute($ids);
+
+    $subtotal = 0;
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $subtotal += $row['price'] * $cart[$row['product_id']];
+    }
+
+    $tax = $subtotal * 0.01;
+
+    return [
+        'count' => array_sum($cart),
+        'subtotal' => $subtotal,
+        'tax' => $tax,
+        'total' => $subtotal + $tax,
+    ];
+}
+
+/* ===============================
+   AJAX CART ACTIONS
+================================ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $action = $_POST['action'] ?? '';
+    $productId = (int)($_POST['product_id'] ?? 0);
+    $qty = max(1, (int)($_POST['quantity'] ?? 1));
+
+    switch ($action) {
+
+        case 'add':
+            if ($productId <= 0) break;
+
+            $stmt = $pdo->prepare(
+                "SELECT stock FROM products WHERE product_id = ?"
+            );
+            $stmt->execute([$productId]);
+            $stock = (int)($stmt->fetchColumn() ?? 0);
 
             if ($stock <= 0) {
-                header('Content-Type: application/json');
                 echo json_encode([
                     'success' => false,
-                    'error' => 'Out of stock',
+                    'error' => 'out_of_stock',
                     'message' => 'Product is out of stock'
                 ]);
                 exit;
             }
 
-            $existing = (int)($cartRef[$id] ?? 0);
-            $newQty = $existing + max(1, $qty);
-            if ($newQty > $stock) {
-                $newQty = $stock;
+            $currentQty = (int)($cart[$productId] ?? 0);
+            $cart[$productId] = min($currentQty + $qty, $stock);
+            break;
+
+        case 'update':
+            if ($productId <= 0) break;
+
+            if ($qty > 0) {
+                $cart[$productId] = $qty;
+            } else {
+                unset($cart[$productId]);
             }
-            $cartRef[$id] = $newQty;
-        }
+            break;
+
+        case 'remove':
+            unset($cart[$productId]);
+            break;
     }
 
-    if ($action === 'remove') {
-        unset($cartRef[$id]);
-    }
-
-    $count = array_sum($cartRef);
-    $subtotal = 0;
-
-    if ($count > 0) {
-        $ids = implode(',', array_keys($cartRef));
-        $stmt = $pdo->query("SELECT product_id, price FROM products WHERE product_id IN ($ids)");
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            $subtotal += $r['price'] * $cartRef[$r['product_id']];
-        }
-    }
-
-    $tax = $subtotal * 0.01;
-    $total = $subtotal + $tax;
+    $totals = calculateCartTotals($pdo, $cart);
 
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
-        'count' => $count,
-        'cart_count' => $count,
-        'subtotal' => $subtotal,
-        'tax' => $tax,
-        'total' => $total
+        'cart_count' => $totals['count'],
+        'count' => $totals['count'],
+        'subtotal' => $totals['subtotal'],
+        'tax' => $totals['tax'],
+        'total' => $totals['total'],
     ]);
     exit;
 }
 
-$cart = $cartRef;
+/* ===============================
+   PAGE LOAD DATA
+================================ */
 $products = [];
 $subtotal = 0;
 
-if ($cart) {
-    $ids = implode(',', array_keys($cart));
-    $stmt = $pdo->query(
+if (!empty($cart)) {
+    $ids = array_keys($cart);
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+    $stmt = $pdo->prepare(
         "SELECT product_id, name, price, image_url, stock
-         FROM products WHERE product_id IN ($ids)"
+         FROM products WHERE product_id IN ($placeholders)"
     );
+    $stmt->execute($ids);
+
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($products as $p) {
@@ -210,11 +251,6 @@ $total = $subtotal + $tax;
                             <!-- SHIPPING -->
                             <div class="mt-6 text-sm">
                                 <p class="font-medium">Shipping</p>
-                                <p>
-                                    Arrives by Fri, Jan 9
-                                    <span class="underline ml-1 cursor-pointer">Edit Location</span>
-                                </p>
-
                                 <p class="mt-4 font-medium">Free Pickup</p>
                                 <p class="underline cursor-pointer">Find a Store</p>
                             </div>

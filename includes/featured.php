@@ -61,13 +61,9 @@ try {
                                 <?= $title ?>
                             </span>
                         </div>
-
                     </a>
-
                 <?php endforeach; ?>
-
             </div>
-
         </div>
     </section>
 <?php endif; ?>

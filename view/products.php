@@ -32,11 +32,6 @@ $category_counts = $pdo->query(
 
 $total_products = $pdo->query("SELECT COUNT(*) as count FROM products WHERE status = 'active'")->fetch()['count'];
 
-/* =========================
-   BUILD PRODUCT QUERY + PAGINATION
-   - preserves existing filter behavior
-   - adds pagination (page, limit)
-========================= */
 
 $where = ["p.status = 'active'"];
 $params = [];
@@ -153,6 +148,7 @@ function e($string): string
     <?php
     require_once '../includes/topbar.php';
     require_once '../includes/navbar.php';
+    require_once '../includes/slide.php';
     ?>
     <div class="max-w-7xl mx-auto px-4 py-6">
         <div class="flex flex-col lg:flex-row gap-8">
@@ -500,20 +496,6 @@ function e($string): string
                                         <i class="far fa-heart text-sm"></i>
                                     </button>
                                 </div>
-
-                                <div class="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform">
-                                    <?php if ((int)$product['stock'] > 0): ?>
-                                        <button onclick="addToCart(<?= $product['product_id'] ?>)"
-                                            class="w-full bg-nike-black text-white py-3 text-sm font-bold hover:bg-gray-800 transition-colors">
-                                            Quick Add
-                                        </button>
-                                    <?php else: ?>
-                                        <button disabled
-                                            class="w-full bg-gray-300 text-gray-600 py-3 text-sm font-bold cursor-not-allowed">
-                                            Out of Stock
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
                             </div>
 
                             <div class="space-y-1">
@@ -546,7 +528,6 @@ function e($string): string
                 <!-- Pagination -->
                 <?php if ($totalPages > 1): ?>
                     <?php
-                    // preserve current filters in pagination links
                     $baseParams = [];
                     foreach (['category', 'gender', 'price_min', 'price_max', 'availability', 'pickup', 'sort'] as $f) {
                         if (isset($$f) && $$f !== '') $baseParams[$f] = $$f;

@@ -1,60 +1,97 @@
 <?php
 require_once __DIR__ . '/../config/connection.php';
+
 if (session_status() === PHP_SESSION_NONE) {
 	session_start();
 }
-// logged-in flag
-$userLogged = !empty($_SESSION['user_id']);
 
-$user_name = $_SESSION['name'] ?? $_SESSION['NAME'] ?? $_SESSION['user_name'] ?? $_SESSION['email'] ?? '';
+/* -------------------------
+|  USER / SESSION DATA
+--------------------------*/
+$userId     = $_SESSION['user_id'] ?? null;
+$userLogged = !empty($userId);
 
+$userName = $_SESSION['name']
+	?? $_SESSION['NAME']
+	?? $_SESSION['user_name']
+	?? $_SESSION['email']
+	?? '';
+
+$email = $_SESSION['email'] ?? '';
+
+/* -------------------------
+|  USER INITIALS
+--------------------------*/
 $initials = '';
-if (!empty($user_name)) {
-	$parts = preg_split('/\s+/', trim($user_name));
-	$initials = strtoupper((($parts[0][0] ?? '') . ($parts[1][0] ?? '')));
-	$initials = trim($initials);
-}
-if (empty($initials) && !empty($_SESSION['email'])) {
-	$local = explode('@', $_SESSION['email'])[0];
-	$initials = strtoupper(substr($local, 0, 2));
+
+if ($userName) {
+	$parts = preg_split('/\s+/', trim($userName));
+	$initials = strtoupper(($parts[0][0] ?? '') . ($parts[1][0] ?? ''));
 }
 
-$user_avatar_url = '';
+if (!$initials && $email) {
+	$initials = strtoupper(substr(strtok($email, '@'), 0, 2));
+}
+
+/* -------------------------
+|  USER AVATAR
+--------------------------*/
 if (!empty($_SESSION['avatar'])) {
-	$user_avatar_url = $_SESSION['avatar'];
-	if (!preg_match('#^https?://#i', $user_avatar_url) && $user_avatar_url[0] !== '/') {
-		$user_avatar_url = '/' . ltrim($user_avatar_url, '/');
+	$userAvatar = $_SESSION['avatar'];
+	if (!preg_match('#^https?://#i', $userAvatar) && $userAvatar[0] !== '/') {
+		$userAvatar = '/' . ltrim($userAvatar, '/');
 	}
 } else {
-	$user_avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($user_name ?: 'User') . '&background=10b981&color=fff';
+	$userAvatar = 'https://ui-avatars.com/api/?name='
+		. urlencode($userName ?: 'User')
+		. '&background=10b981&color=fff';
 }
 
-$navUserId = $_SESSION['user_id'] ?? null;
-$navCartCount = $navUserId ? array_sum($_SESSION["cart_user_{$navUserId}"] ?? []) : array_sum($_SESSION['cart_guest'] ?? []);
-$navWishlistCount = $navUserId ? count($_SESSION["wishlist_user_{$navUserId}"] ?? []) : count($_SESSION['wishlist_guest'] ?? []);
+/* -------------------------
+|  CART & WISHLIST COUNT
+--------------------------*/
+$cartKey     = $userId ? "cart_user_$userId" : 'cart_guest';
+$wishlistKey = $userId ? "wishlist_user_$userId" : 'wishlist_guest';
 
+$navCartCount     = array_sum($_SESSION[$cartKey] ?? []);
+$navWishlistCount = count($_SESSION[$wishlistKey] ?? []);
+
+/* -------------------------
+|  NAVBAR DATA
+--------------------------*/
 try {
-	$parents = $pdo->query("SELECT id, title, position FROM navbar_parents ORDER BY position, id")->fetchAll(PDO::FETCH_ASSOC);
-	$groups = $pdo->query("SELECT id, parent_id, group_title, position, link_url FROM navbar_groups ORDER BY position, id")->fetchAll(PDO::FETCH_ASSOC);
-	$items = $pdo->query("SELECT id, group_id, item_title, position, link_url FROM navbar_items ORDER BY position, id")->fetchAll(PDO::FETCH_ASSOC);
+	$parents = $pdo->query(
+		"SELECT id, title, position FROM navbar_parents ORDER BY position, id"
+	)->fetchAll(PDO::FETCH_ASSOC);
+
+	$groups = $pdo->query(
+		"SELECT id, parent_id, group_title, position, link_url 
+         FROM navbar_groups ORDER BY position, id"
+	)->fetchAll(PDO::FETCH_ASSOC);
+
+	$items = $pdo->query(
+		"SELECT id, group_id, item_title, position, link_url 
+         FROM navbar_items ORDER BY position, id"
+	)->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
 	echo '<!-- Navbar load error -->';
 	return;
 }
 
+/* -------------------------
+|  GROUP DATA STRUCTURE
+--------------------------*/
 $groupsByParent = [];
-foreach ($groups as $g) {
-	$pid = $g['parent_id'] ?? 0;
-	$groupsByParent[$pid][] = $g;
+foreach ($groups as $group) {
+	$groupsByParent[$group['parent_id']][] = $group;
 }
 
 $itemsByGroup = [];
-foreach ($items as $it) {
-	$gid = $it['group_id'];
-	$itemsByGroup[$gid][] = $it;
+foreach ($items as $item) {
+	$itemsByGroup[$item['group_id']][] = $item;
 }
-
 ?>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-p+1mYk0..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script src="https://cdn.tailwindcss.com"></script>
 
