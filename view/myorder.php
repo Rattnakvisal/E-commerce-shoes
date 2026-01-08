@@ -166,11 +166,6 @@ try {
                             </div>
 
                             <div class="flex gap-3">
-                                <a href="order_detail.php?order_id=<?= $oid ?>"
-                                    class="px-5 py-2 rounded-full border text-sm hover:bg-gray-100">
-                                    View Details
-                                </a>
-
                                 <button onclick="window.print()"
                                     class="px-5 py-2 rounded-full bg-black text-white text-sm hover:bg-gray-900">
                                     Print / PDF

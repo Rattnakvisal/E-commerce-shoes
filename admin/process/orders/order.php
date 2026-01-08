@@ -19,6 +19,8 @@ if (
     exit;
 }
 
+$status  = strtolower($o['order_status'] ?? '');
+$payment = strtolower($o['payment_status'] ?? '');
 /* =====================================================
    FILTER INPUTS
 ===================================================== */
@@ -133,8 +135,9 @@ $listStmt = $pdo->prepare("
         o.payment_status,
         o.order_type,
         o.created_at,
-        COALESCE(u.name, u.email, 'Guest') customer_name,
-        u.email customer_email,
+        u.user_id AS user_id,
+        COALESCE(u.name, u.email, 'Guest') AS customer_name,
+        u.email AS customer_email,
         (
             SELECT COUNT(*) FROM order_items oi WHERE oi.order_id=o.order_id
         ) item_count
@@ -278,7 +281,6 @@ $totalPages = (int)ceil($totalOrders / $perPage);
 
 
                 <?php
-                // Preserve filters when switching order status tabs
                 $queryBase = $_GET;
                 unset($queryBase['status'], $queryBase['page']);
                 ?>
@@ -427,9 +429,15 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <?= htmlspecialchars((string)($o['customer_name'] ?? 'Guest')) ?><br>
-                                            <span class="text-xs text-gray-500"><?= htmlspecialchars((string)($o['customer_email'] ?? '')) ?></span>
+                                            <div class="font-medium">
+                                                <?= htmlspecialchars($o['customer_name'] ?? 'Guest') ?>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                ID: <?= (int)($o['user_id'] ?? 0) ?>
+                                                <?= !empty($o['customer_email']) ? ' • ' . htmlspecialchars($o['customer_email']) : '' ?>
+                                            </div>
                                         </td>
+
 
                                         <td class="px-6 py-4 font-semibold">
                                             $<?= number_format((float)$o['total'], 2) ?>
@@ -447,19 +455,63 @@ $totalPages = (int)ceil($totalOrders / $perPage);
 
                                         <td class="px-6 py-4">
                                             <div class="flex gap-2">
-
-                                                <button
+                                                <button type="button"
                                                     class="btn-view px-3 py-2 bg-indigo-50 text-indigo-700 rounded"
+                                                    data-action="view"
                                                     data-id="<?= $o['order_id'] ?>">
                                                     <i class="fas fa-eye mr-1"></i> View
                                                 </button>
 
-                                                <?php if (!in_array($o['order_status'], ['completed'], true)): ?>
+                                                <!-- PAYMENT (allowed unless refunded) -->
+                                                <?php if ($payment !== 'refunded'): ?>
                                                     <button
-                                                        class="btn-complete px-3 py-2 bg-green-50 text-green-700 rounded"
-                                                        data-id="<?= $o['order_id'] ?>">
-                                                        Complete
+                                                        type="button"
+                                                        class="btn-payment px-3 py-2 bg-blue-50 text-blue-700 rounded"
+                                                        data-action="payment"
+                                                        data-id="<?= $o['order_id'] ?>"
+                                                        data-payment="<?= $payment ?>">
+                                                        <i class="fas fa-credit-card mr-1"></i> Payment
                                                     </button>
+                                                <?php endif; ?>
+
+                                                <?php if (in_array($status, ['pending', 'processing'], true) && $payment !== 'paid'): ?>
+
+                                                    <!-- EDIT -->
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit px-3 py-2 bg-yellow-50 text-yellow-700 rounded"
+                                                        data-action="edit"
+                                                        data-id="<?= $o['order_id'] ?>"
+                                                        data-status="<?= $status ?>">
+                                                        <i class="fas fa-edit mr-1"></i> Edit
+                                                    </button>
+
+                                                <?php elseif (in_array($status, ['pending', 'processing'], true) && $payment === 'paid'): ?>
+
+                                                    <!-- COMPLETE -->
+                                                    <button
+                                                        type="button"
+                                                        class="btn-complete px-3 py-2 bg-green-50 text-green-700 rounded"
+                                                        data-action="complete"
+                                                        data-id="<?= $o['order_id'] ?>">
+                                                        <i class="fas fa-check mr-1"></i> Complete
+                                                    </button>
+
+                                                    <!-- REFUND -->
+                                                    <button
+                                                        type="button"
+                                                        class="btn-refund px-3 py-2 bg-red-50 text-red-700 rounded"
+                                                        data-action="refund"
+                                                        data-id="<?= $o['order_id'] ?>">
+                                                        <i class="fas fa-undo mr-1"></i> Refund
+                                                    </button>
+
+                                                <?php else: ?>
+
+                                                    <!-- LOCKED -->
+                                                    <span class="text-xs text-gray-400 italic px-3 py-2">
+                                                        Locked
+                                                    </span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
