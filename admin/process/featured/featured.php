@@ -437,40 +437,8 @@ require_once __DIR__ . '/featured_api.php';
             </form>
         </div>
     </div>
-    <!-- Pagination -->
-    <?php if (!empty($totalPages) && $totalPages > 1): ?>
-        <div class="px-6 py-4 border-t border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Showing <span class="font-medium"><?php echo $offset + 1; ?></span> to
-                    <span class="font-medium"><?php echo min($offset + $limit, $totalFeatured); ?></span> of
-                    <span class="font-medium"><?php echo $totalFeatured; ?></span> featured items
-                </div>
-                <div class="flex space-x-2">
-                    <?php if ($page > 1): ?>
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['page' => $page - 1, 'status' => $status])) ?>"
-                            class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
-                            Previous
-                        </a>
-                    <?php endif; ?>
 
-                    <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['page' => $i, 'status' => $status])) ?>"
-                            class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 bg-white hover:bg-gray-50'; ?> transition">
-                            <?php echo $i; ?>
-                        </a>
-                    <?php endfor; ?>
 
-                    <?php if ($page < $totalPages): ?>
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['page' => $page + 1, 'status' => $status])) ?>"
-                            class="px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
-                            Next
-                        </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
 
     <script src="../../../assets/Js/featured.js"></script>
     <script>
