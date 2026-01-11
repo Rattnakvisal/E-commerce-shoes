@@ -14,15 +14,6 @@
   }
 }
 
-.cart-hover {
-  transition: all 0.3s ease;
-}
-
-.cart-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
 .status-active {
   background-color: #10b981;
   color: white;

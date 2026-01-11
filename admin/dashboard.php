@@ -123,12 +123,13 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/Css/dasboard.css">
+    <link rel="stylesheet" href="../assets/Css/same.css">
 </head>
 
 <body class="bg-gray-50">
     <?php require_once __DIR__ . '/include/navbar.php'; ?>
     <div class="md:ml-64 min-h-screen">
-        <main class="pt-6 md:pt-16 p-4 sm:p-6 lg:p-8 page-transition bg-gray-50 min-h-screen">
+        <main class="pt-6 md:pt-16 p-4 sm:p-6 lg:p-8 page-transition bg-gray-50 min-h-screen animate-fade-in">
             <!-- Page Header -->
             <div class="mb-6 animate-fade-in">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -144,75 +145,85 @@ try {
                     </div>
                 </div>
             </div>
-            <!-- Dashboard Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Total Users -->
-                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Total Users</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-2">
-                            <?php echo number_format($total_users); ?>
-                        </p>
-                        <p class="text-xs mt-1 text-green-600 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i>
-                            <?php echo $total_users > 0 ? 'Calculated from DB' : 'No data'; ?>
-                        </p>
+            <!-- Summary Stats (Analytics Style) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
+
+                <!-- TOTAL USERS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Total Users</p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($total_users) ?>
+                            </p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-users text-blue-600 text-xl"></i>
-                    </div>
+                    <p class="text-xs mt-4 text-green-600 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <?= $total_users > 0 ? 'Calculated from DB' : 'No data' ?>
+                    </p>
                 </div>
 
-                <!-- Total Orders -->
-                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Total Orders</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-2">
-                            <?php echo number_format($total_orders); ?>
-                        </p>
-                        <p class="text-xs mt-1 text-green-600 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i>
-                            8.3% from last week
-                        </p>
+                <!-- TOTAL ORDERS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Total Orders</p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($total_orders) ?>
+                            </p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
-                    </div>
+                    <p class="text-xs mt-4 text-green-600 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        8.3% from last week
+                    </p>
                 </div>
 
-                <!-- Revenue -->
-                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Revenue</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-2">
-                            $<?php echo number_format($revenue, 2); ?>
-                        </p>
-                        <p class="text-xs mt-1 text-red-600 flex items-center">
-                            <i class="fas fa-arrow-down mr-1"></i>
-                            3.2% from last month
-                        </p>
+                <!-- REVENUE -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Revenue</p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                $<?= number_format($revenue, 2) ?>
+                            </p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
-                    </div>
+                    <p class="text-xs mt-4 text-red-600 flex items-center">
+                        <i class="fas fa-arrow-down mr-1"></i>
+                        3.2% from last month
+                    </p>
                 </div>
 
-                <!-- Conversion Rate -->
-                <div class="stat-card bg-white rounded-xl shadow-soft p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500">Conversion Rate</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-2">
-                            <?php echo number_format($conversion_rate, 2); ?>%
-                        </p>
-                        <p class="text-xs mt-1 text-green-600 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i>
-                            1.1% from last week
-                        </p>
+                <!-- CONVERSION RATE -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Conversion Rate</p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($conversion_rate, 2) ?>%
+                            </p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
-                    </div>
+                    <p class="text-xs mt-4 text-green-600 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        1.1% from last week
+                    </p>
                 </div>
+
             </div>
 
             <!-- ================= TOP & LOW STOCK ================= -->

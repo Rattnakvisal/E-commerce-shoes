@@ -16,6 +16,7 @@ require_once __DIR__ . '/slides_api.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../../../assets/Css/slide.css">
+    <link rel="stylesheet" href="../../../assets/Css/same.css">
     <style>
         /* Fade-in animation */
         .animate-fade-in {
@@ -33,36 +34,15 @@ require_once __DIR__ . '/slides_api.php';
                 transform: translateY(0);
             }
         }
-
-        /* Hover card effect */
-        .card-hover {
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        /* Accessibility: reduce motion */
-        @media (prefers-reduced-motion: reduce) {
-            .animate-fade-in {
-                animation: none;
-            }
-
-            .card-hover {
-                transition: none;
-            }
-        }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
     <!-- Include Admin Navbar -->
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
-    <main class="md:ml-64 min-h-screen">
+    <main class="md:ml-64 min-h-screen animate-fade-in">
         <div class="p-4 sm:p-6 lg:p-8">
-            <div class="mb-6 animate-fade-in">
+            <div class="mb-6 ">
                 <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
                     <!-- Title -->
                     <div>
@@ -85,53 +65,61 @@ require_once __DIR__ . '/slides_api.php';
                     </div>
                 </div>
 
+                <!-- Summary Stats -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
 
                     <!-- TOTAL SLIDES -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                                <i class="fas fa-images text-xl"></i>
-                            </div>
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Total Slides</p>
-                                <p class="text-2xl font-bold text-gray-900">
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format((int)($statusCounts['all'] ?? 0)) ?>
                                 </p>
                             </div>
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-images text-blue-600 text-xl"></i>
+                            </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">All slides</p>
                     </div>
 
                     <!-- ACTIVE SLIDES -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
-                                <i class="fas fa-eye text-xl"></i>
-                            </div>
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
+                        <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Active Slides</p>
-                                <p class="text-2xl font-bold text-gray-900">
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format((int)($statusCounts['active'] ?? 0)) ?>
                                 </p>
                             </div>
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-eye text-green-600 text-xl"></i>
+                            </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">Visible on site</p>
                     </div>
 
                     <!-- INACTIVE SLIDES -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
-                                <i class="fas fa-eye-slash text-xl"></i>
-                            </div>
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
+                        <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Inactive Slides</p>
-                                <p class="text-2xl font-bold text-gray-900">
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format((int)($statusCounts['inactive'] ?? 0)) ?>
                                 </p>
                             </div>
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-eye-slash text-yellow-600 text-xl"></i>
+                            </div>
                         </div>
+                        <p class="text-xs mt-4 <?= ($statusCounts['inactive'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
+                            <?= ($statusCounts['inactive'] ?? 0) > 0 ? 'Hidden slides' : 'All active' ?>
+                        </p>
                     </div>
+
                 </div>
+
 
                 <?php
                 $queryBase = $_GET;

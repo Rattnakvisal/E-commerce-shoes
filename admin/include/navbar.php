@@ -34,27 +34,32 @@ $admin_avatar = $adminAvatar;
 | Notifications
 |--------------------------------------------------------------------------
 */
+$unreadCount = 0;
+$notifications = [];
+try {
+    $unreadStmt = $pdo->prepare(
+        "SELECT COUNT(*)
+         FROM notifications
+         WHERE is_read = 0
+           AND (user_id = :uid OR user_id IS NULL)"
+    );
+    $unreadStmt->execute(['uid' => $userId]);
+    $unreadCount = (int) $unreadStmt->fetchColumn();
 
-// 🔔 Unread count
-$unreadStmt = $pdo->prepare(
-    "SELECT COUNT(*)
-     FROM notifications
-     WHERE is_read = 0
-       AND (user_id = :uid OR user_id IS NULL)"
-);
-$unreadStmt->execute(['uid' => $userId]);
-$unreadCount = (int) $unreadStmt->fetchColumn();
-
-// 📥 Latest notifications
-$listStmt = $pdo->prepare(
-    "SELECT notification_id, title, message, is_read, created_at
-     FROM notifications
-     WHERE (user_id = :uid OR user_id IS NULL)
-     ORDER BY created_at DESC
-     LIMIT 10"
-);
-$listStmt->execute(['uid' => $userId]);
-$notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
+    $listStmt = $pdo->prepare(
+        "SELECT notification_id, title, message, is_read, created_at
+         FROM notifications
+         WHERE (user_id = :uid OR user_id IS NULL)
+         ORDER BY created_at DESC
+         LIMIT 10"
+    );
+    $listStmt->execute(['uid' => $userId]);
+    $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log('[Navbar] Notifications query failed: ' . $e->getMessage());
+    $unreadCount = 0;
+    $notifications = [];
+}
 ?>
 
 <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
@@ -164,7 +169,7 @@ $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="pt-4">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/analytics.php"
+                <a href="/E-commerce-shoes/admin/process/analytics/analytics.php"
                     class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                     <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
                     Analytics
@@ -533,7 +538,7 @@ $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/E-commerce-shoes/admin/analytics.php"
+                    <a href="/E-commerce-shoes/admin/process/analytics/analytics.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
                         Analytics

@@ -114,6 +114,7 @@ $statusCounts = [
     'pending' => 0,
     'processing' => 0,
     'completed' => 0,
+    'cancelled' => 0,
 ];
 $scStmt = $pdo->prepare("SELECT order_status, COUNT(*) AS cnt FROM orders GROUP BY order_status");
 $scStmt->execute();
@@ -162,32 +163,7 @@ $totalPages = (int)ceil($totalOrders / $perPage);
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .cart-hover {
-            transition: all 0.3s ease;
-        }
-
-        .cart-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../../../assets/Css/same.css">
 </head>
 
 <body class="bg-gray-50">
@@ -197,88 +173,78 @@ $totalPages = (int)ceil($totalOrders / $perPage);
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
             <div class="mb-6 animate-fade-in">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <!-- Title -->
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
-                            Orders Management
-                        </h1>
-                        <p class="text-gray-600 mt-1">
-                            Manage and track customer orders
-                        </p>
-                    </div>
-                </div>
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-6 animate-fade-in">
+                <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
+                <p class="text-gray-600 mt-1">Manage and track all orders in your store</p>
+                <!-- Summary Stats (Analytics Style) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
                     <!-- TOTAL ORDERS -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Total Orders</p>
-                                <p class="text-2xl font-bold mt-1">
+                                <p class="text-2xl font-bold mt-2">
                                     <?= number_format((int)$totalOrders) ?>
                                 </p>
-                                <p class="text-xs text-gray-500 mt-1">All time</p>
                             </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-shopping-cart text-blue-600"></i>
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">All time</p>
                     </div>
 
                     <!-- TODAY ORDERS -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Today's Orders</p>
-                                <p class="text-2xl font-bold mt-1">
+                                <p class="text-2xl font-bold mt-2">
                                     <?= number_format((int)$todayOrders) ?>
                                 </p>
-                                <p class="text-xs mt-1 <?= $todayOrders > 0 ? 'text-green-600' : 'text-gray-500' ?>">
-                                    $<?= number_format((float)$todayRevenue, 2) ?> revenue
-                                </p>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-calendar-day text-green-600"></i>
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-calendar-day text-green-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs mt-4 <?= $todayOrders > 0 ? 'text-green-600' : 'text-gray-500' ?>">
+                            $<?= number_format((float)$todayRevenue, 2) ?> revenue
+                        </p>
                     </div>
 
                     <!-- TOTAL REVENUE -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Total Revenue</p>
-                                <p class="text-2xl font-bold mt-1">
+                                <p class="text-2xl font-bold mt-2">
                                     $<?= number_format((float)$totalRevenue, 2) ?>
                                 </p>
-                                <p class="text-xs text-gray-500 mt-1">Paid orders only</p>
                             </div>
-                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-dollar-sign text-purple-600"></i>
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">Paid orders only</p>
                     </div>
 
                     <!-- PENDING ORDERS -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">Pending Orders</p>
-                                <p class="text-2xl font-bold mt-1">
+                                <p class="text-2xl font-bold mt-2">
                                     <?= number_format((int)($stats['pending_count'] ?? 0)) ?>
                                 </p>
-                                <p class="text-xs mt-1 <?= ($stats['pending_count'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
-                                    Needs attention
-                                </p>
                             </div>
-                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-clock text-yellow-600"></i>
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs mt-4 <?= ($stats['pending_count'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
+                            Needs attention
+                        </p>
                     </div>
                 </div>
-
 
                 <?php
                 $queryBase = $_GET;
@@ -315,6 +281,16 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                                 Pending
                                 <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
                                     <?= $statusCounts['pending'] ?>
+                                </span>
+                            </a>
+
+                            <!-- CANCELLED -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'cancelled'])) ?>"
+                                class="filter-tab text-sm font-medium flex items-center gap-2
+              <?= $filters['status'] === 'cancelled' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
+                                Cancelled
+                                <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
+                                    <?= $statusCounts['cancelled'] ?>
                                 </span>
                             </a>
                         </nav>

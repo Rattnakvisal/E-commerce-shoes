@@ -15,6 +15,7 @@ require_once __DIR__ . '/products_api.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../../../assets/Css/products.css">
+    <link rel="stylesheet" href="../../../assets/Css/same.css">
 </head>
 
 <body class="bg-gray-50">
@@ -55,52 +56,71 @@ require_once __DIR__ . '/products_api.php';
 
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+
+                    <!-- TOTAL PRODUCTS -->
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Total Products</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2"><?php echo number_format($stats['total']); ?></p>
+                                <p class="text-sm text-gray-500">Total Products</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format((int)$stats['total']) ?>
+                                </p>
                             </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <div class="bg-blue-100 p-3 rounded-lg">
                                 <i class="fas fa-box text-blue-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">All products</p>
                     </div>
 
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <!-- ACTIVE PRODUCTS -->
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Active Products</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2"><?php echo number_format($stats['active']); ?></p>
+                                <p class="text-sm text-gray-500">Active Products</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format((int)$stats['active']) ?>
+                                </p>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <div class="bg-green-100 p-3 rounded-lg">
                                 <i class="fas fa-check-circle text-green-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">Visible in store</p>
                     </div>
 
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <!-- TOTAL STOCK -->
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Total Stock</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2"><?php echo number_format($stats['total_stock']); ?></p>
+                                <p class="text-sm text-gray-500">Total Stock</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format((int)$stats['total_stock']) ?>
+                                </p>
                             </div>
-                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                            <div class="bg-purple-100 p-3 rounded-lg">
                                 <i class="fas fa-cubes text-purple-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">Units in inventory</p>
                     </div>
 
-                    <div class="bg-white rounded-xl p-6 shadow-sm cart-hover">
+                    <!-- INACTIVE PRODUCTS -->
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-red-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Inactive</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2"><?php echo number_format($stats['inactive']); ?></p>
+                                <p class="text-sm text-gray-500">Inactive Products</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format((int)$stats['inactive']) ?>
+                                </p>
                             </div>
-                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                            <div class="bg-red-100 p-3 rounded-lg">
                                 <i class="fas fa-pause-circle text-red-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs mt-4 <?= $stats['inactive'] > 0 ? 'text-red-600' : 'text-gray-500' ?>">
+                            <?= $stats['inactive'] > 0 ? 'Hidden from store' : 'All active' ?>
+                        </p>
                     </div>
                 </div>
 

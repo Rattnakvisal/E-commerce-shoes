@@ -1,24 +1,22 @@
-.stat-card {
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
+/* =====================================================
+   TRANSITIONS
+===================================================== */
 .sidebar-transition {
-  transition: all 0.3s ease-in-out;
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .page-transition {
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.25s ease-in-out;
 }
 
 .dropdown-transition {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* =====================================================
+   SCROLLBAR
+===================================================== */
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -28,22 +26,31 @@
   display: none;
 }
 
-.shadow-soft {
-  box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07),
-    0 10px 20px -2px rgba(0, 0, 0, 0.04);
-}
-
+/* =====================================================
+   BACKGROUNDS
+===================================================== */
 .gradient-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.hover-lift:hover {
-  transform: translateY(-2px);
+/* =====================================================
+   HOVER EFFECTS (NO SHADOW)
+===================================================== */
+.hover-lift {
   transition: transform 0.2s ease;
 }
 
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* =====================================================
+   SIDEBAR ACTIVE STATE
+===================================================== */
 .active-menu-item {
   position: relative;
+  color: #4f46e5;
+  font-weight: 600;
 }
 
 .active-menu-item::after {
@@ -54,34 +61,47 @@
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: #6366f1;
+  background-color: #6366f1;
   border-radius: 3px 0 0 3px;
 }
 
+/* =====================================================
+   STATUS BADGES (DASHBOARD)
+===================================================== */
 .status-active {
   background-color: #10b981;
-  color: white;
+  color: #ffffff;
 }
 
 .status-inactive {
   background-color: #ef4444;
-  color: white;
+  color: #ffffff;
 }
 
+/* =====================================================
+   STOCK STATES
+===================================================== */
 .stock-low {
   background-color: #f59e0b;
-  color: white;
+  color: #ffffff;
 }
 
 .stock-out {
   background-color: #ef4444;
-  color: white;
+  color: #ffffff;
 }
 
+/* =====================================================
+   MODAL OVERLAY
+===================================================== */
 .modal-overlay {
   background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
 }
 
+/* =====================================================
+   SWEETALERT FIX
+===================================================== */
 .swal2-container {
   z-index: 99999 !important;
 }

@@ -15,6 +15,7 @@ require_once __DIR__ . '/featured_api.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../../../assets/Css/products.css">
+    <link rel="stylesheet" href="../../../assets/Css/same.css">
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -22,266 +23,251 @@ require_once __DIR__ . '/featured_api.php';
 
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
-            <!-- Errors -->
-            <?php if (!empty($errors)): ?>
-                <div class="mb-6 p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
-                    <div class="flex items-center gap-2 mb-2">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span class="font-semibold">Please fix the following errors:</span>
-                    </div>
-                    <ul class="list-disc list-inside ml-5">
-                        <?php foreach ($errors as $error): ?>
-                            <li><?= htmlspecialchars($error) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            <div class="mb-6">
+            <div class="mb-6 animate-fade-in">
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Featured Items</h1>
                         <p class="text-gray-600">Manage featured section content</p>
                     </div>
                     <div>
-                        <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center gap-2">
-                            <i class="fas fa-plus"></i> Add Featured
-                        </button>
+                        <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center gap-2"> <i class="fas fa-plus"></i> Add Featured </button>
                     </div>
                 </div>
-
                 <!-- Featured Stats Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
                     <!-- TOTAL FEATURED -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Total Featured</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2">
+                                <p class="text-sm text-gray-500">Total Featured</p>
+                                <p class="text-2xl font-bold mt-2">
                                     <?= number_format($stats['total'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <div class="bg-blue-100 p-3 rounded-lg">
                                 <i class="fas fa-star text-blue-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">All featured items</p>
                     </div>
 
                     <!-- ACTIVE FEATURED -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Active Featured</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2">
+                                <p class="text-sm text-gray-500">Active Featured</p>
+                                <p class="text-2xl font-bold mt-2">
                                     <?= number_format($stats['active'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <div class="bg-green-100 p-3 rounded-lg">
                                 <i class="fas fa-check-circle text-green-600 text-xl"></i>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-500 mt-4">Visible on storefront</p>
+                    </div>
+
+                    <!-- INACTIVE FEATURED (NEW CARD) -->
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-red-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Inactive Featured</p>
+                                <p class="text-2xl font-bold mt-2">
+                                    <?= number_format(($stats['total'] ?? 0) - ($stats['active'] ?? 0)) ?>
+                                </p>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-lg">
+                                <i class="fas fa-eye-slash text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-4">Hidden from site</p>
                     </div>
 
                     <!-- POSITIONS USED -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Positions Used</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2">
+                                <p class="text-sm text-gray-500">Positions Used</p>
+                                <p class="text-2xl font-bold mt-2">
                                     <?= number_format($stats['positions'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                            <div class="bg-purple-100 p-3 rounded-lg">
                                 <i class="fas fa-sort-numeric-up text-purple-600 text-xl"></i>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- INACTIVE FEATURED -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-500">Inactive</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-2">
-                                    <?= number_format($stats['inactive'] ?? 0) ?>
-                                </p>
-                            </div>
-                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-pause-circle text-red-600 text-xl"></i>
-                            </div>
-                        </div>
+                        <p class="text-xs text-gray-500 mt-4">Display order slots</p>
                     </div>
                 </div>
-            </div>
-            <?php
-            $queryBase = $_GET;
-            unset($queryBase['status'], $queryBase['page']);
-            ?>
+                <?php
+                $queryBase = $_GET;
+                unset($queryBase['status'], $queryBase['page']);
+                ?>
 
-            <!-- Featured Status Tabs -->
-            <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
+                <!-- Featured Status Tabs -->
+                <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
 
-                <!-- Tabs -->
-                <div class="border-b border-gray-200">
-                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                    <!-- Tabs -->
+                    <div class="border-b border-gray-200">
+                        <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
 
-                        <!-- ALL -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                            <!-- ALL -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
                <?= $status === ''
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
-                            All Featured
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                <?= $statusCounts['all'] ?? 0 ?>
-                            </span>
-                        </a>
+                                All Featured
+                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                                    <?= $statusCounts['all'] ?? 0 ?>
+                                </span>
+                            </a>
 
-                        <!-- ACTIVE -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                            <!-- ACTIVE -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
                <?= $status === 'active'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
-                            Active
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                <?= $statusCounts['active'] ?? 0 ?>
-                            </span>
-                        </a>
+                                Active
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                    <?= $statusCounts['active'] ?? 0 ?>
+                                </span>
+                            </a>
 
-                        <!-- INACTIVE -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                            <!-- INACTIVE -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
                <?= $status === 'inactive'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
-                            Inactive
-                            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                                <?= $statusCounts['inactive'] ?? 0 ?>
-                            </span>
-                        </a>
+                                Inactive
+                                <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+                                    <?= $statusCounts['inactive'] ?? 0 ?>
+                                </span>
+                            </a>
 
-                    </nav>
+                        </nav>
+                    </div>
+
+                    <!-- Filters -->
+                    <form method="GET" class="p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+
+                            <!-- Search -->
+                            <div class="lg:col-span-2">
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">
+                                    Search
+                                </label>
+                                <input type="text"
+                                    name="search"
+                                    value="<?= htmlspecialchars($search ?? '') ?>"
+                                    placeholder="Featured title or product name"
+                                    class="w-full px-4 py-2 border rounded-lg
+                              focus:ring-2 focus:ring-indigo-500">
+                            </div>
+
+                            <!-- From Date -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">
+                                    From Date
+                                </label>
+                                <input type="date"
+                                    name="date_from"
+                                    value="<?= $date_from ?? '' ?>"
+                                    class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+
+                            <!-- To Date -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">
+                                    To Date
+                                </label>
+                                <input type="date"
+                                    name="date_to"
+                                    value="<?= $date_to ?? '' ?>"
+                                    class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+
+                            <!-- Sort -->
+                            <div>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">
+                                    Sort By
+                                </label>
+                                <select name="sort"
+                                    class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="position">Position</option>
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                </select>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2 justify-end lg:col-span-5">
+                                <a href="featured.php"
+                                    class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+                                    Clear
+                                </a>
+                                <button type="submit"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Filters -->
-                <form method="GET" class="p-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+                <!-- Featured Items Table -->
+                <?php if ($totalFeatured > 0): ?>
+                    <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200 animate-fade-in">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50 border-b">
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">ID</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Product</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Title</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Position</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Image</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Status</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Created</th>
+                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <?php foreach ($featured as $f): ?>
+                                    <tr class="hover:bg-gray-50 transition">
+                                        <td class="py-4 px-6 text-sm text-gray-800">#<?= $f['featured_id'] ?></td>
+                                        <td class="py-4 px-6 text-sm text-gray-800">
+                                            <?= htmlspecialchars($f['product_name'] ?? 'N/A') ?>
+                                            <span class="block text-xs text-gray-500">ID: <?= $f['product_id'] ?></span>
+                                        </td>
+                                        <td class="py-4 px-6 text-sm text-gray-800 font-medium"><?= htmlspecialchars($f['title']) ?></td>
+                                        <td class="py-4 px-6 text-sm text-gray-800">
+                                            <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-800 rounded-full font-semibold">
+                                                <?= $f['position'] ?>
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <?php if ($f['image_url']): ?>
+                                                <img src="<?= htmlspecialchars($f['image_url']) ?>" alt="<?= htmlspecialchars($f['title']) ?>"
+                                                    class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                            <?php else: ?>
+                                                <span class="text-sm text-gray-500">No image</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <a href="?toggle=<?= $f['featured_id'] ?>&<?= http_build_query($queryBase) ?>"
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <?= $f['is_active'] ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' ?>">
 
-                        <!-- Search -->
-                        <div class="lg:col-span-2">
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                Search
-                            </label>
-                            <input type="text"
-                                name="search"
-                                value="<?= htmlspecialchars($search ?? '') ?>"
-                                placeholder="Featured title or product name"
-                                class="w-full px-4 py-2 border rounded-lg
-                              focus:ring-2 focus:ring-indigo-500">
-                        </div>
-
-                        <!-- From Date -->
-                        <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                From Date
-                            </label>
-                            <input type="date"
-                                name="date_from"
-                                value="<?= $date_from ?? '' ?>"
-                                class="w-full px-3 py-2 border rounded-lg">
-                        </div>
-
-                        <!-- To Date -->
-                        <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                To Date
-                            </label>
-                            <input type="date"
-                                name="date_to"
-                                value="<?= $date_to ?? '' ?>"
-                                class="w-full px-3 py-2 border rounded-lg">
-                        </div>
-
-                        <!-- Sort -->
-                        <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                Sort By
-                            </label>
-                            <select name="sort"
-                                class="w-full px-3 py-2 border rounded-lg">
-                                <option value="position">Position</option>
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                            </select>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="flex gap-2 justify-end lg:col-span-5">
-                            <a href="featured.php"
-                                class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
-                                Clear
-                            </a>
-                            <button type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Featured Items Table -->
-            <?php if ($totalFeatured > 0): ?>
-                <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200 animate-fade-in">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-gray-50 border-b">
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">ID</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Product</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Title</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Position</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Image</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Status</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Created</th>
-                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <?php foreach ($featured as $f): ?>
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="py-4 px-6 text-sm text-gray-800">#<?= $f['featured_id'] ?></td>
-                                    <td class="py-4 px-6 text-sm text-gray-800">
-                                        <?= htmlspecialchars($f['product_name'] ?? 'N/A') ?>
-                                        <span class="block text-xs text-gray-500">ID: <?= $f['product_id'] ?></span>
-                                    </td>
-                                    <td class="py-4 px-6 text-sm text-gray-800 font-medium"><?= htmlspecialchars($f['title']) ?></td>
-                                    <td class="py-4 px-6 text-sm text-gray-800">
-                                        <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-800 rounded-full font-semibold">
-                                            <?= $f['position'] ?>
-                                        </span>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <?php if ($f['image_url']): ?>
-                                            <img src="<?= htmlspecialchars($f['image_url']) ?>" alt="<?= htmlspecialchars($f['title']) ?>"
-                                                class="w-16 h-16 object-cover rounded-lg border border-gray-200">
-                                        <?php else: ?>
-                                            <span class="text-sm text-gray-500">No image</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <a href="?toggle=<?= $f['featured_id'] ?>&<?= http_build_query($queryBase) ?>"
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <?= $f['is_active'] ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' ?>">
-
-                                            <?= $f['is_active'] ? 'Active' : 'Inactive' ?>
-                                        </a>
-                                    </td>
-                                    <td class="py-4 px-6 text-sm text-gray-500">
-                                        <?= date('M d, Y', strtotime($f['created_at'])) ?>
-                                    </td>
-                                    <td class="py-4 px-6">
-                                        <div class="flex gap-2">
-                                            <button onclick="confirmEdit(
+                                                <?= $f['is_active'] ? 'Active' : 'Inactive' ?>
+                                            </a>
+                                        </td>
+                                        <td class="py-4 px-6 text-sm text-gray-500">
+                                            <?= date('M d, Y', strtotime($f['created_at'])) ?>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <div class="flex gap-2">
+                                                <button onclick="confirmEdit(
                                                     <?= $f['featured_id'] ?>,
                                                     <?= $f['product_id'] ?>,
                                                     '<?= addslashes($f['title']) ?>',
@@ -289,38 +275,38 @@ require_once __DIR__ . '/featured_api.php';
                                                     <?= $f['is_active'] ?>,
                                                     '<?= addslashes($f['image_url'] ?? '') ?>'
                                                 )" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition flex items-center gap-2 text-sm">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </button>
-                                            <a href="#" onclick="confirmDelete('featured.php?delete=<?= $f['featured_id'] ?>&<?= http_build_query($queryBase) ?>'); return false;"
-                                                class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition flex items-center gap-2 text-sm">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <div class="py-16 text-center bg-white rounded-xl shadow border border-gray-200">
-                    <div class="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gray-100 rounded-full">
-                        <i class="fas fa-layer-group text-gray-400 text-3xl"></i>
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <a href="#" onclick="confirmDelete('featured.php?delete=<?= $f['featured_id'] ?>&<?= http_build_query($queryBase) ?>'); return false;"
+                                                    class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition flex items-center gap-2 text-sm">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">No featured items found</h3>
-                    <p class="text-gray-500 mb-6">Get started by adding your first featured item</p>
-                </div>
-            <?php endif; ?>
+                <?php else: ?>
+                    <div class="py-16 text-center bg-white rounded-xl shadow border border-gray-200">
+                        <div class="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gray-100 rounded-full">
+                            <i class="fas fa-layer-group text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">No featured items found</h3>
+                        <p class="text-gray-500 mb-6">Get started by adding your first featured item</p>
+                    </div>
+                <?php endif; ?>
 
-            <!-- Pagination -->
-            <?php if ($totalFeatured > 0): ?>
-                <div class="mt-6 flex justify-between items-center">
-                    <div class="text-sm text-gray-600">
-                        Showing <?= $totalFeatured ?> item<?= $totalFeatured !== 1 ? 's' : '' ?>
+                <!-- Pagination -->
+                <?php if ($totalFeatured > 0): ?>
+                    <div class="mt-6 flex justify-between items-center">
+                        <div class="text-sm text-gray-600">
+                            Showing <?= $totalFeatured ?> item<?= $totalFeatured !== 1 ? 's' : '' ?>
+                        </div>
                     </div>
-                </div>
-            <?php endif; ?>
-        </div>
+                <?php endif; ?>
+            </div>
     </main>
 
     <!-- Modal Overlay -->

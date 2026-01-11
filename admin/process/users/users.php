@@ -17,6 +17,8 @@ require_once __DIR__ . '/process.php';
     <link rel="stylesheet" href="../../../assets/Css/users.css">
     <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom JS -->
+    <link rel="stylesheet" href="../../../assets/Css/same.css">
 
 </head>
 
@@ -25,8 +27,7 @@ require_once __DIR__ . '/process.php';
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
 
     <div class="md:ml-64">
-        <main class="p-4 sm:p-6 lg:p-8">
-
+        <main class="p-4 sm:p-6 lg:p-8 min-h-screen animate-fade-in">
             <!-- Header -->
             <div class="mb-8">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -47,65 +48,80 @@ require_once __DIR__ . '/process.php';
             </div>
 
             <!-- Quick Stats -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
+
+                <!-- TOTAL USERS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Total Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($totalUsers) ?></p>
-                            <p class="text-xs text-gray-500 mt-1">All accounts</p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($totalUsers) ?>
+                            </p>
                         </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-users text-blue-600"></i>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs text-gray-500 mt-4">All accounts</p>
                 </div>
 
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
+                <!-- TODAY'S NEW USERS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Today's New Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($todayUsers) ?></p>
-                            <p class="text-xs <?= $todayUsers > 0 ? 'text-green-600' : 'text-gray-500' ?> mt-1">
-                                <?= $todayUsers > 0 ? 'Active growth' : 'No new users' ?>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($todayUsers) ?>
                             </p>
                         </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user-clock text-green-600"></i>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-user-clock text-green-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs mt-4 <?= $todayUsers > 0 ? 'text-green-600' : 'text-gray-500' ?>">
+                        <?= $todayUsers > 0 ? 'Active growth' : 'No new users' ?>
+                    </p>
                 </div>
 
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
+                <!-- ACTIVE USERS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-emerald-500">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Active Users</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['active_count'] ?? 0) ?></p>
-                            <p class="text-xs text-green-600 mt-1">
-                                <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>% of total
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($stats['active_count'] ?? 0) ?>
                             </p>
                         </div>
-                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user-check text-emerald-600"></i>
+                        <div class="bg-emerald-100 p-3 rounded-lg">
+                            <i class="fas fa-user-check text-emerald-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs text-emerald-600 mt-4">
+                        <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>% of total
+                    </p>
                 </div>
 
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm">
+                <!-- ADMINS / STAFF -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Admins</p>
-                            <p class="text-2xl font-bold mt-1"><?= number_format($stats['admin_count'] ?? 0) ?></p>
-                            <p class="text-xs text-purple-600 mt-1">
-                                <?= number_format($stats['staff_count'] ?? 0) ?> staff members
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format($stats['admin_count'] ?? 0) ?>
                             </p>
                         </div>
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-shield-alt text-purple-600"></i>
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-shield-alt text-purple-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs text-purple-600 mt-4">
+                        <?= number_format($stats['staff_count'] ?? 0) ?> staff members
+                    </p>
                 </div>
+
             </div>
+
             <?php
             $queryBase = $_GET;
             unset($queryBase['status'], $queryBase['page']);

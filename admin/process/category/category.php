@@ -15,32 +15,9 @@ require_once __DIR__ . '/api_category.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../../../assets/Css/same.css">
     <style>
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .cart-hover {
-            transition: all 0.3s ease;
-        }
-
-        .cart-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
         .success-bg {
             background-color: #d1fae5;
             border-color: #10b981;
@@ -72,45 +49,59 @@ require_once __DIR__ . '/api_category.php';
                     </div>
                 </div>
             </div>
+            <!-- Summary Stats (Analytics Style) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
 
-
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                            <i class="fas fa-tags text-2xl"></i>
-                        </div>
+                <!-- TOTAL CATEGORIES -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Total Categories</p>
-                            <p class="text-2xl font-bold text-gray-800"><?php echo $totalCategories; ?></p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format((int)$totalCategories) ?>
+                            </p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-tags text-blue-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs text-gray-500 mt-4">All categories</p>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
-                            <i class="fas fa-boxes text-2xl"></i>
-                        </div>
+                <!-- TOTAL PRODUCTS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Total Products</p>
-                            <p class="text-2xl font-bold text-gray-800"><?php echo $totalProducts; ?></p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format((int)$totalProducts) ?>
+                            </p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-boxes text-green-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs text-gray-500 mt-4">Across all categories</p>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
-                            <i class="fas fa-question-circle text-2xl"></i>
-                        </div>
+                <!-- UNCATEGORIZED PRODUCTS -->
+                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-500">Uncategorized Products</p>
-                            <p class="text-2xl font-bold text-gray-800"><?php echo $uncategorizedCount; ?></p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900">
+                                <?= number_format((int)$uncategorizedCount) ?>
+                            </p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-question-circle text-yellow-600 text-xl"></i>
                         </div>
                     </div>
+                    <p class="text-xs mt-4 <?= $uncategorizedCount > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
+                        <?= $uncategorizedCount > 0 ? 'Needs review' : 'All categorized' ?>
+                    </p>
                 </div>
+
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
