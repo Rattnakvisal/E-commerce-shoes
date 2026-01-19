@@ -80,95 +80,181 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Create Account</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-indigo-200 px-4">
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
 
-    <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
+    <!-- Card -->
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2">
 
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Create Account</h2>
-        <p class="text-center text-gray-600 mb-6">Join us in just a minute</p>
+            <!-- Left Image -->
+            <div class="relative hidden md:block">
+                <img
+                    src="../assets/Images/Login image detail.avif"
+                    class="h-full w-full object-cover"
+                    alt="Register" />
+                <div class="absolute inset-0 bg-black/50"></div>
 
-        <!-- Error -->
-        <?php if ($error): ?>
-            <div class="mb-4 bg-red-50 border border-red-200 p-3 rounded text-red-700 text-sm">
-                <i class="fas fa-exclamation-circle mr-1"></i><?= htmlspecialchars($error) ?>
-            </div>
-        <?php endif; ?>
-
-        <form method="POST" class="space-y-5">
-
-            <!-- Name -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                    type="text"
-                    name="name"
-                    required
-                    value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
-                    placeholder="John Doe">
+                <div class="absolute inset-0 p-10 flex flex-col justify-end">
+                    <h2 class="text-4xl font-extrabold text-white leading-tight">
+                        Create your<br />Account
+                    </h2>
+                    <p class="text-white/80 mt-2">
+                        Join our platform and start your journey.
+                    </p>
+                </div>
             </div>
 
-            <!-- Email -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                    type="email"
-                    name="email"
-                    required
-                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
-                    placeholder="you@example.com">
+            <!-- Right Form -->
+            <div class="p-8 sm:p-10">
+                <h1 class="text-3xl font-extrabold text-slate-900 text-center">
+                    Sign Up
+                </h1>
+                <p class="text-slate-500 text-center mt-2 mb-8">
+                    It only takes a minute
+                </p>
+
+                <!-- Error -->
+                <?php if ($error): ?>
+                    <div class="mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" class="space-y-5">
+
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Full Name
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input
+                                type="text"
+                                name="name"
+                                required
+                                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
+                                placeholder="John Doe"
+                                class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50
+                       focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Email Address
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input
+                                type="email"
+                                name="email"
+                                required
+                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                                placeholder="you@example.com"
+                                class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50
+                       focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                required
+                                placeholder="••••••••"
+                                class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 bg-slate-50
+                       focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400">
+                            <button type="button" id="togglePassword"
+                                class="absolute inset-y-0 right-0 px-4 text-slate-400 hover:text-slate-700"
+                                aria-label="Toggle password visibility" aria-pressed="false">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Confirm Password
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input
+                                type="password"
+                                id="confirm_password"
+                                name="confirm_password"
+                                required
+                                placeholder="••••••••"
+                                class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 bg-slate-50
+                       focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-400">
+                            <button type="button" id="toggleConfirmPassword"
+                                class="absolute inset-y-0 right-0 px-4 text-slate-400 hover:text-slate-700"
+                                aria-label="Toggle confirm password visibility" aria-pressed="false">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <label class="flex items-start gap-2 text-sm text-slate-600">
+                        <input
+                            type="checkbox"
+                            name="agree_terms"
+                            required
+                            class="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900/20">
+                        <span>
+                            I agree to the
+                            <a href="#" class="text-slate-900 font-medium hover:underline">
+                                Terms & Conditions
+                            </a>
+                        </span>
+                    </label>
+
+                    <!-- Submit -->
+                    <button
+                        type="submit"
+                        class="w-full rounded-xl bg-slate-900 text-white py-3 font-semibold
+                   hover:bg-slate-800 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+
+                    <!-- Link -->
+                    <p class="text-center text-sm text-slate-600 pt-2">
+                        Already have an account?
+                        <a href="login.php" class="text-slate-900 font-semibold hover:underline">
+                            Sign in
+                        </a>
+                    </p>
+                </form>
             </div>
 
-            <!-- Password -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input
-                    type="password"
-                    name="password"
-                    required
-                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
-                    placeholder="••••••••">
-            </div>
-
-            <!-- Confirm -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                <input
-                    type="password"
-                    name="confirm_password"
-                    required
-                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"
-                    placeholder="••••••••">
-            </div>
-
-            <!-- Terms -->
-            <div class="flex items-start">
-                <input type="checkbox" name="agree_terms" required class="mt-1 mr-2">
-                <span class="text-sm text-gray-600">
-                    I agree to the <a href="#" class="text-indigo-600 underline">terms</a>.
-                </span>
-            </div>
-
-            <!-- Submit -->
-            <button
-                type="submit"
-                class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                <i class="fas fa-user-plus mr-1"></i> Create Account
-            </button>
-
-            <p class="text-center text-sm text-gray-600 mt-4">
-                Already registered?
-                <a href="login.php" class="text-indigo-600 font-medium hover:underline">Sign in</a>
-            </p>
-        </form>
+        </div>
     </div>
 
     <script src="../assets/Js/register.js"></script>

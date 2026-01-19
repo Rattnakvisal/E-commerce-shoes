@@ -398,6 +398,11 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                                 </tr>
                                 <?php else: foreach ($orders as $o): ?>
                                     <tr data-row="<?= $o['order_id'] ?>" class="hover:bg-gray-50">
+                                        <?php
+                                        // compute per-row normalized status/payment for conditional UI
+                                        $status = strtolower($o['order_status'] ?? '');
+                                        $payment = strtolower($o['payment_status'] ?? '');
+                                        ?>
 
                                         <td class="px-6 py-4">
                                             #<?= str_pad((string)$o['order_id'], 6, '0', STR_PAD_LEFT) ?><br>

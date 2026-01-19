@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/featured_api.php';
+
+$status = isset($_GET['status']) ? (string)$_GET['status'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +16,7 @@ require_once __DIR__ . '/featured_api.php';
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../../../assets/Css/products.css">
+    <link rel="stylesheet" href="../../../assets/Css/users.css">
     <link rel="stylesheet" href="../../../assets/Css/same.css">
 </head>
 
@@ -105,16 +107,14 @@ require_once __DIR__ . '/featured_api.php';
                 ?>
 
                 <!-- Featured Status Tabs -->
-                <div class="bg-white rounded-xl shadow mb-6 animate-fade-in">
-
-                    <!-- Tabs -->
+                <div class="bg-white">
                     <div class="border-b border-gray-200">
                         <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
 
                             <!-- ALL -->
                             <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
                                 class="flex items-center gap-2 text-sm font-medium
-               <?= $status === ''
+              <?= $status === ''
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
                                 All Featured
@@ -126,7 +126,7 @@ require_once __DIR__ . '/featured_api.php';
                             <!-- ACTIVE -->
                             <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
                                 class="flex items-center gap-2 text-sm font-medium
-               <?= $status === 'active'
+              <?= $status === 'active'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
                                 Active
@@ -138,7 +138,7 @@ require_once __DIR__ . '/featured_api.php';
                             <!-- INACTIVE -->
                             <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
                                 class="flex items-center gap-2 text-sm font-medium
-               <?= $status === 'inactive'
+              <?= $status === 'inactive'
                     ? 'text-indigo-600 border-b-2 border-indigo-600'
                     : 'text-gray-500 hover:text-gray-700' ?>">
                                 Inactive

@@ -275,9 +275,14 @@ function e($string): string
             <main class="flex-1">
                 <!-- Header with Filter Button for Mobile -->
                 <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-6 border-b">
-                    <div>
-                        <h1 class="text-2xl font-bold mb-2">Men's New Releases</h1>
-                        <p class="text-nike-gray"><?= count($products) ?> products</p>
+                    <div class="flex flex-col">
+                        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
+                            New Releases
+                        </h1>
+
+                        <p class="mt-1 text-sm font-medium text-gray-500">
+                            <?= count($products) ?> products
+                        </p>
                     </div>
 
                     <div class="flex items-center space-x-4 mt-4 sm:mt-0">

@@ -35,6 +35,14 @@ $conversion_rate   = 0.0;
 $recent_orders     = [];
 $topProducts       = [];
 $lowStockProducts  = [];
+$ordersByStatus    = [
+    'pending' => 0,
+    'processing' => 0,
+    'completed' => 0,
+    'cancelled' => 0,
+];
+$revenueLast7      = []; // array of ['date' => 'YYYY-MM-DD','total' => float]
+$recent_users      = [];
 
 /* =====================================================
    FETCH DASHBOARD DATA
@@ -106,6 +114,34 @@ try {
         LIMIT 5
     ");
     $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    /* ---------- ORDERS BY STATUS ---------- */
+    $stmt = $pdo->query(
+        "SELECT order_status, COUNT(*) as cnt FROM orders GROUP BY order_status"
+    );
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $r) {
+        $key = strtolower($r['order_status']);
+        if (isset($ordersByStatus[$key])) {
+            $ordersByStatus[$key] = (int)$r['cnt'];
+        }
+    }
+
+    /* ---------- REVENUE LAST 7 DAYS ---------- */
+    $stmt = $pdo->query(
+        "SELECT DATE(created_at) as day, COALESCE(SUM(total),0) as total FROM orders WHERE payment_status = 'paid' GROUP BY DATE(created_at) ORDER BY DATE(created_at) DESC LIMIT 7"
+    );
+    $rows = array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
+    foreach ($rows as $r) {
+        $revenueLast7[] = [
+            'date' => $r['day'],
+            'total' => (float)$r['total']
+        ];
+    }
+
+    /* ---------- RECENT USERS ---------- */
+    $stmt = $pdo->query("SELECT user_id, name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5");
+    $recent_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     error_log('[Admin Dashboard] ' . $e->getMessage());
 }
@@ -226,6 +262,97 @@ try {
 
             </div>
 
+            <!-- Orders Status & Revenue -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-2xl shadow-md lg:col-span-1">
+                    <h3 class="font-semibold text-lg mb-3">Orders by Status</h3>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex justify-between"><span>Pending</span><strong><?= number_format($ordersByStatus['pending']) ?></strong></li>
+                        <li class="flex justify-between"><span>Processing</span><strong><?= number_format($ordersByStatus['processing']) ?></strong></li>
+                        <li class="flex justify-between"><span>Completed</span><strong><?= number_format($ordersByStatus['completed']) ?></strong></li>
+                        <li class="flex justify-between"><span>Cancelled</span><strong><?= number_format($ordersByStatus['cancelled']) ?></strong></li>
+                    </ul>
+                    <div class="mt-4 h-36">
+                        <canvas id="ordersStatusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-md lg:col-span-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg">Revenue (Last 7 Days)</h3>
+                        <span class="text-sm text-gray-400">Paid orders only</span>
+                    </div>
+                    <div class="h-56">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Users & Recent Orders (2-column grid) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Recent Users -->
+                <div class="bg-white p-6 rounded-2xl shadow-md">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold text-lg">Recent Users</h3>
+                        <a href="users/users.php" class="text-sm text-indigo-600 hover:underline">View all users</a>
+                    </div>
+                    <ul class="divide-y">
+                        <?php if (empty($recent_users)): ?>
+                            <li class="py-3 text-gray-500">No recent users</li>
+                            <?php else: foreach ($recent_users as $u): ?>
+                                <li class="py-3 flex justify-between items-center">
+                                    <div>
+                                        <p class="font-medium"><?= htmlspecialchars($u['name'] ?: $u['email']) ?></p>
+                                        <p class="text-xs text-gray-500"><?= htmlspecialchars($u['email']) ?></p>
+                                    </div>
+                                    <div class="text-xs text-gray-400"><?= htmlspecialchars(date('Y-m-d', strtotime($u['created_at']))) ?></div>
+                                </li>
+                        <?php endforeach;
+                        endif; ?>
+                    </ul>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="bg-white rounded-xl shadow-soft p-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">Recent Orders</h2>
+                        <a href="orders.php" class="text-sm text-indigo-600 hover:underline">View all orders</a>
+                    </div>
+
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full text-sm table-auto">
+                            <thead class="text-gray-500 text-left">
+                                <tr>
+                                    <th class="py-2">Order</th>
+                                    <th class="py-2">Customer</th>
+                                    <th class="py-2">Total</th>
+                                    <th class="py-2">Payment</th>
+                                    <th class="py-2">Status</th>
+                                    <th class="py-2">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <?php foreach ($recent_orders as $order): ?>
+                                    <tr class="border-t">
+                                        <td class="py-3">#<?= htmlspecialchars($order['id']) ?></td>
+                                        <td class="py-3"><?= htmlspecialchars($order['customer']) ?></td>
+                                        <td class="py-3">$<?= number_format($order['total'], 2) ?></td>
+                                        <td class="py-3"><?= htmlspecialchars($order['payment_status']) ?></td>
+                                        <td class="py-3"><?= htmlspecialchars($order['status']) ?></td>
+                                        <td class="py-3"><?= htmlspecialchars(date('Y-m-d H:i', strtotime($order['created_at']))) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <?php if (empty($recent_orders)): ?>
+                                    <tr>
+                                        <td colspan="7" class="py-4 text-center text-gray-500">No recent orders</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- ================= TOP & LOW STOCK ================= -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <!-- ================= TOP PRODUCTS ================= -->
@@ -281,47 +408,7 @@ try {
                     </ul>
                 </div>
             </section>
-            <!-- Recent Orders -->
-            <div class="mt-6">
-                <div class="bg-white rounded-xl shadow-soft p-6">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-semibold text-gray-900">Recent Orders</h2>
-                        <a href="orders.php" class="text-sm text-indigo-600 hover:underline">View all orders</a>
-                    </div>
 
-                    <div class="mt-4 overflow-x-auto">
-                        <table class="w-full text-sm table-auto">
-                            <thead class="text-gray-500 text-left">
-                                <tr>
-                                    <th class="py-2">Order</th>
-                                    <th class="py-2">Customer</th>
-                                    <th class="py-2">Total</th>
-                                    <th class="py-2">Payment</th>
-                                    <th class="py-2">Status</th>
-                                    <th class="py-2">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-gray-700">
-                                <?php foreach ($recent_orders as $order): ?>
-                                    <tr class="border-t">
-                                        <td class="py-3">#<?= htmlspecialchars($order['id']) ?></td>
-                                        <td class="py-3"><?= htmlspecialchars($order['customer']) ?></td>
-                                        <td class="py-3">$<?= number_format($order['total'], 2) ?></td>
-                                        <td class="py-3"><?= htmlspecialchars($order['payment_status']) ?></td>
-                                        <td class="py-3"><?= htmlspecialchars($order['status']) ?></td>
-                                        <td class="py-3"><?= htmlspecialchars(date('Y-m-d H:i', strtotime($order['created_at']))) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                <?php if (empty($recent_orders)): ?>
-                                    <tr>
-                                        <td colspan="7" class="py-4 text-center text-gray-500">No recent orders</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 
@@ -402,6 +489,92 @@ try {
                                 callbacks: {
                                     label: ctx => ` Stock: ${ctx.raw}`
                                 }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        /* ================= REVENUE & ORDERS STATUS CHARTS ================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            /* Revenue Last 7 Days */
+            const revenueLabels = <?= json_encode(array_column($revenueLast7, 'date')) ?> || [];
+            const revenueData = <?= json_encode(array_map(function ($r) {
+                                    return (float)$r['total'];
+                                }, $revenueLast7)) ?> || [];
+
+            if (revenueLabels.length) {
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: revenueLabels,
+                        datasets: [{
+                            data: revenueData,
+                            borderColor: 'rgba(99,102,241,0.9)',
+                            backgroundColor: 'rgba(99,102,241,0.12)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            /* Orders Status - simple horizontal bar */
+            const statusLabels = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+            const statusData = [
+                <?= (int)$ordersByStatus['pending'] ?>,
+                <?= (int)$ordersByStatus['processing'] ?>,
+                <?= (int)$ordersByStatus['completed'] ?>,
+                <?= (int)$ordersByStatus['cancelled'] ?>
+            ];
+            if (document.getElementById('ordersStatusChart')) {
+                const ctx2 = document.getElementById('ordersStatusChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusData,
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
                             }
                         },
                         scales: {

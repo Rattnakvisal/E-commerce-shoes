@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    if (!headers_sent()) {
+        session_start();
+    } else {
+        error_log('[Navbar] session_start skipped: headers already sent');
+    }
 }
 
 require_once __DIR__ . '/../../config/conn.php';
@@ -175,7 +179,7 @@ try {
                     Analytics
                 </a>
 
-                <a href="/E-commerce-shoes/admin/reports.php"
+                <a href="/E-commerce-shoes/admin/process/report/report.php"
                     class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                     <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                     Reports
@@ -544,7 +548,7 @@ try {
                         Analytics
                     </a>
 
-                    <a href="/E-commerce-shoes/admin/reports.php"
+                    <a href="/E-commerce-shoes/admin/report/report.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                         Reports
