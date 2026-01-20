@@ -380,6 +380,11 @@ try {
                             </div>
                         </div>
                     </div>
+                    <!-- Dark mode toggle -->
+                    <button id="darkModeToggle" data-theme-toggle="icon" type="button" aria-pressed="false" aria-label="Toggle dark mode"
+                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer">
+                        <i class="fas fa-moon"></i>
+                    </button>
                     <!-- Separator -->
                     <div class="h-6 w-px bg-gray-300"></div>
 
@@ -600,9 +605,11 @@ try {
         if (chevron) chevron.classList.toggle('rotate-180');
     }
 </script>
+<link rel="stylesheet" href="/E-commerce-shoes/assets/Css/dark_mode.css">
 <script src="/E-commerce-shoes/assets/Js/nav.js"></script>
 <?php if (strpos($_SERVER['REQUEST_URI'], '/admin/process/slides/slides.php') !== false): ?>
     <script src="/E-commerce-shoes/admin/process/slides/media_choice.js"></script>
     <script src="/E-commerce-shoes/admin/process/slides/media_preview.js"></script>
 <?php endif; ?>
+<script src="/E-commerce-shoes/assets/Js/dark.js"></script>
 <script src="/E-commerce-shoes/assets/Js/notifications.js"></script>

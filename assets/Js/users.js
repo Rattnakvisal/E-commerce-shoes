@@ -13,7 +13,9 @@ async function apiRequest(action, options = {}) {
 
   const url =
     method === "GET"
-      ? `${USERS_API_URL}?action=${action}&${new URLSearchParams(options.params || {})}`
+      ? `${USERS_API_URL}?action=${action}&${new URLSearchParams(
+          options.params || {},
+        )}`
       : `${USERS_API_URL}?action=${action}`;
 
   const res = await fetch(url, {
@@ -51,20 +53,20 @@ const debounce = (fn, delay = 300) => {
   };
 };
 
-function formData(obj) {
+const formData = (obj) => {
   const fd = new FormData();
   Object.entries(obj).forEach(([k, v]) => fd.append(k, v));
   return fd;
-}
+};
 
-function esc(text = "") {
+const esc = (text = "") => {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
-}
+};
 
 /* =====================================================
-   ALERTS
+   ALERT HELPERS (SweetAlert)
 ===================================================== */
 const showLoading = (msg = "Loading...") =>
   Swal.fire({
@@ -82,7 +84,11 @@ const showSuccess = (msg) =>
   });
 
 const showError = (msg) =>
-  Swal.fire({ icon: "error", title: "Error", text: msg });
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: msg,
+  });
 
 /* =====================================================
    LIVE SEARCH (TABLE FILTER)
@@ -97,8 +103,9 @@ if (searchInput) {
       const q = e.target.value.toLowerCase().trim();
 
       userRows.forEach((row) => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(q) ? "" : "none";
+        row.style.display = row.innerText.toLowerCase().includes(q)
+          ? ""
+          : "none";
       });
     }, 200),
   );
@@ -109,7 +116,9 @@ if (searchInput) {
 ===================================================== */
 async function viewUser(userId) {
   try {
-    const { user } = await apiRequest("get_user", { params: { id: userId } });
+    const { user } = await apiRequest("get_user", {
+      params: { id: userId },
+    });
 
     Swal.fire({
       title: esc(user.name),
@@ -119,7 +128,9 @@ async function viewUser(userId) {
           <p><b>Phone:</b> ${esc(user.phone || "-")}</p>
           <p><b>Role:</b> ${esc(user.role)}</p>
           <p><b>Status:</b> ${esc(user.status)}</p>
-          <p><b>Joined:</b> ${new Date(user.created_at).toLocaleDateString()}</p>
+          <p><b>Joined:</b> ${new Date(
+            user.created_at,
+          ).toLocaleDateString()}</p>
         </div>
       `,
     });
@@ -139,7 +150,9 @@ async function editUser(userId) {
   if (!confirm.isConfirmed) return;
 
   try {
-    const { user } = await apiRequest("get_user", { params: { id: userId } });
+    const { user } = await apiRequest("get_user", {
+      params: { id: userId },
+    });
 
     ["user_id", "name", "email", "phone", "role", "status"].forEach((k) => {
       const el = document.getElementById(`edit_${k}`);
@@ -190,6 +203,7 @@ async function updateUserRole(userId, role) {
 
 async function toggleUserStatus(userId, action) {
   const status = action === "deactivate" ? "inactive" : "active";
+
   try {
     await apiRequest("update_status", {
       method: "POST",
@@ -233,7 +247,10 @@ document
 
     try {
       showLoading("Creating user...");
-      await apiRequest("create", { method: "POST", body: new FormData(f) });
+      await apiRequest("create", {
+        method: "POST",
+        body: new FormData(f),
+      });
       Swal.close();
       showSuccess("User created");
       delayReload();
@@ -244,7 +261,42 @@ document
   });
 
 /* =====================================================
-   GLOBAL EXPORTS
+   MODAL HELPERS
+===================================================== */
+function showAddUserModal() {
+  const modal = document.getElementById("addUserModal");
+  const form = document.getElementById("addUserForm");
+  if (form) form.reset();
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closeAddUserModal() {
+  document.getElementById("addUserModal")?.classList.add("hidden");
+}
+
+function closeEditUserModal() {
+  document.getElementById("editUserModal")?.classList.add("hidden");
+}
+
+/* Overlay click closes modals */
+document.addEventListener("click", (e) => {
+  const overlay = e.target.closest?.(".modal-overlay");
+  if (overlay && e.target === overlay) {
+    closeAddUserModal();
+    closeEditUserModal();
+  }
+});
+
+/* Escape key closes modals */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeAddUserModal();
+    closeEditUserModal();
+  }
+});
+
+/* =====================================================
+   GLOBAL EXPORTS (USED BY INLINE HTML)
 ===================================================== */
 Object.assign(window, {
   viewUser,
@@ -252,4 +304,7 @@ Object.assign(window, {
   deleteUser,
   updateUserRole,
   toggleUserStatus,
+  showAddUserModal,
+  closeAddUserModal,
+  closeEditUserModal,
 });

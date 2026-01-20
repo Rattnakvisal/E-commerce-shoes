@@ -77,15 +77,11 @@ $hasLastLogin = columnExists('last_login');
    SQL NORMALIZERS
 ===================================================== */
 $roleSql = "LOWER(TRIM(REPLACE(COALESCE(u.role,''), CHAR(160), '')))";
-$statusActiveSql = "
-    LOWER(COALESCE(u.status,'')) IN ('active','enabled','enable','true','yes','y','1')
-    OR u.status = 1
-";
-$statusInactiveSql = "
-    LOWER(COALESCE(u.status,'')) IN ('inactive','disabled','disable','false','no','n','0')
-    OR u.status = 0
-";
-
+// Normalized status expressions used in WHERE, SUM(...) and other SQL fragments
+$statusActiveSql = "(LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1') OR u.status = '1')";
+$statusInactiveSql = "(LOWER(COALESCE(u.status, '')) IN ('inactive','disabled','disable','false','no','n','0') OR u.status = '0')";
+$selectStats[] = "SUM(CASE WHEN ( LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1') OR u.status = '1' ) THEN 1 ELSE 0 END) AS active_count";
+$selectStats[] = "SUM(CASE WHEN ( LOWER(COALESCE(u.status, '')) IN ('inactive','disabled','disable','false','no','n','0') OR u.status = '0' ) THEN 1 ELSE 0 END) AS inactive_count";
 /* =====================================================
    WHERE CLAUSE BUILDER
 ===================================================== */

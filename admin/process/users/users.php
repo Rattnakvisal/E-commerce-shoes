@@ -101,51 +101,55 @@ require_once __DIR__ . '/process.php';
                     </div>
                 </div>
 
-                <!-- Active Users -->
-                <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <p class="text-sm text-gray-500">Active Users</p>
-                            <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($stats['active_count'] ?? 0) ?></p>
+                <?php if (($stats['active_count'] ?? 0) > 0): ?>
+                    <!-- Active Users -->
+                    <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
+                            <div>
+                                <p class="text-sm text-gray-500">Active Users</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($stats['active_count'] ?? 0) ?></p>
+                            </div>
+                            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-user-check text-xl"></i>
+                            </div>
                         </div>
-                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-user-check text-xl"></i>
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div class="text-gray-500">Percent of users</div>
+                                <div class="text-gray-500"><?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%</div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-emerald-500" style="width: <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
-                            <div class="text-gray-500">Percent of users</div>
-                            <div class="text-gray-500"><?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%</div>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-emerald-500" style="width: <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%"></div>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
 
-                <!-- Inactive Users -->
-                <div class="stat-card bg-gradient-to-br from-white to-red-50/50 rounded-2xl p-6 shadow-soft-xl border border-red-100/50 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <p class="text-sm text-gray-500">Inactive Users</p>
-                            <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) ?></p>
+                <?php if ((($stats['inactive_count'] ?? 0) + ($statusCounts['inactive'] ?? 0)) > 0): ?>
+                    <!-- Inactive Users -->
+                    <div class="stat-card bg-gradient-to-br from-white to-red-50/50 rounded-2xl p-6 shadow-soft-xl border border-red-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
+                            <div>
+                                <p class="text-sm text-gray-500">Inactive Users</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) ?></p>
+                            </div>
+                            <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-pause-circle text-xl"></i>
+                            </div>
                         </div>
-                        <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-pause-circle text-xl"></i>
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div class="text-gray-500"><?= ($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) > 0 ? 'Hidden / inactive accounts' : 'All active' ?></div>
+                                <div class="text-gray-500"><?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%</div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-red-500" style="width: <?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
-                            <div class="text-gray-500"><?= ($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) > 0 ? 'Hidden / inactive accounts' : 'All active' ?></div>
-                            <div class="text-gray-500"><?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%</div>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-red-500" style="width: <?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%"></div>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
 
             </div>
 
@@ -173,29 +177,33 @@ require_once __DIR__ . '/process.php';
                             </span>
                         </a>
 
-                        <!-- Active -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active', 'role' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                        <?php if (($statusCounts['active'] ?? $stats['active_count'] ?? 0) > 0): ?>
+                            <!-- Active -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active', 'role' => ''])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
                <?= ($filters['status'] === 'active')
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                            Active
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                <?= $statusCounts['active'] ?>
-                            </span>
-                        </a>
+                                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                : 'text-gray-500 hover:text-gray-700' ?>">
+                                Active
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                    <?= $statusCounts['active'] ?>
+                                </span>
+                            </a>
+                        <?php endif; ?>
 
-                        <!-- Inactive -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive', 'role' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
+                        <?php if (($statusCounts['inactive'] ?? $stats['inactive_count'] ?? 0) > 0): ?>
+                            <!-- Inactive -->
+                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive', 'role' => ''])) ?>"
+                                class="flex items-center gap-2 text-sm font-medium
                <?= ($filters['status'] === 'inactive')
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                            Inactive
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                <?= $statusCounts['inactive'] ?>
-                            </span>
-                        </a>
+                                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                : 'text-gray-500 hover:text-gray-700' ?>">
+                                Inactive
+                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                    <?= $statusCounts['inactive'] ?>
+                                </span>
+                            </a>
+                        <?php endif; ?>
 
                         <!-- Role: Admin -->
                         <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'admin', 'status' => ''])) ?>"
@@ -305,7 +313,7 @@ require_once __DIR__ . '/process.php';
             </div>
 
             <!-- Users Table -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden table-no-hover">
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50">
@@ -355,7 +363,7 @@ require_once __DIR__ . '/process.php';
                                     $canToggle = $id !== ($_SESSION['user_id'] ?? 0);
                                     ?>
 
-                                    <tr class="hover:bg-gray-50 transition" data-user-id="<?= $id ?>">
+                                    <tr class="hover:bg-gray-50 transition <?= $status === 'inactive' ? 'opacity-70 bg-gray-50' : '' ?>" data-user-id="<?= $id ?>" data-user-status="<?= $status ?>">
 
                                         <!-- User -->
                                         <td class="px-6 py-4">
@@ -371,7 +379,7 @@ require_once __DIR__ . '/process.php';
                                                 <?php endif; ?>
 
                                                 <div>
-                                                    <div class="font-medium text-gray-900"><?= htmlspecialchars($name) ?></div>
+                                                    <div class="font-medium text-gray-900 <?= $status === 'inactive' ? 'line-through text-gray-500' : '' ?>"><?= htmlspecialchars($name) ?></div>
                                                     <div class="text-xs text-gray-500 mt-1">
                                                         ID: #<?= str_pad((string)$id, 6, '0', STR_PAD_LEFT) ?>
                                                     </div>
