@@ -53,74 +53,109 @@ require_once __DIR__ . '/products_api.php';
                     </div>
                 </div>
 
-
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
-
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
                     <!-- TOTAL PRODUCTS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
+                    <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Total Products</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900">
-                                    <?= number_format((int)$stats['total']) ?>
+                                <h3 class="text-sm font-medium text-gray-600 mb-1">Total Products</h3>
+                                <p class="text-3xl font-bold text-gray-900">
+                                    <?= number_format($stats['total'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-blue-100 p-3 rounded-lg">
-                                <i class="fas fa-box text-blue-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-boxes text-lg"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">All products</p>
+
+                        <?php
+                        $activePercent = ($stats['total'] ?? 0) > 0
+                            ? ($stats['active'] / $stats['total']) * 100
+                            : 0;
+                        ?>
+
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-500 mb-2">
+                                <span>Active Products</span>
+                                <span class="font-semibold"><?= number_format($activePercent, 1) ?>%</span>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2">
+                                <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
+                                    style="--target-width: <?= $activePercent ?>%"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ACTIVE PRODUCTS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
+                    <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group hover:shadow-glow-green">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Active Products</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900">
-                                    <?= number_format((int)$stats['active']) ?>
+                                <h3 class="text-sm font-medium text-gray-600 mb-1">Active Products</h3>
+                                <p class="text-3xl font-bold text-gray-900">
+                                    <?= number_format($stats['active'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-green-100 p-3 rounded-lg">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-check-circle text-lg"></i>
                             </div>
                         </div>
+
                         <p class="text-xs text-gray-500 mt-4">Visible in store</p>
                     </div>
 
                     <!-- TOTAL STOCK -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                        <div class="flex items-center justify-between">
+                    <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group hover:shadow-glow-purple">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Total Stock</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900">
-                                    <?= number_format((int)$stats['total_stock']) ?>
+                                <h3 class="text-sm font-medium text-gray-600 mb-1">Total Stock</h3>
+                                <p class="text-3xl font-bold text-gray-900">
+                                    <?= number_format($stats['total_stock'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-purple-100 p-3 rounded-lg">
-                                <i class="fas fa-cubes text-purple-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-cubes text-lg"></i>
                             </div>
                         </div>
+
                         <p class="text-xs text-gray-500 mt-4">Units in inventory</p>
                     </div>
 
                     <!-- INACTIVE PRODUCTS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-red-500">
-                        <div class="flex items-center justify-between">
+                    <div class="stat-card bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-2xl p-6 shadow-soft-xl border border-red-400/30 relative overflow-hidden group hover:shadow-glow-red">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <?php
+                        $inactivePercent = ($stats['total'] ?? 0) > 0
+                            ? ($stats['inactive'] / $stats['total']) * 100
+                            : 0;
+                        ?>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Inactive Products</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900">
-                                    <?= number_format((int)$stats['inactive']) ?>
+                                <h3 class="text-sm font-medium text-white/90 mb-1">Inactive Products</h3>
+                                <p class="text-3xl font-bold text-white">
+                                    <?= number_format($stats['inactive'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-red-100 p-3 rounded-lg">
-                                <i class="fas fa-pause-circle text-red-600 text-xl"></i>
+                            <div class="bg-white/20 p-3 rounded-xl shadow-inner">
+                                <i class="fas fa-pause-circle text-lg text-white"></i>
                             </div>
                         </div>
-                        <p class="text-xs mt-4 <?= $stats['inactive'] > 0 ? 'text-red-600' : 'text-gray-500' ?>">
-                            <?= $stats['inactive'] > 0 ? 'Hidden from store' : 'All active' ?>
-                        </p>
+
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-white/80 mb-2">
+                                <span>Inactive Rate</span>
+                                <span class="font-semibold"><?= number_format($inactivePercent, 1) ?>%</span>
+                            </div>
+                            <div class="w-full bg-white/30 rounded-full h-2">
+                                <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80"
+                                    style="--target-width: <?= $inactivePercent ?>%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -230,7 +265,6 @@ require_once __DIR__ . '/products_api.php';
                                 </div>
                                 <small class="text-gray-500">Max size: 2MB. Supported formats: JPG, PNG, GIF</small>
 
-                                <!-- Actions placed under preview on right column when modal wide -->
                                 <div class="mt-6 md:mt-12 flex justify-end gap-2">
                                     <button type="button" id="cancelBtn"
                                         class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">

@@ -33,9 +33,6 @@ error_reporting(E_ALL);
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
-                                <i class="fas fa-chart-line text-white text-lg"></i>
-                            </div>
                             <h1 class="text-3xl font-bold text-gray-900">
                                 Dashboard <span class="gradient-text font-extrabold">Reports</span>
                             </h1>

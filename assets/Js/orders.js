@@ -335,7 +335,6 @@ function escapeHtml(text = "") {
   return el.innerHTML;
 }
 
-// Expose stable globals for inline proxies in order.php
 window.ordersEdit = editOrder;
 window.ordersView = viewOrder;
 window.ordersComplete = (id) => confirmStatusChange(id, "completed");

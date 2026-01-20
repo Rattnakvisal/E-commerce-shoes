@@ -15,7 +15,7 @@ async function apiRequest(action, options = {}) {
   const url =
     method === "GET"
       ? `${USERS_API_URL}?action=${action}&${new URLSearchParams(
-          options.params || {}
+          options.params || {},
         )}`
       : `${USERS_API_URL}?action=${action}`;
 
@@ -70,7 +70,7 @@ async function viewUser(userId) {
           <p><strong>Role:</strong> ${esc(user.role)}</p>
           <p><strong>Status:</strong> ${esc(user.status)}</p>
           <p><strong>Joined:</strong> ${new Date(
-            user.created_at
+            user.created_at,
           ).toLocaleDateString()}</p>
         </div>
       `,
@@ -101,7 +101,7 @@ function confirmEdit(title, text) {
 async function editUser(userId) {
   const confirmed = await confirmEdit(
     "Edit user?",
-    "Open editor for this user."
+    "Open editor for this user.",
   );
   if (!confirmed || !confirmed.isConfirmed) return;
   try {
@@ -320,18 +320,24 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Close modals on overlay click
-document.getElementById("userDetailsModal").addEventListener("click", (e) => {
-  if (e.target.classList.contains("modal-overlay")) {
-    closeModal();
-  }
-});
+// Close modals on overlay click (guard missing elements)
+const userDetailsModalEl = document.getElementById("userDetailsModal");
+if (userDetailsModalEl) {
+  userDetailsModalEl.addEventListener("click", (e) => {
+    if (e.target.classList.contains("modal-overlay")) {
+      closeModal();
+    }
+  });
+}
 
-document.getElementById("addUserModal").addEventListener("click", (e) => {
-  if (e.target.classList.contains("modal-overlay")) {
-    closeAddUserModal();
-  }
-});
+const addUserModalEl = document.getElementById("addUserModal");
+if (addUserModalEl) {
+  addUserModalEl.addEventListener("click", (e) => {
+    if (e.target.classList.contains("modal-overlay")) {
+      closeAddUserModal();
+    }
+  });
+}
 
 /* =====================================================
    GLOBAL EXPORTS

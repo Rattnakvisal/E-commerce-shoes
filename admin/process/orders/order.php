@@ -177,9 +177,11 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                 <p class="text-gray-600 mt-1">Manage and track all orders in your store</p>
                 <!-- Summary Stats (Analytics Style) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
-                    <!-- TOTAL ORDERS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
+
+                    <!-- TOTAL ORDERS (BLUE) -->
+                    <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Orders</p>
                                 <p class="text-2xl font-bold mt-2">
@@ -193,9 +195,10 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                         <p class="text-xs text-gray-500 mt-4">All time</p>
                     </div>
 
-                    <!-- TODAY ORDERS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
+                    <!-- TODAY ORDERS (GREEN) -->
+                    <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group hover:shadow-glow-green">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Today's Orders</p>
                                 <p class="text-2xl font-bold mt-2">
@@ -211,9 +214,10 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                         </p>
                     </div>
 
-                    <!-- TOTAL REVENUE -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                        <div class="flex items-center justify-between">
+                    <!-- TOTAL REVENUE (PURPLE) -->
+                    <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group hover:shadow-glow-purple">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Revenue</p>
                                 <p class="text-2xl font-bold mt-2">
@@ -227,25 +231,26 @@ $totalPages = (int)ceil($totalOrders / $perPage);
                         <p class="text-xs text-gray-500 mt-4">Paid orders only</p>
                     </div>
 
-                    <!-- PENDING ORDERS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
-                        <div class="flex items-center justify-between">
+                    <!-- PENDING ORDERS (AMBER) -->
+                    <div class="stat-card bg-gradient-to-br from-white to-amber-50/50 rounded-2xl p-6 shadow-soft-xl border border-amber-100/50 relative overflow-hidden group hover:shadow-glow-amber">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Pending Orders</p>
                                 <p class="text-2xl font-bold mt-2">
                                     <?= number_format((int)($stats['pending_count'] ?? 0)) ?>
                                 </p>
                             </div>
-                            <div class="bg-yellow-100 p-3 rounded-lg">
-                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                            <div class="bg-amber-100 p-3 rounded-lg">
+                                <i class="fas fa-clock text-amber-600 text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs mt-4 <?= ($stats['pending_count'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
+                        <p class="text-xs mt-4 <?= ($stats['pending_count'] ?? 0) > 0 ? 'text-amber-600' : 'text-gray-500' ?>">
                             Needs attention
                         </p>
                     </div>
                 </div>
-
+                <!-- FILTERS -->
                 <?php
                 $queryBase = $_GET;
                 unset($queryBase['status'], $queryBase['page']);

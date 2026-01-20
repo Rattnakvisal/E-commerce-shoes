@@ -47,77 +47,105 @@ require_once __DIR__ . '/process.php';
                 </div>
             </div>
 
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
+            <!-- Quick Stats (reports-style) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
 
-                <!-- TOTAL USERS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between">
+                <!-- Total Users -->
+                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Total Users</p>
-                            <p class="text-2xl font-bold mt-2 text-gray-900">
-                                <?= number_format($totalUsers) ?>
-                            </p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($totalUsers) ?></p>
                         </div>
-                        <div class="bg-blue-100 p-3 rounded-lg">
-                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-users text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-4">All accounts</p>
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                                    <?= $totalUsers > 0 ? '+' . round(($todayUsers / max($totalUsers, 1)) * 100, 1) . '%' : '0%' ?>
+                                </span>
+                            </div>
+                            <div class="text-gray-500">Of Total Users</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-blue-500" style="width: <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- TODAY'S NEW USERS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                    <div class="flex items-center justify-between">
+                <!-- Today's New Users -->
+                <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Today's New Users</p>
-                            <p class="text-2xl font-bold mt-2 text-gray-900">
-                                <?= number_format($todayUsers) ?>
-                            </p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($todayUsers) ?></p>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-lg">
-                            <i class="fas fa-user-clock text-green-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-user-clock text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs mt-4 <?= $todayUsers > 0 ? 'text-green-600' : 'text-gray-500' ?>">
-                        <?= $todayUsers > 0 ? 'Active growth' : 'No new users' ?>
-                    </p>
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700"><?= $todayUsers > 0 ? '+' . number_format($todayUsers) : '0' ?></span>
+                            </div>
+                            <div class="text-gray-500"><?= $todayUsers > 0 ? 'Active growth' : 'No new users' ?></div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-green-500" style="width: <?= $totalUsers ? round($todayUsers / max($totalUsers, 1) * 100, 1) : 0 ?>%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- ACTIVE USERS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-emerald-500">
-                    <div class="flex items-center justify-between">
+                <!-- Active Users -->
+                <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Active Users</p>
-                            <p class="text-2xl font-bold mt-2 text-gray-900">
-                                <?= number_format($stats['active_count'] ?? 0) ?>
-                            </p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($stats['active_count'] ?? 0) ?></p>
                         </div>
-                        <div class="bg-emerald-100 p-3 rounded-lg">
-                            <i class="fas fa-user-check text-emerald-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-user-check text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-emerald-600 mt-4">
-                        <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>% of total
-                    </p>
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div class="text-gray-500">Percent of users</div>
+                            <div class="text-gray-500"><?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-emerald-500" style="width: <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- ADMINS / STAFF -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                    <div class="flex items-center justify-between">
+                <!-- Inactive Users -->
+                <div class="stat-card bg-gradient-to-br from-white to-red-50/50 rounded-2xl p-6 shadow-soft-xl border border-red-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
-                            <p class="text-sm text-gray-500">Admins</p>
-                            <p class="text-2xl font-bold mt-2 text-gray-900">
-                                <?= number_format($stats['admin_count'] ?? 0) ?>
-                            </p>
+                            <p class="text-sm text-gray-500">Inactive Users</p>
+                            <p class="text-2xl font-bold mt-2 text-gray-900"><?= number_format($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) ?></p>
                         </div>
-                        <div class="bg-purple-100 p-3 rounded-lg">
-                            <i class="fas fa-shield-alt text-purple-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-pause-circle text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-purple-600 mt-4">
-                        <?= number_format($stats['staff_count'] ?? 0) ?> staff members
-                    </p>
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div class="text-gray-500"><?= ($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) > 0 ? 'Hidden / inactive accounts' : 'All active' ?></div>
+                            <div class="text-gray-500"><?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-red-500" style="width: <?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%"></div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -132,12 +160,12 @@ require_once __DIR__ . '/process.php';
                 <div class="border-b border-gray-200">
                     <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
 
-                        <!-- ALL USERS -->
+                        <!-- ALL -->
                         <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
                             class="flex items-center gap-2 text-sm font-medium
-              <?= empty($filters['status'])
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
+       <?= empty($_GET['status'])
+            ? 'text-indigo-600 border-b-2 border-indigo-600'
+            : 'text-gray-500 hover:text-gray-700' ?>">
                             All Users
                             <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
                                 <?= $statusCounts['all'] ?>
@@ -147,9 +175,9 @@ require_once __DIR__ . '/process.php';
                         <!-- ACTIVE -->
                         <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
                             class="flex items-center gap-2 text-sm font-medium
-              <?= $filters['status'] === 'active'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
+       <?= ($filters['status'] === 'active')
+            ? 'text-indigo-600 border-b-2 border-indigo-600'
+            : 'text-gray-500 hover:text-gray-700' ?>">
                             Active
                             <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
                                 <?= $statusCounts['active'] ?>
@@ -159,9 +187,9 @@ require_once __DIR__ . '/process.php';
                         <!-- INACTIVE -->
                         <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
                             class="flex items-center gap-2 text-sm font-medium
-              <?= $filters['status'] === 'inactive'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
+       <?= ($filters['status'] === 'inactive')
+            ? 'text-indigo-600 border-b-2 border-indigo-600'
+            : 'text-gray-500 hover:text-gray-700' ?>">
                             Inactive
                             <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
                                 <?= $statusCounts['inactive'] ?>
@@ -333,10 +361,14 @@ require_once __DIR__ . '/process.php';
 
                                         <td class="px-6 py-4">
                                             <?php
-                                            // Normalize status (NULL / invalid → active)
-                                            $status = in_array($user['status'] ?? '', ['active', 'inactive'], true)
-                                                ? $user['status']
-                                                : 'active';
+                                            $rawStatus = strtolower(trim((string)($user['status'] ?? '')));
+                                            if ($rawStatus === '1' || $rawStatus === 'true' || in_array($rawStatus, ['active', 'enabled', 'enable', 'yes', 'y'], true)) {
+                                                $status = 'active';
+                                            } elseif ($rawStatus === '0' || $rawStatus === 'false' || in_array($rawStatus, ['inactive', 'disabled', 'disable', 'no', 'n'], true)) {
+                                                $status = 'inactive';
+                                            } else {
+                                                $status = 'active';
+                                            }
                                             ?>
                                             <span class="status-badge status-<?= $status ?>">
                                                 <?= ucfirst($status) ?>
@@ -378,7 +410,7 @@ require_once __DIR__ . '/process.php';
                                                     </button>
                                                 <?php endif; ?>
 
-                                                <?php $uStatus = $user['status'] ?? ''; ?>
+                                                <?php $uStatus = strtolower((string)($user['status'] ?? '')); ?>
                                                 <?php if ($uStatus === 'active'): ?>
                                                     <button onclick="toggleUserStatus(<?= $user['user_id'] ?>, 'deactivate')"
                                                         class="inline-flex items-center px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-sm hover-lift">
@@ -590,11 +622,6 @@ require_once __DIR__ . '/process.php';
 
 
     <script src="../../../assets/Js/users.js"></script>
-
-    <script>
-
-    </script>
-
 </body>
 
 </html>
