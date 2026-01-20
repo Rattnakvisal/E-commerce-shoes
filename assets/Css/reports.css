@@ -196,3 +196,37 @@
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
 }
+
+/* Responsive tweaks for small screens */
+@media (max-width: 640px) {
+  .stat-card .text-3xl {
+    font-size: 1.5rem; /* reduce large numbers on phones */
+    line-height: 1.1;
+  }
+
+  .stat-card .text-2xl {
+    font-size: 1.125rem;
+  }
+
+  /* Make report progress bars smaller on very small devices */
+  .report-progress {
+    transition: width 1s ease-out;
+  }
+}
+
+/* Responsive table helper: allow horizontal scroll and truncate cells */
+.responsive-table-wrapper {
+  overflow-x: auto;
+}
+
+.responsive-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.responsive-table th,
+.responsive-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

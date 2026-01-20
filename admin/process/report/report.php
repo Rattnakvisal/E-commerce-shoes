@@ -182,7 +182,7 @@ error_reporting(E_ALL);
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Users</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-gray-900 glow-text"><?php echo number_format($summary['unique_customers']); ?></p>
+                                <p class="text-2xl font-bold text-gray-900 glow-text"><?php echo number_format($summary['unique_customers']); ?></p>
                                 <div class="ml-2">
                                     <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
                                         <i class="fas fa-user-check mr-1 text-xs"></i>
@@ -214,7 +214,7 @@ error_reporting(E_ALL);
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Orders</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-gray-900"><?php echo number_format($summary['orders_count']); ?></p>
+                                <p class="text-2xl font-bold text-gray-900"><?php echo number_format($summary['orders_count']); ?></p>
                                 <div class="ml-2">
                                     <?php
                                     $lastWeekOrders = $summary['orders_count'] * 0.92;
@@ -253,7 +253,7 @@ error_reporting(E_ALL);
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Revenue</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-gray-900">$<?php echo number_format($summary['total_sales'], 2); ?></p>
+                                <p class="text-2xl font-bold text-gray-900">$<?php echo number_format($summary['total_sales'], 2); ?></p>
                                 <div class="ml-2">
                                     <?php
                                     $lastMonthRevenue = $summary['total_sales'] * 1.032;
@@ -296,7 +296,7 @@ error_reporting(E_ALL);
                                 $visitors = max($summary['unique_customers'] * 5, 1);
                                 $conversionRate = ($summary['orders_count'] / $visitors) * 100;
                                 ?>
-                                <p class="text-3xl font-bold text-white"><?php echo number_format($conversionRate, 2); ?>%</p>
+                                <p class="text-2xl font-bold text-white"><?php echo number_format($conversionRate, 2); ?>%</p>
                                 <div class="ml-2">
                                     <span class="inline-flex items-center bg-white/20 text-white px-2 py-1 rounded-full text-xs font-medium border border-white/30">
                                         <i class="fas fa-arrow-up mr-1 text-xs"></i>
@@ -497,7 +497,7 @@ error_reporting(E_ALL);
                                 <?php if (empty($recentOrders)): ?>
                                     <div class="p-10 text-center">
                                         <div class="mx-auto mb-4 w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                                            <i class="fas fa-shopping-cart text-3xl text-slate-400"></i>
+                                            <i class="fas fa-shopping-cart text-2xl text-slate-400"></i>
                                         </div>
                                         <p class="text-slate-500 font-medium">No recent orders</p>
                                         <p class="text-sm mt-2 text-slate-400">Orders will appear here as they come in</p>

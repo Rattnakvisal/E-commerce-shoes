@@ -28,9 +28,6 @@ require_once __DIR__ . '/products_api.php';
             <!-- Page Header -->
             <div class="mb-6 animate-fade-in">
                 <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
-
-                    <!-- Title -->
-                    <!-- Title -->
                     <div>
                         <div class="flex items-center gap-3 mb-2">
                             <h1 class="text-3xl font-bold text-gray-900">Products <span class="gradient-text font-extrabold">Management</span></h1>
@@ -59,7 +56,7 @@ require_once __DIR__ . '/products_api.php';
                         <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-1">Total Products</h3>
-                                <p class="text-3xl font-bold text-gray-900">
+                                <p class="text-2xl font-bold text-gray-900">
                                     <?= number_format($stats['total'] ?? 0) ?>
                                 </p>
                             </div>
@@ -92,7 +89,7 @@ require_once __DIR__ . '/products_api.php';
                         <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-1">Active Products</h3>
-                                <p class="text-3xl font-bold text-gray-900">
+                                <p class="text-2xl font-bold text-gray-900">
                                     <?= number_format($stats['active'] ?? 0) ?>
                                 </p>
                             </div>
@@ -110,7 +107,7 @@ require_once __DIR__ . '/products_api.php';
                         <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-1">Total Stock</h3>
-                                <p class="text-3xl font-bold text-gray-900">
+                                <p class="text-2xl font-bold text-gray-900">
                                     <?= number_format($stats['total_stock'] ?? 0) ?>
                                 </p>
                             </div>
@@ -135,7 +132,7 @@ require_once __DIR__ . '/products_api.php';
                         <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <h3 class="text-sm font-medium text-white/90 mb-1">Inactive Products</h3>
-                                <p class="text-3xl font-bold text-white">
+                                <p class="text-2xl font-bold text-white">
                                     <?= number_format($stats['inactive'] ?? 0) ?>
                                 </p>
                             </div>

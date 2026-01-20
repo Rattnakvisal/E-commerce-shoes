@@ -25,21 +25,29 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
     <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
             <div class="mb-6 animate-fade-in">
-                <div class="flex items-center justify-between mb-6">
-                    <!-- Title -->
+                <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Featured<span class="gradient-text font-extrabold">Management</span></h1>
+                            <h1 class="text-3xl font-bold text-gray-900">Products <span class="gradient-text font-extrabold">Management</span></h1>
                         </div>
-                        <p class="text-gray-600 ml-1">Manage and track all featured items in your store.</p>
+                        <p class="text-gray-600 ml-1">Manage and track all products in your store.</p>
                     </div>
-                    <div>
-                        <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center gap-2"> <i class="fas fa-plus"></i> Add Featured </button>
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
+
+                        <button
+                            onclick="openAddModal()"
+                            id="openAddProduct"
+                            type="button"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
+                           hover:bg-indigo-700 transition">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Featured Item
+                        </button>
                     </div>
                 </div>
                 <!-- Featured Stats Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
-
                     <!-- Total Featured -->
                     <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group">
                         <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>

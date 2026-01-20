@@ -193,7 +193,7 @@ try {
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Users</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-gray-900 glow-text"><?= number_format($total_users) ?></p>
+                                <p class="text-2xl font-bold text-gray-900 glow-text"><?= number_format($total_users) ?></p>
                                 <div class="ml-2">
                                     <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
                                         <i class="fas fa-user-check mr-1 text-xs"></i>
@@ -224,7 +224,7 @@ try {
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Orders</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-gray-900"><?= number_format($total_orders) ?></p>
+                                <p class="text-2xl font-bold text-gray-900"><?= number_format($total_orders) ?></p>
                                 <div class="ml-2">
                                     <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
                                         <i class="fas fa-arrow-up mr-1 text-xs"></i>
@@ -255,7 +255,7 @@ try {
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Revenue</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-gray-900">$<?= number_format($revenue, 2) ?></p>
+                                <p class="text-2xl font-bold text-gray-900">$<?= number_format($revenue, 2) ?></p>
                                 <div class="ml-2">
                                     <span class="inline-flex items-center text-red-600 bg-red-100/80 px-2 py-1 rounded-full text-xs font-medium border border-red-200">
                                         <i class="fas fa-arrow-down mr-1 text-xs"></i>
@@ -286,7 +286,7 @@ try {
                         <div>
                             <h3 class="text-sm font-medium text-white/90 tracking-wider mb-1">Conversion Rate</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-3xl font-bold text-white"><?= number_format($conversion_rate, 2) ?>%</p>
+                                <p class="text-2xl font-bold text-white"><?= number_format($conversion_rate, 2) ?>%</p>
                                 <div class="ml-2">
                                     <span class="inline-flex items-center bg-white/20 text-white px-2 py-1 rounded-full text-xs font-medium border border-white/30">
                                         <i class="fas fa-arrow-up mr-1 text-xs"></i>
