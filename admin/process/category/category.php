@@ -39,12 +39,10 @@ require_once __DIR__ . '/api_category.php';
                 <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
                     <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
-                            Category Management
-                        </h1>
-                        <p class="text-gray-600 mt-1">
-                            Manage product categories and organize your inventory
-                        </p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Category <span class="gradient-text font-extrabold">Management</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Manage and track all categories in your store.</p>
                     </div>
                 </div>
             </div>

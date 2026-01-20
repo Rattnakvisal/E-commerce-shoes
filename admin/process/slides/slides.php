@@ -44,14 +44,11 @@ require_once __DIR__ . '/slides_api.php';
         <div class="p-4 sm:p-6 lg:p-8">
             <div class="mb-6 ">
                 <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
-                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
-                            Slides Management
-                        </h1>
-                        <p class="text-gray-600 mt-1">
-                            Manage your homepage slides
-                        </p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Slides <span class="gradient-text font-extrabold">Management</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Manage and track all slides in your store.</p>
                     </div>
                     <!-- Actions -->
                     <div class="flex items-center gap-3">

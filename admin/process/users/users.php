@@ -29,11 +29,12 @@ require_once __DIR__ . '/process.php';
             <!-- Header -->
             <div class="mb-8">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Users Management</h1>
-                        <p class="text-gray-600 mt-1">
-                            Manage user accounts, roles, and permissions
-                        </p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Users<span class="gradient-text font-extrabold">Management</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Manage user accounts, roles, and permissions</p>
                     </div>
 
                     <div class="flex flex-wrap gap-2">

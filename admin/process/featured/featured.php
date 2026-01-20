@@ -26,9 +26,12 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
         <div class="p-4 sm:p-6 lg:p-8">
             <div class="mb-6 animate-fade-in">
                 <div class="flex items-center justify-between mb-6">
+                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Featured Items</h1>
-                        <p class="text-gray-600">Manage featured section content</p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Featured<span class="gradient-text font-extrabold">Management</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Manage and track all featured items in your store.</p>
                     </div>
                     <div>
                         <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center gap-2"> <i class="fas fa-plus"></i> Add Featured </button>

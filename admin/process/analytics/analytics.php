@@ -61,9 +61,12 @@ require_once __DIR__ . '/analyties_api.php';
             <div class="mb-6 animate-fade-in">
                 <!-- Header -->
                 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-                        <p class="text-gray-600 mt-1">Comprehensive overview of store performance and metrics</p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Analytics <span class="gradient-text font-extrabold">Dashboard</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Comprehensive overview of store performance and metrics</p>
                     </div>
 
                     <!-- Date Range Filter -->

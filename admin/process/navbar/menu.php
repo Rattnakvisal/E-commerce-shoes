@@ -12,8 +12,8 @@ require_once __DIR__ . '/../../../config/connection.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../../../assets/Css/same.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../../../assets/Css/reports.css">
     <style>
         .success-bg {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -38,15 +38,12 @@ require_once __DIR__ . '/../../../config/connection.php';
         <div class="mb-6 animate-fade-in">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 py-4">
-
                     <!-- Title -->
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
-                            Navbar Manager
-                        </h1>
-                        <p class="text-sm text-gray-500 mt-1">
-                            Manage your website navigation menu
-                        </p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Menu<span class="gradient-text font-extrabold">Management</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Manage and track all menu items in your store.</p>
                     </div>
                 </div>
             </div>

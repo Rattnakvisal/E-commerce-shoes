@@ -133,7 +133,7 @@ if (productImage) {
 async function editProduct(id) {
   const confirmed = await confirmEdit(
     "Edit product?",
-    "Open editor for this product."
+    "Open editor for this product.",
   );
   if (!confirmed.isConfirmed) return;
 
@@ -198,7 +198,7 @@ async function deleteProduct(id) {
 
   const result = await confirmDelete(
     "Delete Product?",
-    `Are you sure you want to delete "${productName}"? This action cannot be undone.`
+    `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
   );
 
   if (!result.isConfirmed) return;
@@ -277,8 +277,8 @@ if (productForm) {
         formAction.value === "add"
           ? "create"
           : formAction.value === "update"
-          ? "update"
-          : formAction.value;
+            ? "update"
+            : formAction.value;
       fd.append("action", act);
       if (
         formAction &&
@@ -317,7 +317,7 @@ if (productForm) {
       if (data.success) {
         await showSuccess(
           formAction.value === "add" ? "Product Added!" : "Product Updated!",
-          data.message
+          data.message,
         );
 
         closeModal();

@@ -170,11 +170,17 @@ $totalPages = (int)ceil($totalOrders / $perPage);
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
 
     <!-- Main Content -->
-    <main class="md:ml-64 min-h-screen">
+    <main class="md:ml-64 min-h-screen animate-fade-in">
         <div class="p-4 sm:p-6 lg:p-8">
-            <div class="mb-6 animate-fade-in">
-                <h1 class="text-2xl font-bold text-gray-900">Orders Management</h1>
-                <p class="text-gray-600 mt-1">Manage and track all orders in your store</p>
+            <div class="mb-8 fade-in-up">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-gray-900">Orders <span class="gradient-text font-extrabold">Management</span></h1>
+                        </div>
+                        <p class="text-gray-600 ml-1">Manage and track all orders in your store.</p>
+                    </div>
+                </div>
             </div>
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6 fade-in-up">
