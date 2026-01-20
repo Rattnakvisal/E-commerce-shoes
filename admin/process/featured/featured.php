@@ -17,7 +17,6 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../../../assets/Css/users.css">
-    <link rel="stylesheet" href="../../../assets/Css/same.css">
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -36,71 +35,128 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
                     </div>
                 </div>
                 <!-- Featured Stats Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
-                    <!-- TOTAL FEATURED -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
+
+                    <!-- Total Featured -->
+                    <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Featured</p>
-                                <p class="text-2xl font-bold mt-2">
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format($stats['total'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-blue-100 p-3 rounded-lg">
-                                <i class="fas fa-star text-blue-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-star text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">All featured items</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>All featured items</div>
+                                <div>100%</div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-blue-500 w-full"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- ACTIVE FEATURED -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Active Featured -->
+                    <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Active Featured</p>
-                                <p class="text-2xl font-bold mt-2">
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format($stats['active'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-green-100 p-3 rounded-lg">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-check-circle text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Visible on storefront</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>Visible on storefront</div>
+                                <div>
+                                    <?= round((($stats['active'] ?? 0) / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-green-500"
+                                    style="width: <?= round((($stats['active'] ?? 0) / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- INACTIVE FEATURED (NEW CARD) -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-red-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Inactive Featured -->
+                    <div class="stat-card bg-gradient-to-br from-white to-red-50/50 rounded-2xl p-6 shadow-soft-xl border border-red-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <?php $inactive = max(($stats['total'] ?? 0) - ($stats['active'] ?? 0), 0); ?>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Inactive Featured</p>
-                                <p class="text-2xl font-bold mt-2">
-                                    <?= number_format(($stats['total'] ?? 0) - ($stats['active'] ?? 0)) ?>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format($inactive) ?>
                                 </p>
                             </div>
-                            <div class="bg-red-100 p-3 rounded-lg">
-                                <i class="fas fa-eye-slash text-red-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-eye-slash text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Hidden from site</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div><?= $inactive > 0 ? 'Hidden from site' : 'All active' ?></div>
+                                <div>
+                                    <?= round(($inactive / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-red-500"
+                                    style="width: <?= round(($inactive / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- POSITIONS USED -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Positions Used -->
+                    <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Positions Used</p>
-                                <p class="text-2xl font-bold mt-2">
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format($stats['positions'] ?? 0) ?>
                                 </p>
                             </div>
-                            <div class="bg-purple-100 p-3 rounded-lg">
-                                <i class="fas fa-sort-numeric-up text-purple-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-sort-numeric-up text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Display order slots</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>Display order slots</div>
+                                <div><?= number_format($stats['positions'] ?? 0) ?></div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-purple-500 w-full"></div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
+
                 <?php
                 $queryBase = $_GET;
                 unset($queryBase['status'], $queryBase['page']);

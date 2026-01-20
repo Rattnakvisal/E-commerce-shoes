@@ -159,7 +159,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/Css/dasboard.css">
-    <link rel="stylesheet" href="../assets/Css/same.css">
+    <link rel="stylesheet" href="../assets/Css/reports.css">
 </head>
 
 <body class="bg-gray-50">
@@ -181,87 +181,118 @@ try {
                     </div>
                 </div>
             </div>
-            <!-- Summary Stats (Analytics Style) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
-
-                <!-- TOTAL USERS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
+                <!-- Total Users -->
+                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Total Users</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 <?= number_format($total_users) ?>
                             </p>
                         </div>
-                        <div class="bg-blue-100 p-3 rounded-lg">
-                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-users text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs mt-4 text-green-600 flex items-center">
-                        <i class="fas fa-arrow-up mr-1"></i>
-                        <?= $total_users > 0 ? 'Calculated from DB' : 'No data' ?>
-                    </p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>
+                                <?= $total_users > 0 ? 'Calculated from DB' : 'No data' ?>
+                            </div>
+                            <div>100%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-blue-500 w-full"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- TOTAL ORDERS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                    <div class="flex items-center justify-between">
+                <!-- Total Orders -->
+                <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Total Orders</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 <?= number_format($total_orders) ?>
                             </p>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-lg">
-                            <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-shopping-cart text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs mt-4 text-green-600 flex items-center">
-                        <i class="fas fa-arrow-up mr-1"></i>
-                        8.3% from last week
-                    </p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>From last week</div>
+                            <div class="text-green-600">+8.3%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-green-500" style="width: 8.3%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- REVENUE -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                    <div class="flex items-center justify-between">
+                <!-- Revenue -->
+                <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Revenue</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 $<?= number_format($revenue, 2) ?>
                             </p>
                         </div>
-                        <div class="bg-purple-100 p-3 rounded-lg">
-                            <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-dollar-sign text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs mt-4 text-red-600 flex items-center">
-                        <i class="fas fa-arrow-down mr-1"></i>
-                        3.2% from last month
-                    </p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>From last month</div>
+                            <div class="text-red-600">-3.2%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-purple-500" style="width: 96.8%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- CONVERSION RATE -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
-                    <div class="flex items-center justify-between">
+                <!-- Conversion Rate -->
+                <div class="stat-card bg-gradient-to-br from-white to-yellow-50/50 rounded-2xl p-6 shadow-soft-xl border border-yellow-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Conversion Rate</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 <?= number_format($conversion_rate, 2) ?>%
                             </p>
                         </div>
-                        <div class="bg-yellow-100 p-3 rounded-lg">
-                            <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-chart-line text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs mt-4 text-green-600 flex items-center">
-                        <i class="fas fa-arrow-up mr-1"></i>
-                        1.1% from last week
-                    </p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>From last week</div>
+                            <div class="text-green-600">+1.1%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-yellow-500" style="width: <?= min(max($conversion_rate, 0), 100) ?>%"></div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
-
             <!-- Orders Status & Revenue -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-2xl shadow-md lg:col-span-1">

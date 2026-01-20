@@ -15,8 +15,7 @@ require_once __DIR__ . '/api_category.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="../../../assets/Css/same.css">
+    <link rel="stylesheet" href="../../../assets/Css/reports.css">
     <style>
         .success-bg {
             background-color: #d1fae5;
@@ -50,56 +49,91 @@ require_once __DIR__ . '/api_category.php';
                 </div>
             </div>
             <!-- Summary Stats (Analytics Style) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 fade-in-up">
 
-                <!-- TOTAL CATEGORIES -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between">
+                <!-- Total Categories -->
+                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Total Categories</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 <?= number_format((int)$totalCategories) ?>
                             </p>
                         </div>
-                        <div class="bg-blue-100 p-3 rounded-lg">
-                            <i class="fas fa-tags text-blue-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-tags text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-4">All categories</p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>All categories</div>
+                            <div>100%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-blue-500 w-full"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- TOTAL PRODUCTS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                    <div class="flex items-center justify-between">
+                <!-- Total Products -->
+                <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Total Products</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 <?= number_format((int)$totalProducts) ?>
                             </p>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-lg">
-                            <i class="fas fa-boxes text-green-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-boxes text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-4">Across all categories</p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div>Across all categories</div>
+                            <div>100%</div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-green-500 w-full"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- UNCATEGORIZED PRODUCTS -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
-                    <div class="flex items-center justify-between">
+                <!-- Uncategorized Products -->
+                <div class="stat-card bg-gradient-to-br from-white to-yellow-50/50 rounded-2xl p-6 shadow-soft-xl border border-yellow-100/50 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                    <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <p class="text-sm text-gray-500">Uncategorized Products</p>
                             <p class="text-2xl font-bold mt-2 text-gray-900">
                                 <?= number_format((int)$uncategorizedCount) ?>
                             </p>
                         </div>
-                        <div class="bg-yellow-100 p-3 rounded-lg">
-                            <i class="fas fa-question-circle text-yellow-600 text-xl"></i>
+                        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-3 rounded-xl shadow-md">
+                            <i class="fas fa-question-circle text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-xs mt-4 <?= $uncategorizedCount > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
-                        <?= $uncategorizedCount > 0 ? 'Needs review' : 'All categorized' ?>
-                    </p>
+
+                    <div class="mt-4 relative z-10">
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <div><?= $uncategorizedCount > 0 ? 'Needs review' : 'All categorized' ?></div>
+                            <div>
+                                <?= round(($uncategorizedCount / max($totalProducts, 1)) * 100, 1) ?>%
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 bg-yellow-500"
+                                style="width: <?= round(($uncategorizedCount / max($totalProducts, 1)) * 100, 1) ?>%">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>

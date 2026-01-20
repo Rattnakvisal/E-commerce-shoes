@@ -14,16 +14,8 @@ require_once __DIR__ . '/analyties_api.php';
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/Css/dasboard.css">
+    <link rel="stylesheet" href="../../../assets/Css/reports.css">
     <style>
-        .stat-card {
-            transition: transform 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
         .positive-change {
             color: #10b981;
         }
@@ -120,63 +112,124 @@ require_once __DIR__ . '/analyties_api.php';
                 </div>
 
                 <!-- Summary Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-indigo-500">
-                        <div class="flex items-center justify-between">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
+
+                    <!-- Total Revenue -->
+                    <div class="stat-card bg-gradient-to-br from-white to-indigo-50/50 rounded-2xl p-6 shadow-soft-xl border border-indigo-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-indigo-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Revenue</p>
-                                <p class="text-2xl font-bold mt-2">$<?= number_format($totals['revenue'], 2) ?></p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    $<?= number_format($totals['revenue'], 2) ?>
+                                </p>
                             </div>
-                            <div class="bg-indigo-100 p-3 rounded-lg">
-                                <i class="fas fa-dollar-sign text-indigo-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-dollar-sign text-xl"></i>
                             </div>
                         </div>
-                        <div class="mt-4 flex items-center text-sm">
-                            <span class="<?= $totals['revenue_change'] >= 0 ? 'positive-change' : 'negative-change' ?>">
-                                <i class="fas <?= $totals['revenue_change'] >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' ?> mr-1"></i>
-                                <?= number_format(abs($totals['revenue_change']), 1) ?>%
-                            </span>
-                            <span class="text-gray-500 ml-2">vs yesterday</span>
+
+                        <?php
+                        $revChange = $totals['revenue_change'] ?? 0;
+                        $revPercent = min(abs($revChange), 100);
+                        ?>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div class="<?= $revChange >= 0 ? 'text-green-600' : 'text-red-600' ?>">
+                                    <i class="fas <?= $revChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' ?> mr-1"></i>
+                                    <?= number_format(abs($revChange), 1) ?>%
+                                </div>
+                                <div>vs yesterday</div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 <?= $revChange >= 0 ? 'bg-green-500' : 'bg-red-500' ?>"
+                                    style="width: <?= $revPercent ?>%"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Total Orders -->
+                    <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Orders</p>
-                                <p class="text-2xl font-bold mt-2"><?= number_format($totals['orders']) ?></p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format($totals['orders']) ?>
+                                </p>
                             </div>
-                            <div class="bg-blue-100 p-3 rounded-lg">
-                                <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-shopping-cart text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">Avg. Order Value: $<?= number_format($totals['avg_order_value'], 2) ?></p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>Avg. Order Value</div>
+                                <div>$<?= number_format($totals['avg_order_value'], 2) ?></div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-blue-500 w-full"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Total Customers -->
+                    <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Customers</p>
-                                <p class="text-2xl font-bold mt-2"><?= number_format($totals['users']) ?></p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format($totals['users']) ?>
+                                </p>
                             </div>
-                            <div class="bg-green-100 p-3 rounded-lg">
-                                <i class="fas fa-users text-green-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-users text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">New today: <?= number_format($totals['users_today']) ?></p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>New today</div>
+                                <div><?= number_format($totals['users_today']) ?></div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-green-500 w-full"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Conversion Rate -->
+                    <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Conversion Rate</p>
-                                <p class="text-2xl font-bold mt-2"><?= number_format($totals['conversion_rate'], 1) ?>%</p>
+                                <p class="text-2xl font-bold mt-2 text-gray-900">
+                                    <?= number_format($totals['conversion_rate'], 1) ?>%
+                                </p>
                             </div>
-                            <div class="bg-purple-100 p-3 rounded-lg">
-                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-chart-line text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">Orders per customer</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>Orders per customer</div>
+                                <div><?= number_format($totals['conversion_rate'], 1) ?>%</div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-purple-500"
+                                    style="width: <?= min(max($totals['conversion_rate'], 0), 100) ?>%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

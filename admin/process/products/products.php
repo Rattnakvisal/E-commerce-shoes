@@ -15,7 +15,6 @@ require_once __DIR__ . '/products_api.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../../../assets/Css/products.css">
-    <link rel="stylesheet" href="../../../assets/Css/same.css">
 </head>
 
 <body class="bg-gray-50">

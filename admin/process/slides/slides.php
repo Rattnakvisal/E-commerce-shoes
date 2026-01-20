@@ -16,7 +16,7 @@ require_once __DIR__ . '/slides_api.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../../../assets/Css/slide.css">
-    <link rel="stylesheet" href="../../../assets/Css/same.css">
+    <link rel="stylesheet" href="../../../assets/Css/reports.css">
     <style>
         /* Fade-in animation */
         .animate-fade-in {
@@ -66,61 +66,101 @@ require_once __DIR__ . '/slides_api.php';
                 </div>
 
                 <!-- Summary Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 fade-in-up">
 
-                    <!-- TOTAL SLIDES -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Total Slides -->
+                    <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Total Slides</p>
                                 <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format((int)($statusCounts['all'] ?? 0)) ?>
                                 </p>
                             </div>
-                            <div class="bg-blue-100 p-3 rounded-lg">
-                                <i class="fas fa-images text-blue-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-images text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">All slides</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>All slides</div>
+                                <div>100%</div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-green-500"
+                                    style="width: <?= round((($statusCounts['active'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- ACTIVE SLIDES -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Active Slides -->
+                    <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Active Slides</p>
                                 <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format((int)($statusCounts['active'] ?? 0)) ?>
                                 </p>
                             </div>
-                            <div class="bg-green-100 p-3 rounded-lg">
-                                <i class="fas fa-eye text-green-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-eye text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Visible on site</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>Visible on site</div>
+                                <div>
+                                    <?= round((($statusCounts['active'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-green-500"
+                                    style="width: <?= round((($statusCounts['active'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- INACTIVE SLIDES -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-yellow-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Inactive Slides -->
+                    <div class="stat-card bg-gradient-to-br from-white to-yellow-50/50 rounded-2xl p-6 shadow-soft-xl border border-yellow-100/50 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
                                 <p class="text-sm text-gray-500">Inactive Slides</p>
                                 <p class="text-2xl font-bold mt-2 text-gray-900">
                                     <?= number_format((int)($statusCounts['inactive'] ?? 0)) ?>
                                 </p>
                             </div>
-                            <div class="bg-yellow-100 p-3 rounded-lg">
-                                <i class="fas fa-eye-slash text-yellow-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-eye-slash text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs mt-4 <?= ($statusCounts['inactive'] ?? 0) > 0 ? 'text-yellow-600' : 'text-gray-500' ?>">
-                            <?= ($statusCounts['inactive'] ?? 0) > 0 ? 'Hidden slides' : 'All active' ?>
-                        </p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                <div>
+                                    <?= ($statusCounts['inactive'] ?? 0) > 0 ? 'Hidden slides' : 'All active' ?>
+                                </div>
+                                <div>
+                                    <?= round((($statusCounts['inactive'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+                                <div class="h-2 bg-yellow-500"
+                                    style="width: <?= round((($statusCounts['inactive'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
                 </div>
-
-
                 <?php
                 $queryBase = $_GET;
                 unset($queryBase['status'], $queryBase['page']);

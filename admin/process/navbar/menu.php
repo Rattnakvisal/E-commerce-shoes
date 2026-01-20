@@ -54,54 +54,66 @@ require_once __DIR__ . '/../../../config/connection.php';
             <!-- Main Content -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Stats Overview -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 fade-in-up">
 
-                    <!-- PARENT ITEMS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Parent Items -->
+                    <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Parent Items</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900" id="parentCount">
-                                    0
-                                </p>
+                                <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Parent Items</h3>
+                                <p class="text-3xl font-bold mt-2 text-gray-900 glow-text" id="parentCount">0</p>
                             </div>
-                            <div class="bg-blue-100 p-3 rounded-lg">
-                                <i class="fas fa-layer-group text-blue-600 text-xl"></i>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
+                                <i class="fas fa-layer-group text-lg"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Top-level menus</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex justify-between text-sm text-gray-500 mb-2">
+                                <span>Top-level menus</span>
+                                <span class="font-semibold">100%</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- MENU GROUPS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Menu Groups -->
+                    <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group hover:shadow-glow-green">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Menu Groups</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900" id="groupCount">
-                                    0
-                                </p>
-                            </div>
-                            <div class="bg-green-100 p-3 rounded-lg">
-                                <i class="fas fa-folder text-green-600 text-xl"></i>
+                                <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Menu Groups</h3>
+                                <p class="text-3xl font-bold mt-2 text-gray-900" id="groupCount">0</p>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Grouped navigation items</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex justify-between text-sm text-gray-500 mb-2">
+                                <span>Grouped navigation</span>
+                                <span class="font-semibold">—</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- MENU ITEMS -->
-                    <div class="stat-card bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500">
-                        <div class="flex items-center justify-between">
+                    <!-- Menu Items -->
+                    <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group hover:shadow-glow-purple">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
                             <div>
-                                <p class="text-sm text-gray-500">Menu Items</p>
-                                <p class="text-2xl font-bold mt-2 text-gray-900" id="itemCount">
-                                    0
-                                </p>
-                            </div>
-                            <div class="bg-purple-100 p-3 rounded-lg">
-                                <i class="fas fa-link text-purple-600 text-xl"></i>
+                                <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Menu Items</h3>
+                                <p class="text-3xl font-bold mt-2 text-gray-900" id="itemCount">0</p>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4">Total links</p>
+
+                        <div class="mt-4 relative z-10">
+                            <div class="flex justify-between text-sm text-gray-500 mb-2">
+                                <span>Total links</span>
+                                <span class="font-semibold">—</span>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
