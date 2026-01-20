@@ -2,9 +2,8 @@
    CONFIG
 ===================================================== */
 const BASE_URL = "/E-commerce-shoes";
-
-// USERS API
 const USERS_API_URL = `${BASE_URL}/admin/process/users/users_api.php`;
+const RELOAD_DELAY = 700;
 
 /* =====================================================
    API HELPER
@@ -14,9 +13,7 @@ async function apiRequest(action, options = {}) {
 
   const url =
     method === "GET"
-      ? `${USERS_API_URL}?action=${action}&${new URLSearchParams(
-          options.params || {},
-        )}`
+      ? `${USERS_API_URL}?action=${action}&${new URLSearchParams(options.params || {})}`
       : `${USERS_API_URL}?action=${action}`;
 
   const res = await fetch(url, {
@@ -26,12 +23,12 @@ async function apiRequest(action, options = {}) {
   });
 
   const text = await res.text();
-
   let data;
+
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    throw new Error("Server returned invalid JSON");
+    throw new Error("Invalid server response");
   }
 
   if (!res.ok || data.success === false) {
@@ -42,179 +39,18 @@ async function apiRequest(action, options = {}) {
 }
 
 /* =====================================================
-   MODAL CONTROLS
+   UTILITIES
 ===================================================== */
-function openEditUserModal() {
-  document.getElementById("editUserModal")?.classList.remove("hidden");
-}
+const delayReload = () => setTimeout(() => location.reload(), RELOAD_DELAY);
 
-function closeEditUserModal() {
-  document.getElementById("editUserModal")?.classList.add("hidden");
-}
+const debounce = (fn, delay = 300) => {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), delay);
+  };
+};
 
-/* =====================================================
-   VIEW USER
-===================================================== */
-async function viewUser(userId) {
-  try {
-    const { user } = await apiRequest("get_user", {
-      params: { id: userId },
-    });
-
-    Swal.fire({
-      title: esc(user.name),
-      html: `
-        <div class="text-left space-y-2">
-          <p><strong>Email:</strong> ${esc(user.email)}</p>
-          <p><strong>Phone:</strong> ${esc(user.phone || "-")}</p>
-          <p><strong>Role:</strong> ${esc(user.role)}</p>
-          <p><strong>Status:</strong> ${esc(user.status)}</p>
-          <p><strong>Joined:</strong> ${new Date(
-            user.created_at,
-          ).toLocaleDateString()}</p>
-        </div>
-      `,
-      confirmButtonText: "Close",
-    });
-  } catch (e) {
-    showError(e.message);
-  }
-}
-
-function confirmEdit(title, text) {
-  return Swal.fire({
-    title: title || "Edit user?",
-    text: text || "Open editor for this user.",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Edit",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#6b46c1",
-    cancelButtonColor: "#6b7280",
-    reverseButtons: false,
-  });
-}
-
-/* =====================================================
-   EDIT USER
-===================================================== */
-async function editUser(userId) {
-  const confirmed = await confirmEdit(
-    "Edit user?",
-    "Open editor for this user.",
-  );
-  if (!confirmed || !confirmed.isConfirmed) return;
-  try {
-    if (typeof Swal !== "undefined") Swal.close();
-
-    const { user } = await apiRequest("get_user", {
-      params: { id: userId },
-    });
-
-    document.getElementById("edit_user_id").value = user.user_id;
-    document.getElementById("edit_name").value = user.name || "";
-    document.getElementById("edit_email").value = user.email || "";
-    document.getElementById("edit_phone").value = user.phone || "";
-    document.getElementById("edit_role").value = user.role || "customer";
-    document.getElementById("edit_status").value = user.status || "active";
-    document.getElementById("edit_password").value = "";
-
-    openEditUserModal();
-  } catch (e) {
-    showError(e.message);
-  }
-}
-
-/* =====================================================
-   EDIT FORM SUBMIT
-===================================================== */
-document
-  .getElementById("editUserForm")
-  ?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const fd = new FormData(e.target);
-    fd.append("action", "update");
-
-    try {
-      await apiRequest("update", {
-        method: "POST",
-        body: fd,
-      });
-
-      showSuccess("User updated");
-      setTimeout(() => location.reload(), 800);
-    } catch (e) {
-      showError(e.message);
-    }
-  });
-
-/* =====================================================
-   DELETE USER
-===================================================== */
-async function deleteUser(userId) {
-  const confirm = await Swal.fire({
-    title: "Delete user?",
-    text: "This action cannot be undone",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#dc2626",
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  try {
-    await apiRequest("delete", {
-      method: "POST",
-      body: formData({ user_id: userId }),
-    });
-
-    showSuccess("User deleted");
-    setTimeout(() => location.reload(), 800);
-  } catch (e) {
-    showError(e.message);
-  }
-}
-
-/* =====================================================
-   UPDATE ROLE
-===================================================== */
-async function updateUserRole(userId, role) {
-  try {
-    await apiRequest("update_role", {
-      method: "POST",
-      body: formData({ user_id: userId, role }),
-    });
-
-    showSuccess("Role updated");
-    setTimeout(() => location.reload(), 800);
-  } catch (e) {
-    showError(e.message);
-  }
-}
-
-/* =====================================================
-   TOGGLE STATUS
-===================================================== */
-async function toggleUserStatus(userId, action) {
-  const status = action === "deactivate" ? "inactive" : "active";
-
-  try {
-    await apiRequest("update_status", {
-      method: "POST",
-      body: formData({ user_id: userId, status }),
-    });
-
-    showSuccess("Status updated");
-    setTimeout(() => location.reload(), 800);
-  } catch (e) {
-    showError(e.message);
-  }
-}
-
-/* =====================================================
-   HELPERS
-===================================================== */
 function formData(obj) {
   const fd = new FormData();
   Object.entries(obj).forEach(([k, v]) => fd.append(k, v));
@@ -230,120 +66,190 @@ function esc(text = "") {
 /* =====================================================
    ALERTS
 ===================================================== */
-function showLoading(msg = "Loading...") {
+const showLoading = (msg = "Loading...") =>
   Swal.fire({
     title: msg,
     allowOutsideClick: false,
-    didOpen: () => Swal.showLoading(),
+    didOpen: Swal.showLoading,
   });
-}
 
-function showSuccess(msg) {
+const showSuccess = (msg) =>
   Swal.fire({
     icon: "success",
     title: msg,
     timer: 1200,
     showConfirmButton: false,
   });
+
+const showError = (msg) =>
+  Swal.fire({ icon: "error", title: "Error", text: msg });
+
+/* =====================================================
+   LIVE SEARCH (TABLE FILTER)
+===================================================== */
+const searchInput = document.getElementById("liveUserSearch");
+const userRows = document.querySelectorAll("tbody tr[data-user-id]");
+
+if (searchInput) {
+  searchInput.addEventListener(
+    "input",
+    debounce((e) => {
+      const q = e.target.value.toLowerCase().trim();
+
+      userRows.forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? "" : "none";
+      });
+    }, 200),
+  );
 }
 
-function showError(msg) {
-  Swal.fire({
-    icon: "error",
-    title: "Error",
-    text: msg,
+/* =====================================================
+   USER ACTIONS
+===================================================== */
+async function viewUser(userId) {
+  try {
+    const { user } = await apiRequest("get_user", { params: { id: userId } });
+
+    Swal.fire({
+      title: esc(user.name),
+      html: `
+        <div class="text-left space-y-2">
+          <p><b>Email:</b> ${esc(user.email)}</p>
+          <p><b>Phone:</b> ${esc(user.phone || "-")}</p>
+          <p><b>Role:</b> ${esc(user.role)}</p>
+          <p><b>Status:</b> ${esc(user.status)}</p>
+          <p><b>Joined:</b> ${new Date(user.created_at).toLocaleDateString()}</p>
+        </div>
+      `,
+    });
+  } catch (e) {
+    showError(e.message);
+  }
+}
+
+async function editUser(userId) {
+  const confirm = await Swal.fire({
+    title: "Edit user?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Edit",
   });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    const { user } = await apiRequest("get_user", { params: { id: userId } });
+
+    ["user_id", "name", "email", "phone", "role", "status"].forEach((k) => {
+      const el = document.getElementById(`edit_${k}`);
+      if (el) el.value = user[k] || "";
+    });
+
+    document.getElementById("edit_password").value = "";
+    document.getElementById("editUserModal")?.classList.remove("hidden");
+  } catch (e) {
+    showError(e.message);
+  }
 }
 
-function showAddUserModal() {
-  document.getElementById("addUserModal").classList.remove("hidden");
+async function deleteUser(userId) {
+  const confirm = await Swal.fire({
+    title: "Delete user?",
+    text: "This action cannot be undone",
+    icon: "warning",
+    showCancelButton: true,
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    await apiRequest("delete", {
+      method: "POST",
+      body: formData({ user_id: userId }),
+    });
+    showSuccess("User deleted");
+    delayReload();
+  } catch (e) {
+    showError(e.message);
+  }
 }
 
-function closeAddUserModal() {
-  document.getElementById("addUserModal").classList.add("hidden");
+async function updateUserRole(userId, role) {
+  try {
+    await apiRequest("update_role", {
+      method: "POST",
+      body: formData({ user_id: userId, role }),
+    });
+    showSuccess("Role updated");
+    delayReload();
+  } catch (e) {
+    showError(e.message);
+  }
 }
 
-function closeModal() {
-  document.getElementById("userDetailsModal").classList.add("hidden");
+async function toggleUserStatus(userId, action) {
+  const status = action === "deactivate" ? "inactive" : "active";
+  try {
+    await apiRequest("update_status", {
+      method: "POST",
+      body: formData({ user_id: userId, status }),
+    });
+    showSuccess("Status updated");
+    delayReload();
+  } catch (e) {
+    showError(e.message);
+  }
 }
 
-// Handle add user form submission -> call users API
+/* =====================================================
+   ADD / EDIT FORMS
+===================================================== */
+document
+  .getElementById("editUserForm")
+  ?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      await apiRequest("update", {
+        method: "POST",
+        body: new FormData(e.target),
+      });
+      showSuccess("User updated");
+      delayReload();
+    } catch (e) {
+      showError(e.message);
+    }
+  });
+
 document
   .getElementById("addUserForm")
-  .addEventListener("submit", async function (e) {
+  ?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const f = e.target;
 
-    const form = this;
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const password = form.password.value;
-    const confirm_password = form.confirm_password.value;
-    const role = form.role.value;
-    const phone = form.phone.value || "";
-    const status = form.status.value || "active";
-
-    if (password !== confirm_password) {
-      Swal.fire("Error", "Passwords do not match", "error");
-      return;
+    if (f.password.value !== f.confirm_password.value) {
+      return showError("Passwords do not match");
     }
 
     try {
       showLoading("Creating user...");
-      await apiRequest("create", {
-        method: "POST",
-        body: formData({
-          name,
-          email,
-          password,
-          role,
-          phone,
-          status,
-        }),
-      });
-
+      await apiRequest("create", { method: "POST", body: new FormData(f) });
       Swal.close();
       showSuccess("User created");
-      closeAddUserModal();
-      form.reset();
-      setTimeout(() => location.reload(), 800);
-    } catch (err) {
+      delayReload();
+    } catch (e) {
       Swal.close();
-      showError(err.message);
+      showError(e.message);
     }
   });
-
-// Close modals on escape key
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeModal();
-    closeAddUserModal();
-  }
-});
-
-// Close modals on overlay click (guard missing elements)
-const userDetailsModalEl = document.getElementById("userDetailsModal");
-if (userDetailsModalEl) {
-  userDetailsModalEl.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal-overlay")) {
-      closeModal();
-    }
-  });
-}
-
-const addUserModalEl = document.getElementById("addUserModal");
-if (addUserModalEl) {
-  addUserModalEl.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal-overlay")) {
-      closeAddUserModal();
-    }
-  });
-}
 
 /* =====================================================
    GLOBAL EXPORTS
 ===================================================== */
-window.viewUser = viewUser;
-window.editUser = editUser;
-window.deleteUser = deleteUser;
-window.updateUserRole = updateUserRole;
-window.toggleUserStatus = toggleUserStatus;
+Object.assign(window, {
+  viewUser,
+  editUser,
+  deleteUser,
+  updateUserRole,
+  toggleUserStatus,
+});

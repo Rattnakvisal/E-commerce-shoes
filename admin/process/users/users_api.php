@@ -25,12 +25,8 @@ if (empty($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 /* =====================================================
    HELPERS
 ===================================================== */
-function respond(
-    bool $success,
-    string $message = '',
-    int $code = 200,
-    array $data = []
-): void {
+function respond(bool $success, string $message = '', int $code = 200, array $data = []): void
+{
     http_response_code($code);
     echo json_encode(array_merge(
         ['success' => $success, 'message' => $message],
@@ -39,7 +35,7 @@ function respond(
     exit;
 }
 
-function request(string $key, mixed $default = ''): mixed
+function request(string $key, mixed $default = null): mixed
 {
     return $_POST[$key] ?? $_GET[$key] ?? $default;
 }
@@ -60,23 +56,43 @@ function columnExists(string $column): bool
     try {
         $stmt = $pdo->prepare("SHOW COLUMNS FROM users LIKE ?");
         $stmt->execute([$column]);
-        return $columnCache[$column] = (bool)$stmt->fetch();
+        return $columnCache[$column] = (bool) $stmt->fetch();
     } catch (Throwable) {
         return $columnCache[$column] = false;
     }
 }
 
 /* =====================================================
+   VALIDATORS
+===================================================== */
+function validRole(string $role): bool
+{
+    return in_array($role, ['admin', 'staff', 'customer'], true);
+}
+
+function normalizeStatus(string $raw): string
+{
+    $raw = strtolower(trim($raw));
+
+    return match (true) {
+        in_array($raw, ['1', 'true', 'yes', 'y', 'active'], true)   => 'active',
+        in_array($raw, ['0', 'false', 'no', 'n', 'inactive'], true) => 'inactive',
+        default => ''
+    };
+}
+
+/* =====================================================
    ACTION ROUTER
 ===================================================== */
-$action = request('action');
+$action = (string) request('action');
 
 try {
+
     switch ($action) {
 
         /* ================= GET USER ================= */
         case 'get_user': {
-                $id = (int)request('id');
+                $id = (int) request('id');
                 if ($id <= 0) respond(false, 'Invalid user ID', 400);
 
                 $cols = ['user_id', 'name', 'email', 'role', 'created_at'];
@@ -95,12 +111,12 @@ try {
                 respond(true, 'OK', 200, ['user' => $user]);
             }
 
-            /* ================= CREATE ================= */
+            /* ================= CREATE USER ================= */
         case 'create': {
-                $name     = trim((string)request('name'));
-                $email    = trim((string)request('email'));
-                $password = (string)request('password');
-                $role     = request('role', 'customer');
+                $name     = trim((string) request('name'));
+                $email    = trim((string) request('email'));
+                $password = (string) request('password');
+                $role     = (string) request('role', 'customer');
 
                 if ($name === '' || $email === '' || strlen($password) < 6) {
                     respond(false, 'Invalid input', 400);
@@ -110,7 +126,7 @@ try {
                     respond(false, 'Invalid email', 400);
                 }
 
-                if (!in_array($role, ['admin', 'staff', 'customer'], true)) {
+                if (!validRole($role)) {
                     $role = 'customer';
                 }
 
@@ -121,14 +137,11 @@ try {
                 }
 
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-                $hasStatus    = columnExists('status');
-                $status       = strtolower((string)request('status', 'active'));
 
-                if (!in_array($status, ['active', 'inactive'], true)) {
-                    $status = 'active';
-                }
+                if (columnExists('status')) {
+                    $status = normalizeStatus((string) request('status', 'active'));
+                    if ($status === '') $status = 'active';
 
-                if ($hasStatus) {
                     $stmt = $pdo->prepare(
                         "INSERT INTO users (name, email, password, role, status, created_at)
                      VALUES (?, ?, ?, ?, ?, NOW())"
@@ -145,13 +158,13 @@ try {
                 respond(true, 'User created successfully');
             }
 
-            /* ================= UPDATE ================= */
+            /* ================= UPDATE USER ================= */
         case 'update': {
-                $id       = (int)request('user_id');
-                $name     = trim((string)request('name'));
-                $email    = trim((string)request('email'));
-                $password = (string)request('password');
-                $role     = request('role', 'customer');
+                $id       = (int) request('user_id');
+                $name     = trim((string) request('name'));
+                $email    = trim((string) request('email'));
+                $password = (string) request('password');
+                $role     = (string) request('role', 'customer');
 
                 if ($id <= 0 || $name === '' || $email === '') {
                     respond(false, 'Invalid input', 400);
@@ -161,7 +174,7 @@ try {
                     respond(false, 'Invalid email', 400);
                 }
 
-                if (!in_array($role, ['admin', 'staff', 'customer'], true)) {
+                if (!validRole($role)) {
                     $role = 'customer';
                 }
 
@@ -175,9 +188,7 @@ try {
 
                 if ($password !== '') {
                     $stmt = $pdo->prepare(
-                        "UPDATE users
-                     SET name = ?, email = ?, password = ?, role = ?
-                     WHERE user_id = ?"
+                        "UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE user_id = ?"
                     );
                     $stmt->execute([
                         $name,
@@ -188,9 +199,7 @@ try {
                     ]);
                 } else {
                     $stmt = $pdo->prepare(
-                        "UPDATE users
-                     SET name = ?, email = ?, role = ?
-                     WHERE user_id = ?"
+                        "UPDATE users SET name = ?, email = ?, role = ? WHERE user_id = ?"
                     );
                     $stmt->execute([$name, $email, $role, $id]);
                 }
@@ -198,11 +207,12 @@ try {
                 respond(true, 'User updated successfully');
             }
 
-            /* ================= DELETE ================= */
+            /* ================= DELETE USER ================= */
         case 'delete': {
-                $id = (int)request('user_id');
+                $id = (int) request('user_id');
+
                 if ($id <= 0) respond(false, 'Invalid user ID', 400);
-                if ($id === (int)$_SESSION['user_id']) {
+                if ($id === (int) $_SESSION['user_id']) {
                     respond(false, 'Cannot delete your own account', 400);
                 }
 
@@ -222,14 +232,14 @@ try {
 
             /* ================= UPDATE ROLE ================= */
         case 'update_role': {
-                $id   = (int)request('user_id');
-                $role = request('role');
+                $id   = (int) request('user_id');
+                $role = (string) request('role');
 
-                if ($id <= 0 || !in_array($role, ['admin', 'staff', 'customer'], true)) {
+                if ($id <= 0 || !validRole($role)) {
                     respond(false, 'Invalid input', 400);
                 }
 
-                if ($id === (int)$_SESSION['user_id'] && $role !== 'admin') {
+                if ($id === (int) $_SESSION['user_id'] && $role !== 'admin') {
                     respond(false, 'Cannot change your own admin role', 400);
                 }
 
@@ -246,14 +256,14 @@ try {
                     respond(false, 'Status column not available', 400);
                 }
 
-                $id     = (int)request('user_id');
-                $status = strtolower((string)request('status'));
+                $id     = (int) request('user_id');
+                $status = normalizeStatus((string) request('status'));
 
-                if ($id <= 0 || !in_array($status, ['active', 'inactive'], true)) {
+                if ($id <= 0 || $status === '') {
                     respond(false, 'Invalid input', 400);
                 }
 
-                if ($id === (int)$_SESSION['user_id']) {
+                if ($id === (int) $_SESSION['user_id']) {
                     respond(false, 'Cannot change your own status', 400);
                 }
 

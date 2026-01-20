@@ -201,9 +201,9 @@ try {
                     <div class="mt-4 relative z-10">
                         <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                             <div>
-                                <?= $total_users > 0 ? 'Calculated from DB' : 'No data' ?>
+                                <?= $total_users > 0 ? 'Member' : 'No data' ?>
                             </div>
-                            <div>100%</div>
+                            <div> </div>
                         </div>
                         <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
                             <div class="h-2 bg-blue-500 w-full"></div>
@@ -260,7 +260,7 @@ try {
                             <div class="text-red-600">-3.2%</div>
                         </div>
                         <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-purple-500" style="width: 96.8%"></div>
+                            <div class="h-2 bg-yellow-500" style="width: <?= min(max($conversion_rate, 0), 100) ?>%"></div>
                         </div>
                     </div>
                 </div>

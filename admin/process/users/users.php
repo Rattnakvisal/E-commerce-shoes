@@ -155,130 +155,151 @@ require_once __DIR__ . '/process.php';
 
             <!-- Filter Tabs -->
             <div class="bg-white rounded-xl shadow-sm mb-6">
+
+                <!-- Tabs -->
                 <div class="border-b border-gray-200">
                     <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
 
-                        <!-- ALL -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
+                        <!-- All Users -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => '', 'role' => ''])) ?>"
                             class="flex items-center gap-2 text-sm font-medium
-       <?= empty($_GET['status'])
-            ? 'text-indigo-600 border-b-2 border-indigo-600'
-            : 'text-gray-500 hover:text-gray-700' ?>">
+               <?= (!$filters['status'] && !$filters['role'])
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
                             All Users
                             <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
                                 <?= $statusCounts['all'] ?>
                             </span>
                         </a>
 
-                        <!-- ACTIVE -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
+                        <!-- Active -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active', 'role' => ''])) ?>"
                             class="flex items-center gap-2 text-sm font-medium
-       <?= ($filters['status'] === 'active')
-            ? 'text-indigo-600 border-b-2 border-indigo-600'
-            : 'text-gray-500 hover:text-gray-700' ?>">
+               <?= ($filters['status'] === 'active')
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
                             Active
                             <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
                                 <?= $statusCounts['active'] ?>
                             </span>
                         </a>
 
-                        <!-- INACTIVE -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
+                        <!-- Inactive -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive', 'role' => ''])) ?>"
                             class="flex items-center gap-2 text-sm font-medium
-       <?= ($filters['status'] === 'inactive')
-            ? 'text-indigo-600 border-b-2 border-indigo-600'
-            : 'text-gray-500 hover:text-gray-700' ?>">
+               <?= ($filters['status'] === 'inactive')
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
                             Inactive
                             <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
                                 <?= $statusCounts['inactive'] ?>
                             </span>
                         </a>
+
+                        <!-- Role: Admin -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'admin', 'status' => ''])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+               <?= ($filters['role'] === 'admin')
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Admin
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                <?= $roleCounts['admin'] ?>
+                            </span>
+                        </a>
+
+                        <!-- Role: Staff -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'staff', 'status' => ''])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+               <?= ($filters['role'] === 'staff')
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Staff
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                <?= $roleCounts['staff'] ?>
+                            </span>
+                        </a>
+
+                        <!-- Role: Customer -->
+                        <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'customer', 'status' => ''])) ?>"
+                            class="flex items-center gap-2 text-sm font-medium
+               <?= ($filters['role'] === 'customer')
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700' ?>">
+                            Customers
+                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                <?= $roleCounts['customer'] ?>
+                            </span>
+                        </a>
+
                     </nav>
                 </div>
 
-                <!-- Filter Controls -->
-                <div class="p-4 border-b border-gray-200">
-                    <!-- Filter Controls -->
-                    <div class="p-4">
-                        <form method="GET"
-                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                <!-- Filter Form -->
+                <div class="p-4">
+                    <form method="GET"
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
 
-                            <!-- Search -->
-                            <div class="lg:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Search
-                                </label>
-                                <div class="relative">
-                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                    <input
-                                        type="text"
-                                        name="search"
-                                        value="<?= htmlspecialchars($filters['search']) ?>"
-                                        placeholder="Name, Email, Phone..."
-                                        class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300
-                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                           transition">
-                                </div>
+                        <!-- Preserve tab filters -->
+                        <input type="hidden" name="status" value="<?= htmlspecialchars($filters['status']) ?>">
+                        <input type="hidden" name="role" value="<?= htmlspecialchars($filters['role']) ?>">
+
+                        <!-- Search -->
+                        <div class="lg:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input type="text"
+                                    name="search"
+                                    value="<?= htmlspecialchars($filters['search']) ?>"
+                                    placeholder="Name, Email, Phone..."
+                                    class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300
+                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                             </div>
+                        </div>
 
-                            <!-- Role Filter -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Role
-                                </label>
-                                <select
-                                    name="role"
-                                    class="w-full px-3 py-2 rounded-lg border border-gray-300
-                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                       transition">
-                                    <option value="">All Roles</option>
-                                    <option value="admin" <?= $filters['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                    <option value="staff" <?= $filters['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
-                                    <option value="customer" <?= $filters['role'] === 'customer' ? 'selected' : '' ?>>Customer</option>
-                                </select>
-                            </div>
+                        <!-- Role Select -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                            <select name="role"
+                                class="w-full px-3 py-2 rounded-lg border border-gray-300
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                <option value="">All Roles</option>
+                                <option value="admin" <?= $filters['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                <option value="staff" <?= $filters['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
+                                <option value="customer" <?= $filters['role'] === 'customer' ? 'selected' : '' ?>>Customer</option>
+                            </select>
+                        </div>
 
-                            <!-- Sort -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Sort By
-                                </label>
-                                <select
-                                    name="sort"
-                                    class="w-full px-3 py-2 rounded-lg border border-gray-300
-                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                       transition">
-                                    <option value="newest" <?= $filters['sort'] === 'newest' ? 'selected' : '' ?>>Newest First</option>
-                                    <option value="oldest" <?= $filters['sort'] === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
-                                    <option value="name_asc" <?= $filters['sort'] === 'name_asc' ? 'selected' : '' ?>>Name (A-Z)</option>
-                                    <option value="name_desc" <?= $filters['sort'] === 'name_desc' ? 'selected' : '' ?>>Name (Z-A)</option>
-                                    <option value="email_asc" <?= $filters['sort'] === 'email_asc' ? 'selected' : '' ?>>Email (A-Z)</option>
-                                    <option value="email_desc" <?= $filters['sort'] === 'email_desc' ? 'selected' : '' ?>>Email (Z-A)</option>
-                                </select>
-                            </div>
+                        <!-- Sort -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                            <select name="sort"
+                                class="w-full px-3 py-2 rounded-lg border border-gray-300
+                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                <option value="newest" <?= $filters['sort'] === 'newest' ? 'selected' : '' ?>>Newest First</option>
+                                <option value="oldest" <?= $filters['sort'] === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+                                <option value="name_asc" <?= $filters['sort'] === 'name_asc' ? 'selected' : '' ?>>Name (A–Z)</option>
+                                <option value="name_desc" <?= $filters['sort'] === 'name_desc' ? 'selected' : '' ?>>Name (Z–A)</option>
+                            </select>
+                        </div>
 
-                            <!-- Buttons -->
-                            <div class="lg:col-span-2 flex gap-2 justify-end">
-                                <button
-                                    type="reset"
-                                    onclick="window.location.href='users.php'"
-                                    class="px-4 py-2 rounded-lg border border-gray-300
-                       text-gray-700 bg-white hover:bg-gray-50
-                       transition active:scale-95">
-                                    Clear
-                                </button>
+                        <!-- Buttons -->
+                        <div class="lg:col-span-2 flex gap-2 justify-end">
+                            <a href="users.php"
+                                class="px-4 py-2 rounded-lg border border-gray-300
+                          text-gray-700 bg-white hover:bg-gray-50 transition">
+                                Clear
+                            </a>
 
-                                <button
-                                    type="submit"
-                                    class="px-4 py-2 rounded-lg bg-indigo-600 text-white
-                       hover:bg-indigo-700 transition
-                       active:scale-95 inline-flex items-center">
-                                    <i class="fas fa-filter mr-2"></i>
-                                    Apply
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-indigo-600 text-white
+                               hover:bg-indigo-700 transition inline-flex items-center">
+                                <i class="fas fa-filter mr-2"></i> Apply
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
             </div>
 
@@ -288,22 +309,21 @@ require_once __DIR__ . '/process.php';
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">email</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Activity</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody class="divide-y divide-gray-200">
                             <?php if (empty($users)): ?>
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12">
+                                    <td colspan="6" class="px-6 py-12 text-center">
                                         <div class="empty-state">
-                                            <div class="empty-state-icon">
-                                                <i class="fas fa-users"></i>
-                                            </div>
+                                            <div class="empty-state-icon"><i class="fas fa-users"></i></div>
                                             <h3 class="empty-state-title">No users found</h3>
                                             <p class="empty-state-description">Try adjusting your filters</p>
                                         </div>
@@ -311,80 +331,89 @@ require_once __DIR__ . '/process.php';
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($users as $user): ?>
-                                    <tr class="hover:bg-gray-50 transition" data-user-id="<?= $user['user_id'] ?>">
+
+                                    <?php
+                                    // ---------- Normalize ----------
+                                    $id    = (int) $user['user_id'];
+                                    $name  = trim((string) ($user['name'] ?? ''));
+                                    $email = (string) ($user['email'] ?? '');
+                                    $role  = strtolower((string) ($user['role'] ?? ''));
+                                    $phone = (string) ($user['phone'] ?? '');
+
+                                    $avatar = $user['avatar_url'] ?? null;
+                                    $initials = strtoupper(substr($name !== '' ? $name : 'U', 0, 2));
+
+                                    $rawStatus = strtolower(trim((string) ($user['status'] ?? '')));
+                                    $status = match (true) {
+                                        in_array($rawStatus, ['1', 'true', 'yes', 'y', 'active', 'enabled', 'enable'], true) => 'active',
+                                        in_array($rawStatus, ['0', 'false', 'no', 'n', 'inactive', 'disabled', 'disable'], true) => 'inactive',
+                                        default => 'active',
+                                    };
+
+                                    $canDelete = $role !== 'admin' && $id !== ($_SESSION['user_id'] ?? 0);
+                                    $canToggle = $id !== ($_SESSION['user_id'] ?? 0);
+                                    ?>
+
+                                    <tr class="hover:bg-gray-50 transition" data-user-id="<?= $id ?>">
+
+                                        <!-- User -->
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
-                                                <?php $avatar = $user['avatar_url'] ?? null; ?>
                                                 <?php if (!empty($avatar)): ?>
                                                     <img src="<?= htmlspecialchars($avatar) ?>"
-                                                        alt="<?= htmlspecialchars($user['name'] ?? '') ?>"
+                                                        alt="<?= htmlspecialchars($name) ?>"
                                                         class="w-10 h-10 rounded-full mr-3">
                                                 <?php else: ?>
                                                     <div class="w-10 h-10 avatar-placeholder mr-3">
-                                                        <?= strtoupper(substr($user['name'] ?? '', 0, 2)) ?>
+                                                        <?= htmlspecialchars($initials) ?>
                                                     </div>
                                                 <?php endif; ?>
+
                                                 <div>
-                                                    <div class="font-medium text-gray-900"><?= htmlspecialchars($user['name'] ?? '') ?></div>
+                                                    <div class="font-medium text-gray-900"><?= htmlspecialchars($name) ?></div>
                                                     <div class="text-xs text-gray-500 mt-1">
-                                                        ID: #<?= str_pad($user['user_id'], 6, '0', STR_PAD_LEFT) ?>
+                                                        ID: #<?= str_pad((string)$id, 6, '0', STR_PAD_LEFT) ?>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
 
+                                        <!-- Email -->
                                         <td class="px-6 py-4">
-                                            <div>
-                                                <div class="font-medium text-gray-900"><?= htmlspecialchars($user['email'] ?? '') ?></div>
-                                                <?php if ($user['phone']): ?>
-                                                    <div class="text-sm text-gray-500">
-                                                        <i class="fas fa-phone mr-1 text-xs"></i>
-                                                        <?= htmlspecialchars($user['phone'] ?? '') ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-
-                                        <td class="px-6 py-4">
-                                            <span class="role-badge <?= 'role-' . htmlspecialchars($user['role'] ?? '') ?>">
-                                                <?= ucfirst(htmlspecialchars($user['role'] ?? '')) ?>
-                                            </span>
-                                            <?php $orderCount = (int)($user['order_count'] ?? 0); ?>
-                                            <?php if ($orderCount > 0): ?>
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    <?= $orderCount ?> orders
+                                            <div class="font-medium text-gray-900"><?= htmlspecialchars($email) ?></div>
+                                            <?php if ($phone !== ''): ?>
+                                                <div class="text-sm text-gray-500">
+                                                    <i class="fas fa-phone mr-1 text-xs"></i>
+                                                    <?= htmlspecialchars($phone) ?>
                                                 </div>
                                             <?php endif; ?>
                                         </td>
 
+                                        <!-- Role -->
                                         <td class="px-6 py-4">
-                                            <?php
-                                            $rawStatus = strtolower(trim((string)($user['status'] ?? '')));
-                                            if ($rawStatus === '1' || $rawStatus === 'true' || in_array($rawStatus, ['active', 'enabled', 'enable', 'yes', 'y'], true)) {
-                                                $status = 'active';
-                                            } elseif ($rawStatus === '0' || $rawStatus === 'false' || in_array($rawStatus, ['inactive', 'disabled', 'disable', 'no', 'n'], true)) {
-                                                $status = 'inactive';
-                                            } else {
-                                                $status = 'active';
-                                            }
-                                            ?>
+                                            <span class="role-badge role-<?= htmlspecialchars($role) ?>">
+                                                <?= ucfirst($role) ?>
+                                            </span>
+                                        </td>
+
+                                        <!-- Status -->
+                                        <td class="px-6 py-4">
                                             <span class="status-badge status-<?= $status ?>">
                                                 <?= ucfirst($status) ?>
                                             </span>
 
-                                            <?php $totalSpent = (float)($user['total_spent'] ?? 0); ?>
-                                            <?php if ($totalSpent > 0): ?>
+                                            <?php if (!empty($user['total_spent'])): ?>
                                                 <div class="text-xs text-green-600 mt-1">
-                                                    $<?= number_format($totalSpent, 2) ?> spent
+                                                    $<?= number_format((float)$user['total_spent'], 2) ?> spent
                                                 </div>
                                             <?php endif; ?>
                                         </td>
 
+                                        <!-- Activity -->
                                         <td class="px-6 py-4">
                                             <div class="text-sm text-gray-900">
                                                 Joined <?= !empty($user['created_at']) ? date('M j, Y', strtotime($user['created_at'])) : '-' ?>
                                             </div>
-
                                             <div class="text-xs text-gray-500">
                                                 <?= !empty($user['last_login'])
                                                     ? 'Last login: ' . date('M j, g:i A', strtotime($user['last_login']))
@@ -392,84 +421,88 @@ require_once __DIR__ . '/process.php';
                                             </div>
                                         </td>
 
+                                        <!-- Actions -->
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col sm:flex-row gap-2">
-                                                <button onclick="editUser(<?= $user['user_id'] ?>)"
+
+                                                <button onclick="editUser(<?= $id ?>)"
                                                     class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
                                                     <i class="fas fa-edit mr-2"></i> Edit
                                                 </button>
 
-                                                <?php if (($user['role'] ?? '') !== 'admin' && $user['user_id'] !=
-                                                    ($_SESSION['user_id'] ?? 0)
-                                                ): ?>
-                                                    <button onclick="deleteUser(<?= $user['user_id'] ?>)"
+                                                <?php if ($canDelete): ?>
+                                                    <button onclick="deleteUser(<?= $id ?>)"
                                                         class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
                                                         <i class="fas fa-trash mr-2"></i> Delete
                                                     </button>
                                                 <?php endif; ?>
 
-                                                <?php $uStatus = strtolower((string)($user['status'] ?? '')); ?>
-                                                <?php if ($uStatus === 'active'): ?>
-                                                    <button onclick="toggleUserStatus(<?= $user['user_id'] ?>, 'deactivate')"
-                                                        class="inline-flex items-center px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-sm hover-lift">
-                                                        <i class="fas fa-user-slash mr-2"></i> Deactivate
-                                                    </button>
-                                                <?php elseif ($uStatus === 'inactive'): ?>
-                                                    <button onclick="toggleUserStatus(<?= $user['user_id'] ?>, 'activate')"
-                                                        class="inline-flex items-center px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-sm hover-lift">
-                                                        <i class="fas fa-user-check mr-2"></i> Activate
-                                                    </button>
+                                                <?php if ($canToggle): ?>
+                                                    <?php if ($status === 'active'): ?>
+                                                        <button onclick="toggleUserStatus(<?= $id ?>, 'deactivate')"
+                                                            class="inline-flex items-center px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-sm hover-lift">
+                                                            <i class="fas fa-user-slash mr-2"></i> Deactivate
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <button onclick="toggleUserStatus(<?= $id ?>, 'activate')"
+                                                            class="inline-flex items-center px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-sm hover-lift">
+                                                            <i class="fas fa-user-check mr-2"></i> Activate
+                                                        </button>
+                                                    <?php endif; ?>
                                                 <?php endif; ?>
+
                                             </div>
                                         </td>
                                     </tr>
+
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
-                    <div class="px-6 py-4 border-t border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div class="text-sm text-gray-700">
-                                Showing <span class="font-medium"><?= min($offset + 1, $totalUsers) ?></span> to
-                                <span class="font-medium"><?= min($offset + $perPage, $totalUsers) ?></span> of
-                                <span class="font-medium"><?= $totalUsers ?></span> users
-                            </div>
-
-                            <div class="flex items-center space-x-2">
-                                <?php if ($filters['page'] > 1): ?>
-                                    <a href="?<?= http_build_query(array_merge($filters, ['page' => $filters['page'] - 1])) ?>"
-                                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
-                                        <i class="fas fa-chevron-left mr-1"></i> Previous
-                                    </a>
-                                <?php endif; ?>
-
-                                <?php
-                                $startPage = max(1, $filters['page'] - 2);
-                                $endPage = min($totalPages, $filters['page'] + 2);
-                                for ($i = $startPage; $i <= $endPage; $i++): ?>
-                                    <a href="?<?= http_build_query(array_merge($filters, ['page' => $i])) ?>"
-                                        class="px-3 py-2 text-sm rounded-lg <?= $i == $filters['page'] ? 'pagination-active' : 'border border-gray-300 hover:bg-gray-50' ?>">
-                                        <?= $i ?>
-                                    </a>
-                                <?php endfor; ?>
-
-                                <?php if ($filters['page'] < $totalPages): ?>
-                                    <a href="?<?= http_build_query(array_merge($filters, ['page' => $filters['page'] + 1])) ?>"
-                                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
-                                        Next <i class="fas fa-chevron-right ml-1"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
             </div>
 
-        </main>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing <span class="font-medium"><?= min($offset + 1, $filteredTotal) ?></span> to
+                            <span class="font-medium"><?= min($offset + $perPage, $filteredTotal) ?></span> of
+                            <span class="font-medium"><?= $filteredTotal ?></span> users
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <?php if ($filters['page'] > 1): ?>
+                                <a href="?<?= http_build_query(array_merge($filters, ['page' => $filters['page'] - 1])) ?>"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left mr-1"></i> Previous
+                                </a>
+                            <?php endif; ?>
+
+                            <?php
+                            $startPage = max(1, $filters['page'] - 2);
+                            $endPage = min($totalPages, $filters['page'] + 2);
+                            for ($i = $startPage; $i <= $endPage; $i++): ?>
+                                <a href="?<?= http_build_query(array_merge($filters, ['page' => $i])) ?>"
+                                    class="px-3 py-2 text-sm rounded-lg <?= $i == $filters['page'] ? 'pagination-active' : 'border border-gray-300 hover:bg-gray-50' ?>">
+                                    <?= $i ?>
+                                </a>
+                            <?php endfor; ?>
+
+                            <?php if ($filters['page'] < $totalPages): ?>
+                                <a href="?<?= http_build_query(array_merge($filters, ['page' => $filters['page'] + 1])) ?>"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                                    Next <i class="fas fa-chevron-right ml-1"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+    </div>
+    </main>
     </div>
     <!-- Add User Modal -->
     <div id="addUserModal" class="fixed inset-0 z-50 hidden modal-overlay">

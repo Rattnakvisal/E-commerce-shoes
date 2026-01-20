@@ -5,7 +5,6 @@ require_once __DIR__ . '/../../../config/conn.php';
    DB & SESSION
 ===================================================== */
 $pdo ??= $conn ?? null;
-
 if (!$pdo) {
     die('Database connection missing.');
 }
@@ -22,11 +21,11 @@ if (empty($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 /* =====================================================
    ADMIN INFO
 ===================================================== */
-$adminName = $_SESSION['name'] ?? $_SESSION['email'] ?? 'Admin';
+$adminName      = $_SESSION['name'] ?? $_SESSION['email'] ?? 'Admin';
 $adminFirstName = htmlspecialchars(strtok(trim($adminName), ' '));
 
 /* =====================================================
-   COLUMN EXISTENCE (CACHED)
+   COLUMN EXISTENCE CACHE
 ===================================================== */
 $columnCache = [];
 
@@ -34,54 +33,75 @@ function columnExists(string $column): bool
 {
     global $pdo, $columnCache;
 
-    if (isset($columnCache[$column])) {
+    if (array_key_exists($column, $columnCache)) {
         return $columnCache[$column];
     }
 
     try {
         $stmt = $pdo->prepare("SHOW COLUMNS FROM users LIKE ?");
         $stmt->execute([$column]);
-        return $columnCache[$column] = (bool)$stmt->fetch();
+        return $columnCache[$column] = (bool) $stmt->fetch();
     } catch (Throwable) {
         return $columnCache[$column] = false;
     }
 }
 
 /* =====================================================
-   FILTERS
+   FILTERS (STRICT)
 ===================================================== */
 $filters = [
-    'status'     => strtolower($_GET['status'] ?? ''),
-    'role'       => $_GET['role'] ?? '',
-    'date_from'  => $_GET['date_from'] ?? '',
-    'date_to'    => $_GET['date_to'] ?? '',
-    'search'     => trim($_GET['search'] ?? ''),
-    'sort'       => $_GET['sort'] ?? 'newest',
-    'page'       => max(1, (int)($_GET['page'] ?? 1)),
+    'status' => in_array($_GET['status'] ?? '', ['active', 'inactive'], true)
+        ? $_GET['status']
+        : '',
+    'role' => in_array($_GET['role'] ?? '', ['admin', 'staff', 'customer'], true)
+        ? $_GET['role']
+        : '',
+    'date_from' => $_GET['date_from'] ?? '',
+    'date_to'   => $_GET['date_to'] ?? '',
+    'search'    => trim($_GET['search'] ?? ''),
+    'sort'      => $_GET['sort'] ?? 'newest',
+    'page'      => max(1, (int) ($_GET['page'] ?? 1)),
 ];
 
 $perPage = 15;
 $offset  = ($filters['page'] - 1) * $perPage;
 
 /* =====================================================
-   WHERE CLAUSE BUILDER
+   COLUMN FLAGS
 ===================================================== */
-$where   = [];
-$params  = [];
-
 $hasStatus    = columnExists('status');
 $hasAvatar    = columnExists('avatar_url');
 $hasLastLogin = columnExists('last_login');
 
+/* =====================================================
+   SQL NORMALIZERS
+===================================================== */
+$roleSql = "LOWER(TRIM(REPLACE(COALESCE(u.role,''), CHAR(160), '')))";
+$statusActiveSql = "
+    LOWER(COALESCE(u.status,'')) IN ('active','enabled','enable','true','yes','y','1')
+    OR u.status = 1
+";
+$statusInactiveSql = "
+    LOWER(COALESCE(u.status,'')) IN ('inactive','disabled','disable','false','no','n','0')
+    OR u.status = 0
+";
+
+/* =====================================================
+   WHERE CLAUSE BUILDER
+===================================================== */
+$where  = [];
+$params = [];
+
 /* Status */
-if ($hasStatus && in_array($filters['status'], ['active', 'inactive'], true)) {
-    $where[]  = 'LOWER(u.status) = ?';
-    $params[] = $filters['status'];
+if ($hasStatus && $filters['status']) {
+    $where[] = $filters['status'] === 'active'
+        ? "($statusActiveSql)"
+        : "($statusInactiveSql)";
 }
 
 /* Role */
-if (in_array($filters['role'], ['admin', 'staff', 'customer'], true)) {
-    $where[]  = 'u.role = ?';
+if ($filters['role']) {
+    $where[]  = "$roleSql = ?";
     $params[] = $filters['role'];
 }
 
@@ -90,7 +110,6 @@ if ($filters['date_from']) {
     $where[]  = 'DATE(u.created_at) >= ?';
     $params[] = $filters['date_from'];
 }
-
 if ($filters['date_to']) {
     $where[]  = 'DATE(u.created_at) <= ?';
     $params[] = $filters['date_to'];
@@ -99,11 +118,26 @@ if ($filters['date_to']) {
 /* Search */
 if ($filters['search']) {
     $where[] = '(u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ? OR u.user_id LIKE ?)';
-    $search  = "%{$filters['search']}%";
-    array_push($params, $search, $search, $search, $search);
+    $like = '%' . $filters['search'] . '%';
+    array_push($params, $like, $like, $like, $like);
 }
 
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+/* =====================================================
+   FILTERED COUNT
+===================================================== */
+try {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users u $whereSql");
+    foreach ($params as $i => $val) {
+        $stmt->bindValue($i + 1, $val);
+    }
+    $stmt->execute();
+    $filteredTotal = (int) $stmt->fetchColumn();
+} catch (PDOException $e) {
+    error_log('[users_count] ' . $e->getMessage());
+    $filteredTotal = 0;
+}
 
 /* =====================================================
    SORTING
@@ -118,7 +152,7 @@ $orderBy = match ($filters['sort']) {
 };
 
 /* =====================================================
-   STATS QUERY
+   GLOBAL STATS
 ===================================================== */
 $stats = [
     'total_count'    => 0,
@@ -130,40 +164,30 @@ $stats = [
 ];
 
 try {
-    $selectStats = [
-        'COUNT(*) AS total_count',
-        "SUM(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) AS admin_count",
-        "SUM(CASE WHEN u.role = 'staff' THEN 1 ELSE 0 END) AS staff_count",
-        "SUM(CASE WHEN u.role = 'customer' THEN 1 ELSE 0 END) AS customer_count",
-    ];
+    $stmt = $pdo->query("
+        SELECT
+            COUNT(*) AS total_count,
+            SUM($roleSql = 'admin')    AS admin_count,
+            SUM($roleSql = 'staff')    AS staff_count,
+            SUM($roleSql = 'customer') AS customer_count,
+            SUM($statusActiveSql)      AS active_count,
+            SUM($statusInactiveSql)    AS inactive_count
+        FROM users u
+    ");
 
-    if ($hasStatus) {
-        $selectStats[] = "SUM(CASE WHEN (
-            LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1')
-            OR u.status = 1
-        ) THEN 1 ELSE 0 END) AS active_count";
-
-        $selectStats[] = "SUM(CASE WHEN (
-            LOWER(COALESCE(u.status, '')) IN ('inactive','disabled','disable','false','no','n','0')
-            OR u.status = 0
-        ) THEN 1 ELSE 0 END) AS inactive_count";
-    }
-
-    $stmt = $pdo->prepare(
-        "SELECT " . implode(', ', $selectStats) . " FROM users u"
-    );
-
-    $stmt->execute();
     $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: $stats;
 } catch (PDOException $e) {
     error_log('[users_stats] ' . $e->getMessage());
 }
 
+/* Normalize stats */
+foreach ($stats as $k => $v) {
+    $stats[$k] = (int) $v;
+}
+
 /* =====================================================
    USERS QUERY
 ===================================================== */
-$users = [];
-
 $select = [
     'u.user_id',
     'u.name',
@@ -177,59 +201,50 @@ if ($hasStatus)    $select[] = 'u.status';
 if ($hasAvatar)    $select[] = 'u.avatar_url';
 if ($hasLastLogin) $select[] = 'u.last_login';
 
-try {
-    $stmt = $pdo->prepare("
-        SELECT " . implode(', ', $select) . "
-        FROM users u
-        $whereSql
-        ORDER BY $orderBy
-        LIMIT :limit OFFSET :offset
+$stmt = $pdo->prepare("
+    SELECT " . implode(', ', $select) . "
+    FROM users u
+    $whereSql
+    ORDER BY $orderBy
+    LIMIT ? OFFSET ?
     ");
 
-    foreach ($params as $i => $val) {
-        $stmt->bindValue($i + 1, $val);
-    }
-
-    $stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
-
-    $stmt->execute();
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    error_log('[users_list] ' . $e->getMessage());
+foreach ($params as $i => $val) {
+    $stmt->bindValue($i + 1, $val);
 }
+
+// Bind limit and offset as positional params after any filter params
+$stmt->bindValue(count($params) + 1, $perPage, PDO::PARAM_INT);
+$stmt->bindValue(count($params) + 2, $offset,  PDO::PARAM_INT);
+
+$stmt->execute();
+$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* =====================================================
    PAGINATION
 ===================================================== */
-$totalUsers = (int)($stats['total_count'] ?? 0);
-$totalPages = max(1, (int)ceil($totalUsers / $perPage));
+$totalUsers  = $stats['total_count'];
+$totalPages  = max(1, (int) ceil($filteredTotal / $perPage));
 
 /* =====================================================
-   STATUS & ROLE COUNTS
+   COUNTS FOR UI
 ===================================================== */
 $statusCounts = [
-    'all'      => $totalUsers,
-    'active'   => (int)($stats['active_count'] ?? 0),
-    'inactive' => (int)($stats['inactive_count'] ?? 0),
+    'all'      => $stats['total_count'],
+    'active'   => $stats['active_count'],
+    'inactive' => $stats['inactive_count'],
 ];
 
 $roleCounts = [
-    'admin'    => (int)($stats['admin_count'] ?? 0),
-    'staff'    => (int)($stats['staff_count'] ?? 0),
-    'customer' => (int)($stats['customer_count'] ?? 0),
+    'admin'    => $stats['admin_count'],
+    'staff'    => $stats['staff_count'],
+    'customer' => $stats['customer_count'],
 ];
 
 /* =====================================================
    TODAY USERS
 ===================================================== */
-$todayUsers = 0;
-
-try {
-    $todayUsers = (int)$pdo->query("
-        SELECT COUNT(*) FROM users
-        WHERE DATE(created_at) = CURDATE()
-    ")->fetchColumn();
-} catch (PDOException $e) {
-    error_log('[today_users] ' . $e->getMessage());
-}
+$todayUsers = (int) $pdo->query("
+    SELECT COUNT(*) FROM users
+    WHERE DATE(created_at) = CURDATE()
+")->fetchColumn();
