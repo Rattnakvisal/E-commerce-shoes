@@ -5,7 +5,7 @@ $slides = [];
 
 try {
     $stmt = $conn->prepare("
-        SELECT title, description, image_url, link_url
+        SELECT title, description, image_url, link_url, button_text
         FROM slides
         WHERE is_active = 1
         ORDER BY display_order ASC
@@ -46,9 +46,10 @@ try {
                     $desc  = htmlspecialchars($slide['description']);
                     $img   = htmlspecialchars($slide['image_url']);
                     $link  = htmlspecialchars($slide['link_url']);
+                    $btnText = htmlspecialchars($slide['button_text']);
                     ?>
 
-                    <div class="min-w-full relative h-[520px] md:h-[620px] lg:h-[700px]">
+                    <div class="min-w-full relative h-[520px] md:h-[620px] lg:h-[680px]">
 
                         <!-- Media (Image or Video) -->
                         <?php $ext = strtolower(pathinfo($img, PATHINFO_EXTENSION)); ?>
@@ -80,7 +81,7 @@ try {
 
                                 <div class="mt-8 flex items-center gap-4">
                                     <a href="<?= $link ?>" class="px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100">
-                                        Shop
+                                        <?= $btnText ?>
                                     </a>
                                 </div>
 
