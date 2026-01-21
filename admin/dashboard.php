@@ -173,7 +173,7 @@ try {
                     <!-- Welcome Text -->
                     <div>
                         <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-2xl font-bold text-gray-900">
+                            <h1 class="text-3xl font-bold text-gray-900">
                                 Welcome back, <span class="gradient-text font-extrabold"><?= htmlspecialchars(explode(' ', $admin_name)[0]) ?>!</span>
                             </h1>
                         </div>

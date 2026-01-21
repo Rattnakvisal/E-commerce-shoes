@@ -2,6 +2,7 @@
    CONFIG
 ===================================================== */
 const API_BASE_URL = "get_order.php";
+const RELOAD_DELAY = 700;
 
 /* =====================================================
    EVENT DELEGATION
@@ -10,30 +11,24 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
 
-  const action = btn.dataset.action;
-  const id = btn.dataset.id;
+  const { action, id, status, payment } = btn.dataset;
 
   switch (action) {
     case "view":
       viewOrder(id);
       break;
-
     case "edit":
-      editOrder(id, btn.dataset.status);
+      editOrder(id, status);
       break;
-
     case "payment":
-      editPayment(id, btn.dataset.payment);
+      editPayment(id, payment);
       break;
-
     case "refund":
       refundOrder(id);
       break;
-
     case "complete":
       confirmStatusChange(id, "completed");
       break;
-
     case "cancel":
       confirmStatusChange(id, "cancelled");
       break;
@@ -41,22 +36,90 @@ document.addEventListener("click", (e) => {
 });
 
 /* =====================================================
+   SWEETALERT HELPERS (GLOBAL STANDARD)
+===================================================== */
+function showLoading(msg = "Loading...") {
+  Swal.fire({
+    title: msg,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading(),
+  });
+}
+
+function showSuccess(title, text = "") {
+  return Swal.fire({
+    icon: "success",
+    title,
+    text: text || undefined,
+    showConfirmButton: false,
+    timer: 1200,
+    timerProgressBar: true,
+  });
+}
+
+function showError(msg) {
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: msg,
+    confirmButtonColor: "#dc2626",
+  });
+}
+
+/* =====================================================
+   CONFIRM HELPERS (MATCH USERS & PRODUCTS)
+===================================================== */
+function confirmEdit(title, text) {
+  return Swal.fire({
+    icon: "question",
+    title,
+    html: `
+      <p class="text-gray-600 mt-2">
+        ${text}
+      </p>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Update",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#4f46e5",
+    cancelButtonColor: "#6b7280",
+  });
+}
+
+function confirmDelete(title, text) {
+  return Swal.fire({
+    icon: "warning",
+    title,
+    html: `
+      <p class="text-gray-600 mt-2">
+        ${text}
+      </p>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Confirm",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#dc2626",
+  });
+}
+
+/* =====================================================
    EDIT ORDER STATUS
 ===================================================== */
 function editOrder(orderId, currentStatus = "pending") {
   if (!orderId) return;
 
-  ensureSwal();
-
   const allowed = ["pending", "processing", "completed", "cancelled"];
-  currentStatus = (currentStatus || "pending").toLowerCase();
-
-  if (!allowed.includes(currentStatus)) {
-    currentStatus = "pending";
-  }
+  currentStatus = allowed.includes(currentStatus) ? currentStatus : "pending";
 
   Swal.fire({
     title: "Update Order Status",
+    html: `
+      <p class="text-gray-600 mt-2">
+        Select the new status for this order.
+      </p>
+    `,
     input: "select",
     inputOptions: {
       pending: "Pending",
@@ -76,75 +139,28 @@ function editOrder(orderId, currentStatus = "pending") {
 }
 
 /* =====================================================
-   REFUND ORDER (client-side)
-===================================================== */
-async function refundOrder(orderId) {
-  if (!orderId) return;
-
-  ensureSwal();
-
-  const confirmed = await Swal.fire({
-    title: "Refund order?",
-    html: `This will mark payment as <strong>REFUNDED</strong> and restock items. Continue?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, refund",
-    confirmButtonColor: "#dc2626",
-  });
-
-  if (!confirmed.isConfirmed) return;
-
-  try {
-    showLoading("Processing refund...");
-
-    const res = await fetch(`${API_BASE_URL}?action=refund`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ order_id: orderId }),
-    });
-
-    const data = await res.json();
-    if (!res.ok || !data.success)
-      throw new Error(data.error || data.message || "Refund failed");
-
-    showSuccess(data.message || "Order refunded");
-    setTimeout(() => location.reload(), 700);
-  } catch (err) {
-    showError(err.message || "Server error");
-  }
-}
-
-/* =====================================================
-   UPDATE ORDER STATUS (API)
+   UPDATE ORDER STATUS
 ===================================================== */
 async function updateOrderStatus(orderId, status) {
   try {
-    ensureSwal();
     showLoading("Updating order...");
 
     const res = await fetch(`${API_BASE_URL}?action=update_status`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({
-        order_id: orderId,
-        status,
-      }),
+      body: JSON.stringify({ order_id: orderId, status }),
     });
 
     const data = await res.json();
-
-    if (!res.ok || !data.success) {
+    if (!res.ok || !data.success)
       throw new Error(data.error || data.message || "Update failed");
-    }
 
-    showSuccess(data.message || "Order updated");
-    setTimeout(() => location.reload(), 600);
+    Swal.close();
+    showSuccess("Order updated", "Order status updated successfully.");
+    setTimeout(() => location.reload(), RELOAD_DELAY);
   } catch (err) {
+    Swal.close();
     showError(err.message);
   }
 }
@@ -155,20 +171,20 @@ async function updateOrderStatus(orderId, status) {
 function editPayment(orderId, currentPayment = "pending") {
   if (!orderId) return;
 
-  ensureSwal();
-
-  const allowed = {
-    pending: "Pending",
-    paid: "Paid",
-    failed: "Failed",
-    refunded: "Refunded",
-  };
-  currentPayment = (currentPayment || "pending").toLowerCase();
-
   Swal.fire({
     title: "Update Payment Status",
+    html: `
+      <p class="text-gray-600 mt-2">
+        Select the new payment status for this order.
+      </p>
+    `,
     input: "select",
-    inputOptions: allowed,
+    inputOptions: {
+      pending: "Pending",
+      paid: "Paid",
+      failed: "Failed",
+      refunded: "Refunded",
+    },
     inputValue: currentPayment,
     showCancelButton: true,
     confirmButtonText: "Update",
@@ -181,42 +197,69 @@ function editPayment(orderId, currentPayment = "pending") {
 
       const response = await fetch(`${API_BASE_URL}?action=update_payment`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ order_id: orderId, payment_status: res.value }),
+        body: JSON.stringify({
+          order_id: orderId,
+          payment_status: res.value,
+        }),
       });
 
       const data = await response.json();
       if (!response.ok || !data.success)
         throw new Error(data.error || data.message || "Update failed");
 
-      showSuccess(data.message || "Payment status updated");
-      setTimeout(() => location.reload(), 600);
+      Swal.close();
+      showSuccess("Payment updated", "Payment status updated successfully.");
+      setTimeout(() => location.reload(), RELOAD_DELAY);
     } catch (err) {
-      showError(err.message || "Server error");
+      Swal.close();
+      showError(err.message);
     }
   });
 }
 
 /* =====================================================
-   CONFIRM STATUS CHANGE
+   REFUND ORDER
+===================================================== */
+async function refundOrder(orderId) {
+  const res = await confirmDelete(
+    "Refund order?",
+    "This will refund the payment and restock all items associated with this order.",
+  );
+  if (!res.isConfirmed) return;
+
+  try {
+    showLoading("Processing refund...");
+
+    const response = await fetch(`${API_BASE_URL}?action=refund`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ order_id: orderId }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success)
+      throw new Error(data.error || data.message || "Refund failed");
+
+    Swal.close();
+    showSuccess("Order refunded", "Payment has been refunded successfully.");
+    setTimeout(() => location.reload(), RELOAD_DELAY);
+  } catch (err) {
+    Swal.close();
+    showError(err.message);
+  }
+}
+
+/* =====================================================
+   CONFIRM QUICK STATUS CHANGE
 ===================================================== */
 function confirmStatusChange(orderId, status) {
-  if (!orderId) return;
-
-  ensureSwal();
-
-  Swal.fire({
-    title: "Confirm Status Change",
-    html: `Change order status to <b>${status.toUpperCase()}</b>?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, update",
-    confirmButtonColor: "#4f46e5",
-  }).then((res) => {
+  confirmEdit(
+    "Confirm status change",
+    `Change order status to <b>${status.toUpperCase()}</b>?`,
+  ).then((res) => {
     if (res.isConfirmed) updateOrderStatus(orderId, status);
   });
 }
@@ -225,23 +268,17 @@ function confirmStatusChange(orderId, status) {
    VIEW ORDER
 ===================================================== */
 async function viewOrder(orderId) {
-  if (!orderId) return;
-
   try {
-    ensureSwal();
     showLoading("Loading order...");
 
-    const res = await fetch(`${API_BASE_URL}?action=view&order_id=${orderId}`, {
-      headers: { Accept: "application/json" },
-    });
-
+    const res = await fetch(`${API_BASE_URL}?action=view&order_id=${orderId}`);
     const data = await res.json();
-    if (!res.ok || !data.success) {
+    if (!res.ok || !data.success)
       throw new Error(data.error || "Failed to load order");
-    }
 
     renderOrderModal(data.order, data.items);
   } catch (err) {
+    Swal.close();
     showError(err.message);
   }
 }
@@ -300,41 +337,21 @@ function renderOrderModal(order, items = []) {
     confirmButtonColor: "#4f46e5",
   });
 }
+
 /* =====================================================
    UTILITIES
 ===================================================== */
-function ensureSwal() {
-  if (typeof Swal === "undefined") {
-    alert("SweetAlert2 is not loaded. Please reload the page.");
-    throw new Error("Swal not available");
-  }
-}
-
-/* =====================================================
-   UI HELPERS
-===================================================== */
-function showLoading(text) {
-  Swal.fire({
-    title: text,
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading(),
-  });
-}
-
-function showSuccess(msg) {
-  Swal.fire({ icon: "success", title: msg, timer: 1200 });
-}
-
-function showError(msg) {
-  Swal.fire({ icon: "error", title: "Error", text: msg });
-}
-
 function escapeHtml(text = "") {
   const el = document.createElement("div");
   el.textContent = text;
   return el.innerHTML;
 }
 
-window.ordersEdit = editOrder;
-window.ordersView = viewOrder;
-window.ordersComplete = (id) => confirmStatusChange(id, "completed");
+/* =====================================================
+   GLOBAL EXPORTS
+===================================================== */
+Object.assign(window, {
+  ordersEdit: editOrder,
+  ordersView: viewOrder,
+  ordersComplete: (id) => confirmStatusChange(id, "completed"),
+});

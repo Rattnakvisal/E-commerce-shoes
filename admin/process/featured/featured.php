@@ -28,9 +28,9 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
                 <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Products <span class="gradient-text font-extrabold">Management</span></h1>
+                            <h1 class="text-3xl font-bold text-gray-900">Featured <span class="gradient-text font-extrabold">Management</span></h1>
                         </div>
-                        <p class="text-gray-600 ml-1">Manage and track all products in your store.</p>
+                        <p class="text-gray-600 ml-1">Manage and track all featured items in your store.</p>
                     </div>
                     <!-- Actions -->
                     <div class="flex items-center gap-3">
@@ -495,59 +495,66 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
 
     <script src="../../../assets/Js/featured.js"></script>
     <script>
-        // Auto-fill featured image when a product is selected
+        /* =====================================================
+   PRODUCT IMAGE AUTO-PREVIEW (FEATURED)
+===================================================== */
         const productsMap = <?= json_encode(array_column($products, null, 'product_id')) ?>;
-        const productSelect = document.getElementById('productId');
+        const productSelect = document.getElementById("productId");
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        const oldImageInput = document.getElementById("oldImage");
 
         function updatePreviewForProduct() {
-            const pid = productSelect.value;
-            const previewContainer = document.getElementById('imagePreviewContainer');
-            const oldImageInput = document.getElementById('oldImage');
+            if (!productSelect || !previewContainer || !oldImageInput) return;
 
-            if (pid && productsMap[pid] && productsMap[pid].image_url) {
+            const pid = productSelect.value;
+
+            if (pid && productsMap[pid]?.image_url) {
                 const img = productsMap[pid].image_url;
                 oldImageInput.value = img;
+
                 previewContainer.innerHTML = `
-                    <div class="relative">
-                        <img src="${img}" alt="Product image" class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
-                        <div class="absolute top-2 right-2 bg-white/80 rounded-full p-2">
-                            <span class="text-xs font-medium text-gray-700">Product image</span>
-                        </div>
-                    </div>
-                `;
+      <div class="relative">
+        <img src="${img}" alt="Product image"
+             class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
+        <div class="absolute top-2 right-2 bg-white/80 rounded-full p-2">
+          <span class="text-xs font-medium text-gray-700">
+            Product image
+          </span>
+        </div>
+      </div>
+    `;
             } else {
-                // if no product image, clear old_image but keep any current featured image
-                oldImageInput.value = '';
-                if (!document.getElementById('newImagePreview') || document.getElementById('newImagePreview').classList.contains('hidden')) {
-                    previewContainer.innerHTML = '<p class="text-sm text-gray-500">No image currently set</p>';
-                }
+                oldImageInput.value = "";
+                previewContainer.innerHTML =
+                    '<p class="text-sm text-gray-500">No image currently set</p>';
             }
         }
 
-        productSelect?.addEventListener('change', updatePreviewForProduct);
-
-        // if modal opened for add and product already selected, update preview
-        productSelect?.addEventListener('focus', function() {
-            /* no-op placeholder */
-        });
+        productSelect?.addEventListener("change", updatePreviewForProduct);
     </script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        /* =====================================================
+   FLASH MESSAGE (MATCH PRODUCTS & USERS)
+===================================================== */
+        document.addEventListener("DOMContentLoaded", () => {
             <?php if (!empty($flash) && ($flash['type'] ?? '') === 'success'): ?>
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: '<?= addslashes($flash['text']) ?>',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#3085d6'
+                    icon: "success",
+                    title: "Success",
+                    text: "<?= addslashes($flash['text']) ?>",
+                    showConfirmButton: false,
+                    timer: 1200,
+                    timerProgressBar: true,
+                }).then(() => {
+                    window.location.reload();
                 });
             <?php elseif (!empty($flash) && ($flash['type'] ?? '') === 'error'): ?>
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: '<?= addslashes($flash['text']) ?>',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#d33'
+                    icon: "error",
+                    title: "Error",
+                    text: "<?= addslashes($flash['text']) ?>",
+                    confirmButtonColor: "#dc2626",
                 });
             <?php endif; ?>
         });

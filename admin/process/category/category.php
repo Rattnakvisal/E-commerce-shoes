@@ -307,52 +307,6 @@ require_once __DIR__ . '/api_category.php';
     </div>
 
     <script src="../../../assets/Js/category.js"></script>
-    <script>
-        function showLoading(message = 'Loading...') {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: message,
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-            } else {
-                console.log('Loading:', message);
-            }
-        }
-
-        function showToast(message, icon = 'success') {
-            if (typeof Swal !== 'undefined') {
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-                Toast.fire({
-                    icon: icon,
-                    title: message
-                });
-            } else {
-                console.log(message);
-            }
-        }
-
-        function showError(message) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: message,
-                    confirmButtonColor: '#3b82f6'
-                });
-            } else {
-                console.error(message);
-            }
-        }
-    </script>
 </body>
 
 </html>

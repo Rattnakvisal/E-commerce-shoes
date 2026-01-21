@@ -1,20 +1,20 @@
 /* ============================================================================
-   DARK MODE THEME SYSTEM WITH EXTENDED COLOR PALETTE
+   DARK MODE THEME SYSTEM WITH EXTENDED COLOR PALETTE - FIXED VERSION
    ============================================================================ */
 
 /* CSS Variables for dark theme - Enhanced with new colors */
 :root {
-  /* Original dark theme colors */
-  --dark-bg: #07121a;
-  --dark-surface: #0b1e2b;
-  --dark-surface-elevated: #10273a;
+  /* Original dark theme colors - UPDATED FOR BETTER CONTRAST */
+  --dark-bg: #0c1825;
+  --dark-surface: #101f2e;
+  --dark-surface-elevated: #152535;
   --dark-muted: #9fb0c4;
-  --dark-text: #e6f0fb;
-  --dark-text-secondary: #c2d0e0;
-  --dark-border: rgba(255, 255, 255, 0.06);
-  --dark-border-hover: rgba(255, 255, 255, 0.12);
-  --dark-primary: #0c2c55;
-  --dark-primary-hover: #1a3e6c;
+  --dark-text: #f1f5f9;
+  --dark-text-secondary: #cbd5e1;
+  --dark-border: rgba(255, 255, 255, 0.1);
+  --dark-border-hover: rgba(255, 255, 255, 0.2);
+  --dark-primary: #1a3e6c;
+  --dark-primary-hover: #2a528c;
   --dark-accent: #3b82f6;
   --dark-success: #10b981;
   --dark-warning: #f59e0b;
@@ -28,15 +28,15 @@
   --dark-gradient-accent-to: #3b82f6;
   --dark-overlay: rgba(0, 0, 0, 0.7);
 
-  /* New colors provided */
-  --color-primary: #0c2c55;
+  /* New colors provided - UPDATED FOR DARK MODE */
+  --color-primary: #1a3e6c;
   --color-secondary: #296374;
   --color-white: #ffffff;
   --color-light-blue: #629fad;
 
-  /* Extended color palette */
-  --color-primary-light: #1a3e6c;
-  --color-primary-lighter: #295c9d;
+  /* Extended color palette - UPDATED */
+  --color-primary-light: #2a528c;
+  --color-primary-lighter: #3a66a5;
   --color-secondary-light: #3a7a8d;
   --color-secondary-lighter: #5ba0b8;
   --color-light-blue-light: #7bb4c5;
@@ -47,20 +47,20 @@
   --color-secondary-bg: rgba(41, 99, 116, 0.1);
   --color-light-blue-bg: rgba(98, 159, 173, 0.1);
 
-  /* Text variants */
-  --color-text-primary: var(--color-white);
-  --color-text-secondary: #d1d5db;
-  --color-text-muted: #9ca3af;
+  /* Text variants - UPDATED FOR BETTER CONTRAST */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
 
-  /* Hover colors */
-  --color-hover-primary: var(--color-white);
-  --color-hover-secondary: var(--color-white);
-  --color-hover-light-blue: var(--color-white);
+  /* Hover colors - FIXED (removed pure white) */
+  --color-hover-primary: rgba(255, 255, 255, 0.1);
+  --color-hover-secondary: rgba(255, 255, 255, 0.08);
+  --color-hover-light-blue: rgba(255, 255, 255, 0.1);
 
-  /* Border variants */
-  --color-border-primary: rgba(12, 44, 85, 0.3);
-  --color-border-secondary: rgba(41, 99, 116, 0.3);
-  --color-border-light: rgba(98, 159, 173, 0.2);
+  /* Border variants - IMPROVED VISIBILITY */
+  --color-border-primary: rgba(12, 44, 85, 0.4);
+  --color-border-secondary: rgba(41, 99, 116, 0.4);
+  --color-border-light: rgba(98, 159, 173, 0.3);
 }
 
 /* Base dark mode setup */
@@ -84,6 +84,103 @@ html.dark {
 html.dark body {
   background-color: var(--dark-bg) !important;
   color: var(--color-text-primary) !important;
+}
+
+/* ============================================================================
+   COMMON ELEMENTS - ADDED MISSING STYLES
+   ============================================================================ */
+
+/* Links */
+html.dark a {
+  color: var(--color-light-blue) !important;
+}
+
+html.dark a:hover {
+  color: var(--color-light-blue-light) !important;
+  text-decoration: underline !important;
+}
+
+/* Inputs, textareas, selects */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: var(--dark-surface-elevated) !important;
+  border: 1px solid var(--color-border-light) !important;
+  color: var(--color-text-primary) !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  outline: 2px solid var(--color-light-blue) !important;
+  outline-offset: 2px !important;
+  border-color: var(--color-light-blue-light) !important;
+}
+
+/* Placeholder text */
+html.dark ::placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.7 !important;
+}
+
+/* Focus states */
+html.dark *:focus {
+  outline: 2px solid var(--color-light-blue) !important;
+  outline-offset: 2px !important;
+}
+
+/* Disabled states */
+html.dark .disabled,
+html.dark [disabled] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* Selection color */
+html.dark ::selection {
+  background-color: var(--color-primary-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Tables */
+html.dark table {
+  background-color: var(--dark-surface) !important;
+  border-collapse: collapse !important;
+}
+
+html.dark th {
+  background-color: var(--dark-surface-elevated) !important;
+  color: var(--color-text-primary) !important;
+  padding: 12px !important;
+  border-bottom: 2px solid var(--color-border-primary) !important;
+}
+
+html.dark td {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid var(--color-border-light) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+html.dark tr:hover td {
+  background-color: var(--color-hover-primary) !important;
+}
+
+/* Code blocks */
+html.dark pre,
+html.dark code {
+  background-color: var(--dark-surface-elevated) !important;
+  border: 1px solid var(--color-border-primary) !important;
+  border-radius: 4px !important;
+  padding: 8px 12px !important;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace !important;
+}
+
+html.dark pre {
+  padding: 16px !important;
+  overflow-x: auto !important;
 }
 
 /* ============================================================================
@@ -341,6 +438,7 @@ html.dark .text-gradient-primary {
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
 html.dark .text-gradient-secondary {
@@ -351,6 +449,7 @@ html.dark .text-gradient-secondary {
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
 html.dark .text-gradient-blue {
@@ -361,6 +460,7 @@ html.dark .text-gradient-blue {
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
 html.dark .text-gradient-primary-to-blue {
@@ -371,6 +471,7 @@ html.dark .text-gradient-primary-to-blue {
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
 /* ============================================================================
@@ -747,7 +848,7 @@ html.dark .shadow-blue {
 }
 
 /* ============================================================================
-   FIXED HOVER STATES WITH #FFFFFF
+   FIXED HOVER STATES
    ============================================================================ */
 
 /* Background hover states */
@@ -783,6 +884,23 @@ html.dark .hover\:border-secondary:hover {
 
 html.dark .hover\:border-light-blue:hover {
   border-color: var(--color-light-blue-light) !important;
+}
+
+/* Text hover states */
+html.dark .hover\:text-white:hover {
+  color: var(--color-white) !important;
+}
+
+html.dark .hover\:text-primary:hover {
+  color: var(--color-primary-light) !important;
+}
+
+html.dark .hover\:text-secondary:hover {
+  color: var(--color-secondary-light) !important;
+}
+
+html.dark .hover\:text-light-blue:hover {
+  color: var(--color-light-blue-light) !important;
 }
 
 /* ============================================================================
@@ -894,6 +1012,9 @@ html.dark .alert {
   background-color: var(--dark-surface-elevated) !important;
   border-color: var(--color-border-primary) !important;
   color: var(--color-text-primary) !important;
+  padding: 12px 16px !important;
+  border-radius: 6px !important;
+  border-left-width: 4px !important;
 }
 
 html.dark .alert-primary {
@@ -925,22 +1046,38 @@ html.dark .alert-blue {
 
 html.dark .alert-success {
   border-left-color: var(--dark-success) !important;
-  background-color: rgba(16, 185, 129, 0.1) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(16, 185, 129, 0.05)
+  ) !important;
 }
 
 html.dark .alert-warning {
   border-left-color: var(--dark-warning) !important;
-  background-color: rgba(245, 158, 11, 0.1) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(245, 158, 11, 0.1),
+    rgba(245, 158, 11, 0.05)
+  ) !important;
 }
 
 html.dark .alert-danger {
   border-left-color: var(--dark-danger) !important;
-  background-color: rgba(239, 68, 68, 0.1) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(239, 68, 68, 0.1),
+    rgba(239, 68, 68, 0.05)
+  ) !important;
 }
 
 html.dark .alert-info {
   border-left-color: var(--dark-info) !important;
-  background-color: rgba(6, 182, 212, 0.1) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(6, 182, 212, 0.1),
+    rgba(6, 182, 212, 0.05)
+  ) !important;
 }
 
 /* ============================================================================
@@ -985,6 +1122,9 @@ html.dark .icon-blue {
 
 html.dark .progress {
   background-color: var(--dark-surface-elevated) !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
 }
 
 html.dark .progress-bar {
@@ -993,6 +1133,8 @@ html.dark .progress-bar {
     var(--color-primary),
     var(--color-primary-light)
   ) !important;
+  height: 100% !important;
+  border-radius: 4px !important;
 }
 
 html.dark .progress-bar-secondary {
@@ -1012,13 +1154,24 @@ html.dark .progress-bar-blue {
 }
 
 html.dark .progress-success {
-  background-color: var(--dark-success) !important;
+  background: linear-gradient(90deg, #10b981, #34d399) !important;
 }
 
 html.dark .spinner,
 html.dark .loader {
   border-color: var(--color-border-primary) !important;
   border-top-color: var(--color-light-blue) !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* ============================================================================
@@ -1026,13 +1179,13 @@ html.dark .loader {
    ============================================================================ */
 
 html.dark ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 10px !important;
+  height: 10px !important;
 }
 
 html.dark ::-webkit-scrollbar-track {
-  background: var(--dark-surface);
-  border-radius: 5px;
+  background: var(--dark-surface) !important;
+  border-radius: 5px !important;
 }
 
 html.dark ::-webkit-scrollbar-thumb {
@@ -1040,9 +1193,9 @@ html.dark ::-webkit-scrollbar-thumb {
     135deg,
     var(--color-primary),
     var(--color-secondary)
-  );
-  border-radius: 5px;
-  border: 2px solid var(--dark-surface);
+  ) !important;
+  border-radius: 5px !important;
+  border: 2px solid var(--dark-surface) !important;
 }
 
 html.dark ::-webkit-scrollbar-thumb:hover {
@@ -1050,7 +1203,13 @@ html.dark ::-webkit-scrollbar-thumb:hover {
     135deg,
     var(--color-primary-light),
     var(--color-secondary-light)
-  );
+  ) !important;
+}
+
+/* Firefox scrollbar */
+html.dark * {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--color-primary) var(--dark-surface) !important;
 }
 
 /* ============================================================================
@@ -1084,15 +1243,125 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   html.dark .text-light-blue {
     color: #000000 !important;
   }
+
+  html.dark a {
+    color: #0000ee !important;
+    text-decoration: underline !important;
+  }
+
+  /* Hide non-essential elements */
+  html.dark .no-print,
+  html.dark .sidebar,
+  html.dark .header {
+    display: none !important;
+  }
 }
-html.dark .btn-primary:hover,
-html.dark .bg-indigo-600:hover,
-html.dark .bg-blue-600:hover {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary-light),
-    var(--color-primary-lighter)
-  ) !important;
-  border-color: var(--color-border-secondary) !important;
-  color: var(--color-white) !important; /* Added this line */
+
+/* ============================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================================================ */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  html.dark {
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #e5e7eb;
+    --color-text-muted: #d1d5db;
+    --color-border-primary: rgba(255, 255, 255, 0.3);
+    --color-border-secondary: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html.dark *,
+  html.dark *::before,
+  html.dark *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+/* Flex utilities */
+html.dark .flex-center {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+html.dark .flex-between {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Spacing utilities */
+html.dark .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1rem !important;
+}
+
+html.dark .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-left: 1rem !important;
+}
+
+/* Overflow utilities */
+html.dark .overflow-ellipsis {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Visibility utilities */
+html.dark .visible {
+  visibility: visible !important;
+}
+
+html.dark .invisible {
+  visibility: hidden !important;
+}
+
+/* Opacity utilities */
+html.dark .opacity-0 {
+  opacity: 0 !important;
+}
+html.dark .opacity-25 {
+  opacity: 0.25 !important;
+}
+html.dark .opacity-50 {
+  opacity: 0.5 !important;
+}
+html.dark .opacity-75 {
+  opacity: 0.75 !important;
+}
+html.dark .opacity-100 {
+  opacity: 1 !important;
+}
+
+/* Z-index utilities */
+html.dark .z-0 {
+  z-index: 0 !important;
+}
+html.dark .z-10 {
+  z-index: 10 !important;
+}
+html.dark .z-20 {
+  z-index: 20 !important;
+}
+html.dark .z-30 {
+  z-index: 30 !important;
+}
+html.dark .z-40 {
+  z-index: 40 !important;
+}
+html.dark .z-50 {
+  z-index: 50 !important;
+}
+html.dark .z-auto {
+  z-index: auto !important;
 }

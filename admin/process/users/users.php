@@ -510,8 +510,13 @@ require_once __DIR__ . '/process.php';
                     </div>
                 </div>
             <?php endif; ?>
+        </main>
     </div>
-    </main>
+    <div class="flex flex-wrap gap-2">
+        <button onclick="showAddUserModal()"
+            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <i class="fas fa-user-plus mr-2"></i> Add User
+        </button>
     </div>
     <!-- Add User Modal -->
     <div id="addUserModal" class="fixed inset-0 z-50 hidden modal-overlay">
@@ -654,12 +659,14 @@ require_once __DIR__ . '/process.php';
                                 Save Changes
                             </button>
                         </div>
+                        <div class="mt-3 text-sm text-gray-500">
+                            Leaving the password field blank will keep the user's current password unchanged.
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
 
     <script src="../../../assets/Js/users.js"></script>
 </body>

@@ -1,261 +1,248 @@
-// SweetAlert2 Helper Functions
+/* =====================================================
+   CONFIG
+===================================================== */
+const RELOAD_DELAY = 700;
+
+/* =====================================================
+   SWEETALERT HELPERS (GLOBAL – NO OK ANYWHERE)
+===================================================== */
 const SwalHelper = {
-  toast: (title, icon = "success") => {
+  loading(title = "Processing...") {
     Swal.fire({
       title,
-      icon,
-      toast: true,
-      position: "top-end",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
       showConfirmButton: false,
-      timer: 3000,
+      didOpen: () => Swal.showLoading(),
+    });
+  },
+
+  success(title, text = "") {
+    return Swal.fire({
+      icon: "success",
+      title,
+      text: text || undefined,
+      showConfirmButton: false,
+      timer: 1200,
       timerProgressBar: true,
     });
   },
 
-  loading: (title = "Processing...") => {
+  error(text) {
     Swal.fire({
-      title,
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      willOpen: () => Swal.showLoading(),
-    });
-  },
-
-  success: (title, text = "") => {
-    return Swal.fire({
-      icon: "success",
-      title,
-      text,
-      confirmButtonText: "OK",
-      confirmButtonColor: "#3085d6",
-    });
-  },
-
-  error: (text) => {
-    return Swal.fire({
       icon: "error",
       title: "Error",
       text,
-      confirmButtonText: "OK",
-      confirmButtonColor: "#d33",
+      showConfirmButton: false,
+      timer: 2200,
+      timerProgressBar: true,
     });
   },
 
-  confirmDelete: (title, text) => {
+  confirmDelete(title, text) {
     return Swal.fire({
-      title: title || "Are you sure?",
-      text: text || "You won't be able to revert this!",
       icon: "warning",
+      title,
+      html: `<p class="text-gray-600 mt-2">${text}</p>`,
       showCancelButton: true,
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      reverseButtons: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
     });
   },
 };
 
-// API Helper
+/* =====================================================
+   API HELPER
+===================================================== */
 const CategoryAPI = {
-  request: async (data) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
+  async request(payload) {
+    const fd = new FormData();
+    Object.entries(payload).forEach(([k, v]) => fd.append(k, v));
 
-    const response = await fetch("", {
+    const res = await fetch("", {
       method: "POST",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: formData,
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      body: fd,
     });
 
     try {
-      return await response.json();
-    } catch (error) {
-      throw new Error("Failed to parse server response");
+      return await res.json();
+    } catch {
+      throw new Error("Invalid server response");
     }
   },
 };
 
-// Category Management Functions
+/* =====================================================
+   CATEGORY MANAGER
+===================================================== */
 const CategoryManager = {
-  add: async (formData) => {
+  async add(data) {
     SwalHelper.loading("Adding category...");
 
     try {
-      const data = await CategoryAPI.request(formData);
+      const res = await CategoryAPI.request(data);
       Swal.close();
 
-      if (data.success) {
-        await SwalHelper.success("Success!", data.message);
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        SwalHelper.error(data.message);
-      }
-    } catch (error) {
+      if (!res.success) return SwalHelper.error(res.message);
+
+      SwalHelper.success("Category added", res.message);
+      setTimeout(() => location.reload(), RELOAD_DELAY);
+    } catch {
       Swal.close();
       SwalHelper.error("Network error. Please try again.");
     }
   },
 
-  update: async (formData) => {
+  async update(data) {
     SwalHelper.loading("Updating category...");
 
     try {
-      const data = await CategoryAPI.request(formData);
+      const res = await CategoryAPI.request(data);
       Swal.close();
 
-      if (data.success) {
-        await SwalHelper.success("Success!", data.message);
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        SwalHelper.error(data.message);
-      }
-    } catch (error) {
+      if (!res.success) return SwalHelper.error(res.message);
+
+      SwalHelper.success("Category updated", res.message);
+      setTimeout(() => location.reload(), RELOAD_DELAY);
+    } catch {
       Swal.close();
       SwalHelper.error("Network error. Please try again.");
     }
   },
 
-  delete: async (categoryId, categoryName, productCount) => {
+  async delete(id, name, productCount) {
     if (productCount > 0) {
-      Swal.fire({
-        title: "Cannot Delete Category",
-        html: `Category "<strong>${categoryName}</strong>" has <strong>${productCount}</strong> product(s).<br><br>Please reassign or delete these products before deleting the category.`,
+      return Swal.fire({
         icon: "warning",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#3b82f6",
+        title: "Cannot delete category",
+        html: `
+          <p class="text-gray-600 mt-2">
+            Category <b>${name}</b> has <b>${productCount}</b> product(s).
+            Please reassign or delete them first.
+          </p>
+        `,
+        showConfirmButton: false,
+        timer: 2600,
+        timerProgressBar: true,
       });
-      return;
     }
 
-    const result = await SwalHelper.confirmDelete(
-      "Delete Category?",
-      `Are you sure you want to delete "<strong>${categoryName}</strong>"?`
+    const res = await SwalHelper.confirmDelete(
+      "Delete category?",
+      `Delete <b>${name}</b>? This action cannot be undone.`,
     );
 
-    if (!result.isConfirmed) return;
+    if (!res.isConfirmed) return;
 
     SwalHelper.loading("Deleting category...");
 
     try {
       const data = await CategoryAPI.request({
         action: "delete_category",
-        category_id: categoryId,
+        category_id: id,
       });
 
       Swal.close();
 
-      if (data.success) {
-        await SwalHelper.success("Deleted!", data.message);
-        // Remove row from table
-        const row = document.getElementById(`category-row-${categoryId}`);
-        if (row) row.remove();
-        // Update stats
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        SwalHelper.error(data.message);
-      }
-    } catch (error) {
+      if (!data.success) return SwalHelper.error(data.message);
+
+      SwalHelper.success("Category deleted", data.message);
+      document.getElementById(`category-row-${id}`)?.remove();
+      setTimeout(() => location.reload(), RELOAD_DELAY);
+    } catch {
       Swal.close();
       SwalHelper.error("Network error. Please try again.");
     }
   },
 };
 
-// Modal Functions
+/* =====================================================
+   MODAL HANDLERS
+===================================================== */
 const Modal = {
-  openEdit: (categoryId, categoryName) => {
-    document.getElementById("edit_category_id").value = categoryId;
-    document.getElementById("edit_category_name").value = categoryName;
+  openEdit(id, name) {
+    document.getElementById("edit_category_id").value = id;
+    document.getElementById("edit_category_name").value = name;
     document.getElementById("editModal").classList.remove("hidden");
     setTimeout(
       () => document.getElementById("edit_category_name").focus(),
-      100
+      100,
     );
   },
 
-  closeEdit: () => {
+  closeEdit() {
     document.getElementById("editModal").classList.add("hidden");
   },
 };
 
-// Event Handlers
-function editCategory(categoryId, categoryName) {
-  Modal.openEdit(categoryId, categoryName);
+/* =====================================================
+   GLOBAL FUNCTIONS (USED BY HTML)
+===================================================== */
+function editCategory(id, name) {
+  Modal.openEdit(id, name);
 }
 
-function deleteCategory(categoryId, categoryName, productCount) {
-  CategoryManager.delete(categoryId, categoryName, productCount);
+function deleteCategory(id, name, count) {
+  CategoryManager.delete(id, name, count);
 }
 
 function closeEditModal() {
   Modal.closeEdit();
 }
 
-// Form Submissions
+/* =====================================================
+   FORM SUBMITS
+===================================================== */
 document
   .getElementById("addCategoryForm")
-  .addEventListener("submit", async (e) => {
+  ?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
 
-    const form = e.target;
-    const formData = new FormData(form);
-
-    if (!formData.get("category_name").trim()) {
-      SwalHelper.error("Category name is required");
-      return;
+    if (!data.category_name?.trim()) {
+      return SwalHelper.error("Category name is required");
     }
 
-    await CategoryManager.add(Object.fromEntries(formData));
-    form.reset();
+    await CategoryManager.add(data);
+    e.target.reset();
   });
 
 document
   .getElementById("editCategoryForm")
-  .addEventListener("submit", async (e) => {
+  ?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
 
-    const form = e.target;
-    const formData = new FormData(form);
-
-    if (!formData.get("category_name").trim()) {
-      SwalHelper.error("Category name is required");
-      return;
+    if (!data.category_name?.trim()) {
+      return SwalHelper.error("Category name is required");
     }
 
-    await CategoryManager.update(Object.fromEntries(formData));
+    await CategoryManager.update(data);
     Modal.closeEdit();
   });
 
-// Search Functionality
-document
-  .getElementById("searchCategory")
-  .addEventListener("input", function (e) {
-    const searchTerm = e.target.value.toLowerCase();
-    const rows = document.querySelectorAll("#categoriesTableBody tr");
-
-    rows.forEach((row) => {
-      const categoryName = row
-        .querySelector("td:first-child")
-        .textContent.toLowerCase();
-      row.style.display = categoryName.includes(searchTerm) ? "" : "none";
-    });
+/* =====================================================
+   SEARCH
+===================================================== */
+document.getElementById("searchCategory")?.addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  document.querySelectorAll("#categoriesTableBody tr").forEach((row) => {
+    row.style.display = row.textContent.toLowerCase().includes(term)
+      ? ""
+      : "none";
   });
-
-// Close modal on outside click
-document.getElementById("editModal").addEventListener("click", (e) => {
-  if (e.target === document.getElementById("editModal")) {
-    Modal.closeEdit();
-  }
 });
 
-// Close modal on ESC key
+/* =====================================================
+   MODAL CLOSE EVENTS
+===================================================== */
+document.getElementById("editModal")?.addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) Modal.closeEdit();
+});
+
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    Modal.closeEdit();
-  }
+  if (e.key === "Escape") Modal.closeEdit();
 });

@@ -45,14 +45,6 @@ async function apiRequest(action, options = {}) {
 ===================================================== */
 const delayReload = () => setTimeout(() => location.reload(), RELOAD_DELAY);
 
-const debounce = (fn, delay = 300) => {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), delay);
-  };
-};
-
 const formData = (obj) => {
   const fd = new FormData();
   Object.entries(obj).forEach(([k, v]) => fd.append(k, v));
@@ -66,49 +58,69 @@ const esc = (text = "") => {
 };
 
 /* =====================================================
-   ALERT HELPERS (SweetAlert)
+   SWEETALERT HELPERS (SAME AS PRODUCTS)
 ===================================================== */
-const showLoading = (msg = "Loading...") =>
+function showLoading(msg = "Loading...") {
   Swal.fire({
     title: msg,
     allowOutsideClick: false,
-    didOpen: Swal.showLoading,
-  });
-
-const showSuccess = (msg) =>
-  Swal.fire({
-    icon: "success",
-    title: msg,
-    timer: 1200,
+    allowEscapeKey: false,
     showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
   });
+}
 
-const showError = (msg) =>
+function showSuccess(title, text = "") {
+  return Swal.fire({
+    icon: "success",
+    title,
+    text: text || undefined,
+    showConfirmButton: false,
+    timer: 1200,
+    timerProgressBar: true,
+  });
+}
+
+function showError(msg) {
   Swal.fire({
     icon: "error",
     title: "Error",
     text: msg,
+    confirmButtonColor: "#dc2626",
   });
+}
 
-/* =====================================================
-   LIVE SEARCH (TABLE FILTER)
-===================================================== */
-const searchInput = document.getElementById("liveUserSearch");
-const userRows = document.querySelectorAll("tbody tr[data-user-id]");
+/* Edit confirm (Products style) */
+function confirmEdit(title, text) {
+  return Swal.fire({
+    icon: "question",
+    title: title || "Edit user?",
+    html: `
+      <p class="text-gray-600 mt-2">
+        ${text || "Open the editor to update this user's information, role, or status."}
+      </p>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Edit",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#6b46c1",
+    cancelButtonColor: "#6b7280",
+  });
+}
 
-if (searchInput) {
-  searchInput.addEventListener(
-    "input",
-    debounce((e) => {
-      const q = e.target.value.toLowerCase().trim();
-
-      userRows.forEach((row) => {
-        row.style.display = row.innerText.toLowerCase().includes(q)
-          ? ""
-          : "none";
-      });
-    }, 200),
-  );
+/* Delete confirm (Products style) */
+function confirmDelete() {
+  return Swal.fire({
+    title: "Delete user?",
+    text: "This action cannot be undone",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#dc2626",
+  });
 }
 
 /* =====================================================
@@ -128,9 +140,7 @@ async function viewUser(userId) {
           <p><b>Phone:</b> ${esc(user.phone || "-")}</p>
           <p><b>Role:</b> ${esc(user.role)}</p>
           <p><b>Status:</b> ${esc(user.status)}</p>
-          <p><b>Joined:</b> ${new Date(
-            user.created_at,
-          ).toLocaleDateString()}</p>
+          <p><b>Joined:</b> ${new Date(user.created_at).toLocaleDateString()}</p>
         </div>
       `,
     });
@@ -139,51 +149,61 @@ async function viewUser(userId) {
   }
 }
 
+/* =====================================================
+   EDIT USER (OLD EDIT-ONLY MODAL)
+===================================================== */
 async function editUser(userId) {
-  const confirm = await Swal.fire({
-    title: "Edit user?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Edit",
-  });
-
-  if (!confirm.isConfirmed) return;
+  const confirmed = await confirmEdit(
+    "Edit user?",
+    "You can update user details, role, status, or reset the password.",
+  );
+  if (!confirmed.isConfirmed) return;
 
   try {
+    showLoading("Loading user...");
+
     const { user } = await apiRequest("get_user", {
       params: { id: userId },
     });
 
-    ["user_id", "name", "email", "phone", "role", "status"].forEach((k) => {
-      const el = document.getElementById(`edit_${k}`);
-      if (el) el.value = user[k] || "";
-    });
+    Swal.close();
 
+    document.getElementById("edit_user_id").value =
+      user.user_id ?? user.id ?? "";
+    document.getElementById("edit_name").value = user.name ?? "";
+    document.getElementById("edit_email").value = user.email ?? "";
+    document.getElementById("edit_phone").value = user.phone ?? "";
+    document.getElementById("edit_role").value = user.role ?? "customer";
+    document.getElementById("edit_status").value = user.status ?? "active";
     document.getElementById("edit_password").value = "";
-    document.getElementById("editUserModal")?.classList.remove("hidden");
+
+    document.getElementById("editUserModal").classList.remove("hidden");
   } catch (e) {
+    Swal.close();
     showError(e.message);
   }
 }
 
+/* =====================================================
+   DELETE / ROLE / STATUS
+===================================================== */
 async function deleteUser(userId) {
-  const confirm = await Swal.fire({
-    title: "Delete user?",
-    text: "This action cannot be undone",
-    icon: "warning",
-    showCancelButton: true,
-  });
-
-  if (!confirm.isConfirmed) return;
+  const res = await confirmDelete();
+  if (!res.isConfirmed) return;
 
   try {
+    showLoading("Deleting user...");
+
     await apiRequest("delete", {
       method: "POST",
       body: formData({ user_id: userId }),
     });
-    showSuccess("User deleted");
+
+    Swal.close();
+    showSuccess("User deleted", "The user account has been removed.");
     delayReload();
   } catch (e) {
+    Swal.close();
     showError(e.message);
   }
 }
@@ -194,7 +214,8 @@ async function updateUserRole(userId, role) {
       method: "POST",
       body: formData({ user_id: userId, role }),
     });
-    showSuccess("Role updated");
+
+    showSuccess("Role updated", "User role has been updated.");
     delayReload();
   } catch (e) {
     showError(e.message);
@@ -209,7 +230,11 @@ async function toggleUserStatus(userId, action) {
       method: "POST",
       body: formData({ user_id: userId, status }),
     });
-    showSuccess("Status updated");
+
+    showSuccess(
+      "Status updated",
+      `User has been ${status === "active" ? "activated" : "deactivated"}.`,
+    );
     delayReload();
   } catch (e) {
     showError(e.message);
@@ -217,20 +242,27 @@ async function toggleUserStatus(userId, action) {
 }
 
 /* =====================================================
-   ADD / EDIT FORMS
+   FORMS
 ===================================================== */
 document
   .getElementById("editUserForm")
   ?.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     try {
+      showLoading("Updating user...");
+
       await apiRequest("update", {
         method: "POST",
         body: new FormData(e.target),
       });
-      showSuccess("User updated");
+
+      Swal.close();
+      showSuccess("User updated", "User information updated successfully.");
+      closeEditUserModal();
       delayReload();
     } catch (e) {
+      Swal.close();
       showError(e.message);
     }
   });
@@ -247,12 +279,15 @@ document
 
     try {
       showLoading("Creating user...");
+
       await apiRequest("create", {
         method: "POST",
         body: new FormData(f),
       });
+
       Swal.close();
-      showSuccess("User created");
+      showSuccess("User created", "New user account created successfully.");
+      closeAddUserModal();
       delayReload();
     } catch (e) {
       Swal.close();
@@ -264,10 +299,8 @@ document
    MODAL HELPERS
 ===================================================== */
 function showAddUserModal() {
-  const modal = document.getElementById("addUserModal");
-  const form = document.getElementById("addUserForm");
-  if (form) form.reset();
-  if (modal) modal.classList.remove("hidden");
+  document.getElementById("addUserForm")?.reset();
+  document.getElementById("addUserModal")?.classList.remove("hidden");
 }
 
 function closeAddUserModal() {
@@ -278,16 +311,14 @@ function closeEditUserModal() {
   document.getElementById("editUserModal")?.classList.add("hidden");
 }
 
-/* Overlay click closes modals */
+/* Overlay + ESC */
 document.addEventListener("click", (e) => {
-  const overlay = e.target.closest?.(".modal-overlay");
-  if (overlay && e.target === overlay) {
+  if (e.target.classList.contains("modal-overlay")) {
     closeAddUserModal();
     closeEditUserModal();
   }
 });
 
-/* Escape key closes modals */
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeAddUserModal();
@@ -296,7 +327,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* =====================================================
-   GLOBAL EXPORTS (USED BY INLINE HTML)
+   GLOBAL EXPORTS
 ===================================================== */
 Object.assign(window, {
   viewUser,

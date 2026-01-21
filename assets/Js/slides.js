@@ -1,7 +1,96 @@
-// Modal Functions
+/* =====================================================
+   CONFIG
+===================================================== */
+const RELOAD_DELAY = 700;
+
+/* =====================================================
+   SWEETALERT HELPERS (GLOBAL — NO OK)
+===================================================== */
+const SwalHelper = {
+  loading(title = "Processing...") {
+    Swal.fire({
+      title,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading(),
+    });
+  },
+
+  success(title, text = "") {
+    return Swal.fire({
+      icon: "success",
+      title,
+      text: text || undefined,
+      showConfirmButton: false,
+      timer: 1200,
+      timerProgressBar: true,
+    });
+  },
+
+  error(text) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text,
+      showConfirmButton: false,
+      timer: 2200,
+      timerProgressBar: true,
+    });
+  },
+
+  confirmEdit(title, text) {
+    return Swal.fire({
+      icon: "question",
+      title,
+      html: `<p class="text-gray-600 mt-2">${text}</p>`,
+      showCancelButton: true,
+      confirmButtonText: "Edit",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#6d28d9",
+      cancelButtonColor: "#6b7280",
+    });
+  },
+
+  confirmDelete(title, text) {
+    return Swal.fire({
+      icon: "warning",
+      title,
+      html: `<p class="text-gray-600 mt-2">${text}</p>`,
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+    });
+  },
+};
+
+/* =====================================================
+   MODAL HELPERS
+===================================================== */
+function openModal() {
+  document.getElementById("slideModal")?.classList.remove("hidden");
+  document.getElementById("slideModal")?.classList.add("flex");
+  document.getElementById("modalOverlay")?.classList.remove("hidden");
+  document.documentElement.style.overflow = "hidden";
+}
+
+function closeModal() {
+  document.getElementById("slideModal")?.classList.add("hidden");
+  document.getElementById("slideModal")?.classList.remove("flex");
+  document.getElementById("modalOverlay")?.classList.add("hidden");
+  document.documentElement.style.overflow = "";
+  document.getElementById("imageUpload")?.value = "";
+}
+
+/* =====================================================
+   OPEN ADD SLIDE
+===================================================== */
 function openAddModal() {
   document.getElementById("modalTitle").innerHTML =
     '<i class="fas fa-plus mr-2 text-indigo-600"></i> Add Slide';
+
   document.getElementById("slideId").value = "0";
   document.getElementById("oldImage").value = "";
   document.getElementById("modalTitleInput").value = "";
@@ -9,17 +98,18 @@ function openAddModal() {
   document.getElementById("modalLinkUrl").value = "";
   document.getElementById("modalButtonText").value = "";
   document.getElementById("modalDisplayOrder").value =
-    "<?php echo $totalSlides + 1; ?>";
-  const statusEl = document.getElementById("modalIsActive");
-  if (statusEl) statusEl.value = "1";
+    document.getElementById("modalDisplayOrder").value || 1;
+  document.getElementById("modalIsActive").value = "1";
 
-  // Hide current image
   document.getElementById("currentImageContainer").classList.add("hidden");
   document.getElementById("newImageContainer").classList.add("hidden");
 
   openModal();
 }
 
+/* =====================================================
+   OPEN EDIT SLIDE
+===================================================== */
 function openEditModal(
   id,
   title,
@@ -28,10 +118,11 @@ function openEditModal(
   buttonText,
   displayOrder,
   isActive,
-  imageUrl
+  imageUrl,
 ) {
   document.getElementById("modalTitle").innerHTML =
     '<i class="fas fa-edit mr-2 text-yellow-600"></i> Edit Slide';
+
   document.getElementById("slideId").value = id;
   document.getElementById("oldImage").value = imageUrl;
   document.getElementById("modalTitleInput").value = title;
@@ -39,116 +130,30 @@ function openEditModal(
   document.getElementById("modalLinkUrl").value = linkUrl;
   document.getElementById("modalButtonText").value = buttonText;
   document.getElementById("modalDisplayOrder").value = displayOrder;
-  const statusEl = document.getElementById("modalIsActive");
-  if (statusEl) statusEl.value = isActive == 1 ? "1" : "0";
+  document.getElementById("modalIsActive").value = isActive == 1 ? "1" : "0";
 
-  if (imageUrl) {
-    var currentImgEl = document.getElementById("currentImagePreview");
-    var currentVideoEl = document.getElementById("currentVideoPreview");
-    if (/\.(mp4)(\?.*)?$/i.test(imageUrl)) {
-      // show video preview
-      if (currentVideoEl) {
-        currentVideoEl.src = imageUrl;
-        currentVideoEl.classList.remove("hidden");
-      }
-      if (currentImgEl) {
-        currentImgEl.classList.add("hidden");
-        currentImgEl.removeAttribute("src");
-      }
-    } else {
-      if (currentImgEl) {
-        currentImgEl.src = imageUrl;
-        currentImgEl.classList.remove("hidden");
-      }
-      if (currentVideoEl) {
-        currentVideoEl.classList.add("hidden");
-        currentVideoEl.src = "";
-      }
-    }
-    document.getElementById("currentImageContainer").classList.remove("hidden");
-  } else {
-    document.getElementById("currentImageContainer").classList.add("hidden");
+  const img = document.getElementById("currentImagePreview");
+  const video = document.getElementById("currentVideoPreview");
+
+  if (imageUrl && /\.mp4(\?.*)?$/i.test(imageUrl)) {
+    video.src = imageUrl;
+    video.classList.remove("hidden");
+    img.classList.add("hidden");
+  } else if (imageUrl) {
+    img.src = imageUrl;
+    img.classList.remove("hidden");
+    video.classList.add("hidden");
   }
 
-  // Hide new image preview
+  document.getElementById("currentImageContainer").classList.remove("hidden");
   document.getElementById("newImageContainer").classList.add("hidden");
 
   openModal();
 }
 
-function openModal() {
-  const slideModal = document.getElementById("slideModal");
-  const overlay = document.getElementById("modalOverlay");
-  if (slideModal) {
-    slideModal.classList.remove("hidden");
-    slideModal.classList.add("flex");
-  }
-  if (overlay) {
-    overlay.classList.remove("hidden");
-  }
-  // prevent background scroll
-  document.documentElement.style.overflow = "hidden";
-}
-
-function closeModal() {
-  const slideModal = document.getElementById("slideModal");
-  const overlay = document.getElementById("modalOverlay");
-  if (slideModal) {
-    slideModal.classList.add("hidden");
-    slideModal.classList.remove("flex");
-  }
-  if (overlay) {
-    overlay.classList.add("hidden");
-  }
-  document.documentElement.style.overflow = "";
-  const img = document.getElementById("imageUpload");
-  if (img) img.value = "";
-}
-
-// Close modal when clicking overlay
-document.getElementById("modalOverlay").addEventListener("click", closeModal);
-
-// Image preview
-function previewNewImage(input) {
-  const newImageContainer = document.getElementById("newImageContainer");
-  const newImagePreview = document.getElementById("newImagePreview");
-
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      newImagePreview.src = e.target.result;
-      newImageContainer.classList.remove("hidden");
-    };
-    reader.readAsDataURL(input.files[0]);
-  } else {
-    newImageContainer.classList.add("hidden");
-  }
-}
-
-// Delete confirmation
-function confirmDelete(title) {
-  event.preventDefault();
-  const url = event.currentTarget.href;
-
-  Swal.fire({
-    title: "Delete Slide?",
-    html: `Are you sure you want to delete <strong>"${title}"</strong>?<br><br>This action cannot be undone.`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#ef4444",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.href = url;
-    }
-  });
-
-  return false;
-}
-
-// Edit confirmation (open editor after confirmation)
+/* =====================================================
+   CONFIRM EDIT / DELETE (MATCH USERS & PRODUCTS)
+===================================================== */
 function confirmEditSlide(
   id,
   title,
@@ -157,19 +162,14 @@ function confirmEditSlide(
   buttonText,
   displayOrder,
   isActive,
-  imageUrl
+  imageUrl,
 ) {
-  Swal.fire({
-    title: "Edit slide?",
-    html: `Open editor for <strong>"${title}"</strong>.`,
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonColor: "#6d28d9",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "Edit",
-    cancelButtonText: "Cancel",
-  }).then((result) => {
-    if (result.isConfirmed) {
+  SwalHelper.confirmEdit(
+    "Edit slide?",
+    `You can update the slide title, image, content, link, or display order for
+     <b>${title}</b>.`,
+  ).then((res) => {
+    if (res.isConfirmed) {
       openEditModal(
         id,
         title,
@@ -178,102 +178,80 @@ function confirmEditSlide(
         buttonText,
         displayOrder,
         isActive,
-        imageUrl
+        imageUrl,
       );
     }
   });
 }
 
-// Form validation
-document.getElementById("slideForm").addEventListener("submit", function (e) {
+function confirmDelete(title, url) {
+  SwalHelper.confirmDelete(
+    "Delete slide?",
+    `Are you sure you want to permanently delete
+     <b>${title}</b>? This action cannot be undone.`,
+  ).then((res) => {
+    if (res.isConfirmed) {
+      SwalHelper.loading("Deleting slide...");
+      window.location.href = url;
+    }
+  });
+}
+
+/* =====================================================
+   IMAGE PREVIEW
+===================================================== */
+function previewNewImage(input) {
+  const container = document.getElementById("newImageContainer");
+  const preview = document.getElementById("newImagePreview");
+
+  if (!input.files?.length) {
+    container.classList.add("hidden");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    container.classList.remove("hidden");
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+/* =====================================================
+   FORM VALIDATION (CONSISTENT TEXT)
+===================================================== */
+document.getElementById("slideForm")?.addEventListener("submit", (e) => {
   const title = document.getElementById("modalTitleInput").value.trim();
   const image = document.getElementById("imageUpload").files.length;
-  const slideId = document.getElementById("slideId").value;
-  const isEditMode = slideId !== "0";
+  const isEdit = document.getElementById("slideId").value !== "0";
 
   if (!title) {
     e.preventDefault();
-    Swal.fire({
-      title: "Missing Title",
-      text: "Please enter a slide title",
-      icon: "warning",
-      confirmButtonColor: "#3b82f6",
-    });
-    return false;
+    SwalHelper.error("Please enter a slide title.");
+    return;
   }
 
-  if (!isEditMode && !image) {
+  if (!isEdit && !image) {
     e.preventDefault();
-    Swal.fire({
-      title: "Missing Image",
-      text: "Please upload an image for the slide",
-      icon: "warning",
-      confirmButtonColor: "#3b82f6",
-    });
-    return false;
+    SwalHelper.error("Please upload an image for this slide.");
   }
 });
 
-// Small UI helpers used by refresh and other actions
-function showLoading(message = "Loading...") {
-  if (typeof Swal !== "undefined") {
-    Swal.fire({
-      title: message,
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-  } else {
-    console.log("Loading:", message);
-  }
-}
+/* =====================================================
+   CLOSE EVENTS
+===================================================== */
+document.getElementById("modalOverlay")?.addEventListener("click", closeModal);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeModal();
+});
 
-function showError(message) {
-  if (typeof Swal !== "undefined") {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: message,
-      confirmButtonColor: "#3b82f6",
-    });
-  } else {
-    console.error(message);
-  }
-}
-
-function showSuccess(message) {
-  if (typeof Swal !== "undefined") {
-    Swal.fire({
-      icon: "success",
-      title: message,
-      timer: 1200,
-      showConfirmButton: false,
-    });
-  } else {
-    console.log("Success:", message);
-  }
-}
-
-function showToast(message, icon = "success") {
-  if (typeof Swal !== "undefined") {
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-    });
-    Toast.fire({
-      icon: icon,
-      title: message,
-    });
-  } else {
-    console.log(message);
-  }
-}
-// Export alert helpers to global scope so server-side flash can call them
-window.showLoading = showLoading;
-window.showError = showError;
-window.showSuccess = showSuccess;
-window.showToast = showToast;
+/* =====================================================
+   GLOBAL EXPORTS
+===================================================== */
+Object.assign(window, {
+  openAddModal,
+  confirmEditSlide,
+  confirmDelete,
+  previewNewImage,
+  closeModal,
+});

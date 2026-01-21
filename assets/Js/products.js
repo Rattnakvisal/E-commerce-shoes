@@ -1,8 +1,27 @@
-// SweetAlert2 helpers
+/* =====================================================
+   CONFIG
+===================================================== */
+const PRODUCTS_API_URL = "add-product.php";
+const RELOAD_DELAY = 700;
+
+/* =====================================================
+   UTILITIES
+===================================================== */
+const delayReload = () => setTimeout(() => location.reload(), RELOAD_DELAY);
+
+const esc = (text = "") => {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+};
+
+/* =====================================================
+   SWEETALERT HELPERS (MATCH USERS)
+===================================================== */
 function showToast(title, icon = "success") {
   Swal.fire({
-    title: title,
-    icon: icon,
+    title,
+    icon,
     toast: true,
     position: "top-end",
     showConfirmButton: false,
@@ -15,18 +34,19 @@ function showLoading(msg = "Loading...") {
   Swal.fire({
     title: msg,
     allowOutsideClick: false,
+    allowEscapeKey: false,
     didOpen: () => Swal.showLoading(),
   });
 }
 
 function showSuccess(title, text = "") {
-  // Always show a brief auto-closing success without an OK button
   return Swal.fire({
     icon: "success",
-    title: title,
+    title,
     text: text || undefined,
-    timer: 1200,
     showConfirmButton: false,
+    timer: 1200,
+    timerProgressBar: true,
   });
 }
 
@@ -35,70 +55,81 @@ function showError(msg) {
     icon: "error",
     title: "Error",
     text: msg,
-  });
-}
-
-function confirmDelete(title, text) {
-  return Swal.fire({
-    title: title || "Delete item?",
-    text: text || "This action cannot be undone",
-    icon: "warning",
-    showCancelButton: true,
     confirmButtonColor: "#dc2626",
   });
 }
 
+/* Confirm edit (Products style) */
 function confirmEdit(title, text) {
   return Swal.fire({
-    title: title || "Edit product?",
-    text: text || "Open editor for this product.",
     icon: "question",
+    title: title || "Edit product?",
+    html: `
+      <p class="text-gray-600 mt-2">
+        ${text || "Open the editor to update this product information."}
+      </p>
+    `,
     showCancelButton: true,
     confirmButtonText: "Edit",
     cancelButtonText: "Cancel",
     confirmButtonColor: "#6b46c1",
     cancelButtonColor: "#6b7280",
-    reverseButtons: false,
   });
 }
 
-// DOM Elements
+/* Confirm delete */
+function confirmDelete(title, text) {
+  return Swal.fire({
+    title: title || "Delete product?",
+    text: text || "This action cannot be undone",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#dc2626",
+  });
+}
+
+/* =====================================================
+   DOM ELEMENTS
+===================================================== */
 const productModal = document.getElementById("productModal");
 const modalTitle = document.getElementById("modalTitle");
 const productForm = document.getElementById("productForm");
 const formAction = document.getElementById("formAction");
 const productId = document.getElementById("productId");
+
 const productName = document.getElementById("productName");
 const productDescription = document.getElementById("productDescription");
 const productCategory = document.getElementById("productCategory");
-const productSku = document.getElementById("productSku");
 const productPrice = document.getElementById("productPrice");
 const productCost = document.getElementById("productCost");
 const productStock = document.getElementById("productStock");
 const productStatus = document.getElementById("productStatus");
+
 const productImage = document.getElementById("productImage");
 const imagePreview = document.getElementById("imagePreview");
 const previewImage = document.getElementById("previewImage");
+
 const submitBtn = document.getElementById("submitBtn");
 const submitText = document.getElementById("submitText");
 
-// Modal Functions
+/* =====================================================
+   MODAL HANDLERS
+===================================================== */
 function openModal() {
-  if (!productModal) return;
-  productModal.classList.remove("hidden");
-  productModal.classList.add("flex");
+  productModal?.classList.remove("hidden");
+  productModal?.classList.add("flex");
 }
 
 function closeModal() {
-  if (productModal) {
-    productModal.classList.add("hidden");
-    productModal.classList.remove("flex");
-  }
+  productModal?.classList.add("hidden");
+  productModal?.classList.remove("flex");
   resetForm();
 }
 
 function resetForm() {
-  if (productForm) productForm.reset();
+  productForm?.reset();
   if (productId) productId.value = "";
   if (formAction) formAction.value = "add";
   if (modalTitle) modalTitle.textContent = "Add Product";
@@ -106,274 +137,178 @@ function resetForm() {
   if (submitBtn)
     submitBtn.className =
       "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition";
-  if (imagePreview && imagePreview.classList)
-    imagePreview.classList.add("hidden");
+  imagePreview?.classList.add("hidden");
 }
 
-// Image Preview
-if (productImage) {
-  productImage.addEventListener("change", function (e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        if (previewImage) previewImage.src = e.target.result;
-        if (imagePreview && imagePreview.classList)
-          imagePreview.classList.remove("hidden");
-      };
-      reader.readAsDataURL(file);
-    } else {
-      if (imagePreview && imagePreview.classList)
-        imagePreview.classList.add("hidden");
-    }
-  });
-}
+/* =====================================================
+   IMAGE PREVIEW
+===================================================== */
+productImage?.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return imagePreview?.classList.add("hidden");
 
-// Edit Product
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    previewImage.src = ev.target.result;
+    imagePreview.classList.remove("hidden");
+  };
+  reader.readAsDataURL(file);
+});
+
+/* =====================================================
+   EDIT PRODUCT
+===================================================== */
 async function editProduct(id) {
   const confirmed = await confirmEdit(
     "Edit product?",
-    "Open editor for this product.",
+    "You can update product details, pricing, stock, or image.",
   );
   if (!confirmed.isConfirmed) return;
 
   try {
-    const response = await fetch("add-product.php?action=get_one&id=" + id);
-    const data = await response.json();
+    showLoading("Loading product...");
 
+    const res = await fetch(`${PRODUCTS_API_URL}?action=get_one&id=${id}`);
+    const data = await res.json();
     Swal.close();
 
-    if (data.success) {
-      const product = data.data;
-      if (productId) productId.value = product.product_id ?? product.id ?? "";
-      if (productName) productName.value = product.name ?? product.NAME ?? "";
-      if (productDescription)
-        productDescription.value =
-          product.description ?? product.DESCRIPTION ?? "";
-      if (productCategory)
-        productCategory.value =
-          product.category_id ?? product.category_id ?? "";
-      if (productPrice)
-        productPrice.value = product.price ?? product.PRICE ?? "";
-      if (productCost) productCost.value = product.cost ?? product.COST ?? "";
-      if (productStock)
-        productStock.value = product.stock ?? product.STOCK ?? "";
-      if (productStatus)
-        productStatus.value = product.status ?? product.STATUS ?? "";
-
-      // Handle image preview
-      if (product.image_url) {
-        if (previewImage) previewImage.src = product.image_url;
-        if (imagePreview && imagePreview.classList)
-          imagePreview.classList.remove("hidden");
-      } else {
-        if (imagePreview && imagePreview.classList)
-          imagePreview.classList.add("hidden");
-      }
-
-      if (formAction) formAction.value = "update";
-      if (modalTitle) modalTitle.textContent = "Edit Product";
-      if (submitText) submitText.textContent = "Update Product";
-      if (submitBtn)
-        submitBtn.className =
-          "px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition";
-
-      openModal();
-    } else {
-      showError(data.message || "Failed to load product");
+    if (!data.success || !data.data) {
+      return showError(data.message || "Failed to load product");
     }
-  } catch (error) {
+
+    const p = data.data;
+
+    productId.value = p.product_id ?? p.id ?? "";
+    productName.value = p.name ?? "";
+    productDescription.value = p.description ?? "";
+    productCategory.value = p.category_id ?? "";
+    productPrice.value = p.price ?? "";
+    productCost.value = p.cost ?? "";
+    productStock.value = p.stock ?? "";
+    productStatus.value = p.status ?? "active";
+
+    if (p.image_url) {
+      previewImage.src = p.image_url;
+      imagePreview.classList.remove("hidden");
+    } else {
+      imagePreview.classList.add("hidden");
+    }
+
+    formAction.value = "update";
+    modalTitle.textContent = "Edit Product";
+    submitText.textContent = "Update Product";
+    submitBtn.className =
+      "px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition";
+
+    openModal();
+  } catch (err) {
     Swal.close();
     showError("Network error. Please try again.");
-    console.error("Edit error:", error);
   }
 }
 
-// Delete Product
+/* =====================================================
+   DELETE PRODUCT
+===================================================== */
 async function deleteProduct(id) {
-  const productRow = document.querySelector(`tr[data-id="${id}"]`);
-  const productName = productRow
-    ? productRow.querySelector("td:nth-child(2) .font-medium").textContent
-    : "this product";
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  const name = row?.querySelector("td:nth-child(2) .font-medium")?.textContent;
 
-  const result = await confirmDelete(
-    "Delete Product?",
-    `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
+  const res = await confirmDelete(
+    "Delete product?",
+    `Are you sure you want to delete "${name || "this product"}"?`,
   );
-
-  if (!result.isConfirmed) return;
-
-  showLoading("Deleting product...");
+  if (!res.isConfirmed) return;
 
   try {
-    const formData = new FormData();
-    formData.append("action", "delete");
-    formData.append("id", id);
+    showLoading("Deleting product...");
 
-    const response = await fetch("add-product.php", {
+    const fd = new FormData();
+    fd.append("action", "delete");
+    fd.append("id", id);
+
+    const r = await fetch(PRODUCTS_API_URL, {
       method: "POST",
-      body: formData,
+      body: fd,
     });
-
-    const data = await response.json();
+    const data = await r.json();
 
     Swal.close();
 
-    if (data.success) {
-      await showSuccess("Deleted!", "Product has been deleted successfully.");
-      // Remove row from table
-      if (productRow) {
-        productRow.remove();
-      }
-      // Refresh page to update stats
-      window.location.reload();
-    } else {
-      showError(data.message || "Failed to delete product");
+    if (!data.success) {
+      return showError(data.message || "Delete failed");
     }
-  } catch (error) {
+
+    showSuccess("Product deleted", "The product has been removed.");
+    delayReload();
+  } catch {
     Swal.close();
     showError("Network error. Please try again.");
-    console.error("Delete error:", error);
   }
 }
 
-// Form Submission
-if (productForm) {
-  productForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
+/* =====================================================
+   FORM SUBMIT (ADD / UPDATE)
+===================================================== */
+productForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    if (!productName || !productName.value || !productName.value.trim()) {
-      showError("Product name is required");
-      return;
+  if (!productName.value.trim()) return showError("Product name is required");
+  if (productPrice.value <= 0) return showError("Price must be greater than 0");
+  if (productStock.value < 0) return showError("Stock must be 0 or greater");
+
+  try {
+    submitBtn.disabled = true;
+    submitText.textContent =
+      formAction.value === "add" ? "Adding..." : "Updating...";
+
+    const fd = new FormData(productForm);
+    fd.append("action", formAction.value === "add" ? "create" : "update");
+
+    const res = await fetch(PRODUCTS_API_URL, {
+      method: "POST",
+      body: fd,
+    });
+    const data = await res.json();
+
+    submitBtn.disabled = false;
+    submitText.textContent =
+      formAction.value === "add" ? "Add Product" : "Update Product";
+
+    if (!data.success) {
+      return showError(data.message || "Operation failed");
     }
 
-    if (
-      !productPrice ||
-      !productPrice.value ||
-      parseFloat(productPrice.value) <= 0
-    ) {
-      showError("Price must be greater than 0");
-      return;
-    }
+    showSuccess(
+      formAction.value === "add" ? "Product added" : "Product updated",
+    );
+    closeModal();
+    delayReload();
+  } catch {
+    submitBtn.disabled = false;
+    showError("Network error. Please try again.");
+  }
+});
 
-    if (
-      !productStock ||
-      !productStock.value ||
-      parseInt(productStock.value) < 0
-    ) {
-      showError("Stock must be 0 or greater");
-      return;
-    }
+/* =====================================================
+   EVENT BINDINGS
+===================================================== */
+document.getElementById("openAddProduct")?.addEventListener("click", () => {
+  resetForm();
+  openModal();
+});
 
-    // Show loading state
-    if (submitBtn) submitBtn.disabled = true;
-    if (submitText)
-      submitText.textContent =
-        formAction && formAction.value === "add" ? "Adding..." : "Updating...";
+document.getElementById("closeModal")?.addEventListener("click", closeModal);
+document.getElementById("cancelBtn")?.addEventListener("click", closeModal);
 
-    try {
-      const fd = new FormData();
-      const act =
-        formAction.value === "add"
-          ? "create"
-          : formAction.value === "update"
-            ? "update"
-            : formAction.value;
-      fd.append("action", act);
-      if (
-        formAction &&
-        formAction.value === "update" &&
-        productId &&
-        productId.value
-      )
-        fd.append("product_id", productId.value);
-      fd.append("NAME", productName.value);
-      fd.append("DESCRIPTION", productDescription.value);
-      fd.append("category_id", productCategory.value);
-      fd.append("price", productPrice.value);
-      fd.append("cost", productCost.value);
-      fd.append("stock", productStock.value);
-      fd.append("STATUS", productStatus.value);
-      // include image file if selected
-      if (productImage && productImage.files && productImage.files[0]) {
-        fd.append("image", productImage.files[0]);
-      }
+productModal?.addEventListener("click", (e) => {
+  if (e.target === productModal) closeModal();
+});
 
-      const response = await fetch("add-product.php", {
-        method: "POST",
-        body: fd,
-      });
-
-      const data = await response.json();
-
-      // Reset button state
-      if (submitBtn) submitBtn.disabled = false;
-      if (submitText)
-        submitText.textContent =
-          formAction && formAction.value === "add"
-            ? "Add Product"
-            : "Update Product";
-
-      if (data.success) {
-        await showSuccess(
-          formAction.value === "add" ? "Product Added!" : "Product Updated!",
-          data.message,
-        );
-
-        closeModal();
-        // Refresh page
-        window.location.reload();
-      } else {
-        showError(data.message || "Operation failed");
-      }
-    } catch (error) {
-      // Reset button state
-      if (submitBtn) submitBtn.disabled = false;
-      if (submitText)
-        submitText.textContent =
-          formAction && formAction.value === "add"
-            ? "Add Product"
-            : "Update Product";
-
-      showError("Network error. Please try again.");
-      console.error("Form submission error:", error);
-    }
-  });
-}
-
-// Event Listeners
-const openAddBtn = document.getElementById("openAddProduct");
-const closeModalBtn = document.getElementById("closeModal");
-const cancelBtnEl = document.getElementById("cancelBtn");
-
-if (openAddBtn) {
-  openAddBtn.addEventListener("click", () => {
-    resetForm();
-    openModal();
-  });
-}
-
-if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
-if (cancelBtnEl) cancelBtnEl.addEventListener("click", closeModal);
-
-// Close modal when clicking outside
-if (productModal) {
-  productModal.addEventListener("click", (e) => {
-    if (e.target === productModal) {
-      closeModal();
-    }
-  });
-}
-
-// Utility helpers from users.js for consistent behavior
-function formData(obj) {
-  const fd = new FormData();
-  Object.entries(obj).forEach(([k, v]) => fd.append(k, v));
-  return fd;
-}
-
-function esc(text = "") {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
+/* =====================================================
+   GLOBAL EXPORTS
+===================================================== */
+Object.assign(window, {
+  editProduct,
+  deleteProduct,
+});

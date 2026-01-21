@@ -1,3 +1,74 @@
+/* =====================================================
+   SWEETALERT HELPERS (MATCH PRODUCTS & USERS)
+===================================================== */
+function showLoading(msg = "Loading...") {
+  Swal.fire({
+    title: msg,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading(),
+  });
+}
+
+function showSuccess(title, text = "") {
+  return Swal.fire({
+    icon: "success",
+    title,
+    text: text || undefined,
+    showConfirmButton: false,
+    timer: 1200,
+    timerProgressBar: true,
+  });
+}
+
+function showError(msg) {
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: msg,
+    confirmButtonColor: "#dc2626",
+  });
+}
+
+/* Confirm edit (Products style) */
+function confirmEditFeatured(cb) {
+  return Swal.fire({
+    icon: "question",
+    title: "Edit featured item?",
+    html: `
+      <p class="text-gray-600 mt-2">
+        Open the editor to update the featured product, image, or position.
+      </p>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Edit",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#6b46c1",
+    cancelButtonColor: "#6b7280",
+  }).then((res) => {
+    if (res.isConfirmed && typeof cb === "function") cb();
+  });
+}
+
+/* Confirm delete */
+function confirmDeleteFeatured(cb) {
+  return Swal.fire({
+    title: "Delete featured item?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#dc2626",
+  }).then((res) => {
+    if (res.isConfirmed && typeof cb === "function") cb();
+  });
+}
+
+/* =====================================================
+   MODAL HELPERS
+===================================================== */
 function openAddModal() {
   document.getElementById("featuredForm").reset();
   document.getElementById("featuredId").value = "";
@@ -21,25 +92,18 @@ function openEditModal(id, pid, title, position, active, image) {
   document.getElementById("isActive").checked = !!active;
   document.getElementById("modalTitle").textContent = "Edit Featured Item";
 
-  // Clear new image preview
   document.getElementById("newImagePreview").classList.add("hidden");
 
-  // Update image preview
-  const previewContainer = document.getElementById("imagePreviewContainer");
-  if (image) {
-    previewContainer.innerHTML = `
-                    <div class="relative">
-                        <img src="${image}" alt="Current featured image" 
-                             class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
-                        <div class="absolute top-2 right-2 bg-white/80 rounded-full p-2">
-                            <span class="text-xs font-medium text-gray-700">Current</span>
-                        </div>
-                    </div>
-                `;
-  } else {
-    previewContainer.innerHTML =
-      '<p class="text-sm text-gray-500">No image currently set</p>';
-  }
+  const preview = document.getElementById("imagePreviewContainer");
+  preview.innerHTML = image
+    ? `
+      <div class="relative">
+        <img src="${image}" class="w-full h-64 object-cover rounded-lg border">
+        <span class="absolute top-2 right-2 bg-white/80 px-2 py-1 rounded text-xs">
+          Current
+        </span>
+      </div>`
+    : '<p class="text-sm text-gray-500">No image currently set</p>';
 
   document.getElementById("modalOverlay").classList.remove("hidden");
   document.getElementById("featuredModal").classList.remove("hidden");
@@ -52,18 +116,19 @@ function closeModal() {
   document.body.style.overflow = "auto";
 }
 
+/* =====================================================
+   IMAGE PREVIEW
+===================================================== */
 function previewImage(input) {
   const preview = document.getElementById("newImagePreview");
-  const previewImg = document.getElementById("newImagePreviewImg");
+  const img = document.getElementById("newImagePreviewImg");
 
   if (input.files && input.files[0]) {
     const reader = new FileReader();
-
-    reader.onload = function (e) {
-      previewImg.src = e.target.result;
+    reader.onload = (e) => {
+      img.src = e.target.result;
       preview.classList.remove("hidden");
     };
-
     reader.readAsDataURL(input.files[0]);
   }
 }
@@ -73,66 +138,29 @@ function removeNewImage() {
   document.getElementById("newImagePreview").classList.add("hidden");
 }
 
+/* =====================================================
+   ACTION CONFIRMATIONS
+===================================================== */
 function confirmEdit(id, pid, title, position, active, image) {
-  if (typeof Swal === "undefined") {
-    // fallback to direct open
-    openEditModal(id, pid, title, position, active, image);
-    return;
-  }
-
-  Swal.fire({
-    title: "Edit featured item?",
-    text: "Open editor for this featured item.",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Edit",
-    cancelButtonText: "Cancel",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      openEditModal(id, pid, title, position, active, image);
-    }
-  });
+  confirmEditFeatured(() =>
+    openEditModal(id, pid, title, position, active, image),
+  );
 }
 
 function confirmDelete(url) {
-  if (typeof Swal === "undefined") {
-    if (
-      confirm(
-        "Are you sure you want to delete this featured item? This action cannot be undone."
-      )
-    ) {
-      window.location = url;
-    }
-    return;
-  }
-
-  Swal.fire({
-    title: "Delete featured item?",
-    text: "This action cannot be undone.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Delete",
-    confirmButtonColor: "#d33",
-    cancelButtonText: "Cancel",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.location = url;
-    }
+  confirmDeleteFeatured(() => {
+    showLoading("Deleting...");
+    window.location = url;
   });
 }
 
-// Close modal on ESC key
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    closeModal();
-  }
+/* =====================================================
+   GLOBAL EVENTS
+===================================================== */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeModal();
 });
 
-// Close modal when clicking outside
-document
-  .getElementById("featuredModal")
-  ?.addEventListener("click", function (e) {
-    if (e.target === this) {
-      closeModal();
-    }
-  });
+document.getElementById("featuredModal")?.addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
