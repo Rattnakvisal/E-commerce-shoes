@@ -11,12 +11,37 @@ USE ecommerce;
 ========================================================= */
 CREATE TABLE users (
     user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
     NAME VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(20),
+
     PASSWORD VARCHAR(255) NOT NULL,
-    ROLE ENUM('admin','staff','customer') NOT NULL DEFAULT 'customer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+    ROLE ENUM('admin','staff','customer')
+        NOT NULL DEFAULT 'customer',
+
+    STATUS ENUM('active','inactive','blocked')
+        NOT NULL DEFAULT 'active',
+
+    email_verified TINYINT(1)
+        NOT NULL DEFAULT 0,
+
+    last_login TIMESTAMP NULL,
+
+    created_at TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    deleted_at TIMESTAMP NULL,
+
+    INDEX idx_role (ROLE),
+    INDEX idx_status (STATUS),
+    INDEX idx_email (email)
+
 ) ENGINE=INNODB;
 
 /* =========================================================
@@ -82,7 +107,7 @@ CREATE TABLE orders (
         FOREIGN KEY (user_id)
         REFERENCES users(user_id)
         ON DELETE SET NULL
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    ORDER ITEMS
@@ -106,7 +131,7 @@ CREATE TABLE order_items (
         FOREIGN KEY (product_id)
         REFERENCES products(product_id)
         ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    PAYMENTS
@@ -124,7 +149,7 @@ CREATE TABLE payments (
         FOREIGN KEY (order_id)
         REFERENCES orders(order_id)
         ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    INVENTORY LOGS
@@ -142,7 +167,7 @@ CREATE TABLE inventory_logs (
         FOREIGN KEY (product_id)
         REFERENCES products(product_id)
         ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    SHIPPING
@@ -162,7 +187,7 @@ CREATE TABLE shipping (
         FOREIGN KEY (order_id)
         REFERENCES orders(order_id)
         ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    NOTIFICATIONS
@@ -183,7 +208,7 @@ CREATE TABLE notifications (
         FOREIGN KEY (user_id)
         REFERENCES users(user_id)
         ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    FEATURED ITEMS
@@ -203,7 +228,7 @@ CREATE TABLE featured_items (
         FOREIGN KEY (product_id)
         REFERENCES products(product_id)
         ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=INNODB;
 
 /* =========================================================
    CONTACT MESSAGES
@@ -214,4 +239,4 @@ CREATE TABLE contact_messages (
     email VARCHAR(100) NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+) ENGINE=INNODB;

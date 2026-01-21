@@ -1,7 +1,7 @@
 <?php
 $host = 'localhost';
 $root = '3306';
-$db = 'dynamic_ecommerce';
+$db = 'Dynamic_ecommeries';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
