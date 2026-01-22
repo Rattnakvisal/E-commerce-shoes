@@ -187,7 +187,7 @@ function renderGroup(g, items) {
               <button onclick="deleteItem(${i.id})" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
             </div>
           </div>
-        `
+        `,
           )
           .join("")}
       </div>
@@ -253,7 +253,7 @@ function editItem(id) {
 async function deleteEntity(type, id, label) {
   const ok = await confirmBox(
     `Delete ${label}?`,
-    "This action cannot be undone"
+    "This action cannot be undone",
   );
   if (!ok.isConfirmed) return;
 

@@ -49,7 +49,7 @@ try {
                     $btnText = htmlspecialchars($slide['button_text']);
                     ?>
 
-                    <div class="min-w-full relative h-[520px] md:h-[620px] lg:h-[680px]">
+                    <div class="min-w-full relative h-[520px] md:h-[620px] lg:h-[700px]">
 
                         <!-- Media (Image or Video) -->
                         <?php $ext = strtolower(pathinfo($img, PATHINFO_EXTENSION)); ?>
