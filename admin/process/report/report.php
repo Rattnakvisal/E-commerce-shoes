@@ -394,7 +394,7 @@ error_reporting(E_ALL);
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Top Customer</h3>
                             <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900"><?php echo htmlspecialchars($top_customer['NAME'] ?? '—'); ?></p>
+                                <p class="text-2xl font-bold text-gray-900"><?php echo htmlspecialchars($top_customer['user_id'] ?? '—'); ?></p>
                                 <div class="ml-2">
                                     <span class="text-sm text-gray-500">$<?php echo number_format($top_customer['total_spent'] ?? 0, 2); ?></span>
                                 </div>

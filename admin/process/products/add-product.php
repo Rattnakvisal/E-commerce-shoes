@@ -35,14 +35,14 @@ try {
 ============================ */
 if ($action === 'create') {
     try {
-        $NAME = trim($_POST['NAME'] ?? '');
+        $NAME = trim($_POST['NAME'] ?? $_POST['name'] ?? '');
         $sku = trim($_POST['SKU'] ?? $_POST['sku'] ?? '');
-        $DESCRIPTION = trim($_POST['DESCRIPTION'] ?? '');
-        $category_id = $_POST['category_id'] ?? null;
-        $price = $_POST['price'] ?? null;
-        $cost = $_POST['cost'] ?? null;
-        $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
-        $STATUS = $_POST['STATUS'] ?? 'active';
+        $DESCRIPTION = trim($_POST['DESCRIPTION'] ?? $_POST['description'] ?? '');
+        $category_id = $_POST['category_id'] ?? $_POST['category'] ?? null;
+        $price = $_POST['price'] ?? $_POST['PRICE'] ?? null;
+        $cost = $_POST['cost'] ?? $_POST['COST'] ?? null;
+        $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : (isset($_POST['STOCK']) ? (int)$_POST['STOCK'] : 0);
+        $STATUS = $_POST['STATUS'] ?? $_POST['status'] ?? 'active';
 
         if ($NAME === '' || $price === null || $price === '') {
             echo json_encode(['success' => false, 'message' => 'Name and price are required']);
@@ -60,7 +60,9 @@ if ($action === 'create') {
         // Ensure sku is unique (if collision, append suffix)
         $sku = ensureUniqueSku($pdo, $sku);
 
-        $image_url = uploadImage($_FILES['image'] ?? null);
+        // Accept various possible file input names (image, file, IMAGE)
+        $fileInput = $_FILES['image'] ?? $_FILES['file'] ?? $_FILES['IMAGE'] ?? null;
+        $image_url = uploadImage($fileInput);
 
         $stmt = $pdo->prepare("\n            INSERT INTO products\n            (NAME, sku, image_url, DESCRIPTION, price, cost, stock, category_id, STATUS)\n            VALUES\n            (:NAME, :sku, :image_url, :DESCRIPTION, :price, :cost, :stock, :category_id, :STATUS)\n        ");
 
@@ -95,10 +97,27 @@ if ($action === 'get_one') {
     $stmt->execute([':id' => $id]);
 
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    $out = null;
+    if ($product) {
+        $out = [
+            'product_id'  => $product['product_id'] ?? $product['product_id'] ?? null,
+            'id'          => $product['product_id'] ?? null,
+            'name'        => $product['NAME'] ?? $product['name'] ?? null,
+            'sku'         => $product['sku'] ?? null,
+            'description' => $product['DESCRIPTION'] ?? $product['description'] ?? null,
+            'price'       => isset($product['price']) ? (float)$product['price'] : null,
+            'cost'        => isset($product['cost']) ? (float)$product['cost'] : null,
+            'stock'       => isset($product['stock']) ? (int)$product['stock'] : 0,
+            'category_id' => isset($product['category_id']) ? (int)$product['category_id'] : null,
+            'image_url'   => $product['image_url'] ?? null,
+            'status'      => $product['STATUS'] ?? $product['status'] ?? null,
+            'created_at'  => $product['created_at'] ?? null,
+        ];
+    }
 
     echo json_encode([
-        'success' => (bool)$product,
-        'data' => $product
+        'success' => (bool)$out,
+        'data' => $out
     ]);
     exit;
 }
@@ -108,15 +127,15 @@ if ($action === 'get_one') {
 ============================ */
 if ($action === 'update') {
     try {
-        $id = (int)$_POST['product_id'];
-        $NAME = trim($_POST['NAME']);
+        $id = (int)($_POST['product_id'] ?? $_POST['id'] ?? 0);
+        $NAME = trim($_POST['NAME'] ?? $_POST['name'] ?? '');
         $sku = trim($_POST['SKU'] ?? $_POST['sku'] ?? '');
-        $DESCRIPTION = trim($_POST['DESCRIPTION'] ?? '');
-        $category_id = $_POST['category_id'] ?? null;
-        $price = $_POST['price'];
-        $cost = $_POST['cost'] ?? null;
-        $stock = (int)$_POST['stock'];
-        $STATUS = $_POST['STATUS'];
+        $DESCRIPTION = trim($_POST['DESCRIPTION'] ?? $_POST['description'] ?? '');
+        $category_id = $_POST['category_id'] ?? $_POST['category'] ?? null;
+        $price = $_POST['price'] ?? $_POST['PRICE'] ?? null;
+        $cost = $_POST['cost'] ?? $_POST['COST'] ?? null;
+        $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : (isset($_POST['STOCK']) ? (int)$_POST['STOCK'] : 0);
+        $STATUS = $_POST['STATUS'] ?? $_POST['status'] ?? 'active';
 
         // Get old image
         $old = $pdo->prepare("SELECT image_url FROM products WHERE product_id = :id");
@@ -124,8 +143,9 @@ if ($action === 'update') {
         $oldImage = $old->fetchColumn();
 
         $image_url = $oldImage;
-        if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $image_url = uploadImage($_FILES['image']);
+        $fileInput = $_FILES['image'] ?? $_FILES['file'] ?? $_FILES['IMAGE'] ?? null;
+        if (!empty($fileInput) && $fileInput['error'] === UPLOAD_ERR_OK) {
+            $image_url = uploadImage($fileInput);
         }
 
         // Validate SKU uniqueness for update (exclude current product)

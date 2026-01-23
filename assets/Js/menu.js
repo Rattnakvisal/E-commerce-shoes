@@ -10,36 +10,64 @@ const $ = (id) => document.getElementById(id);
 let els = {};
 
 /* =====================================================
-   ALERT HELPERS
+   SWEETALERT HELPERS (match users.js style)
 ===================================================== */
-const toast = (title, icon = "success") =>
+function showLoading(msg = "Loading...") {
   Swal.fire({
-    title,
-    icon,
-    toast: true,
-    position: "top-end",
+    title: msg,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
     showConfirmButton: false,
-    timer: 3000,
+    didOpen: () => {
+      Swal.showLoading();
+    },
   });
+}
 
-const confirmBox = (title, text) =>
-  Swal.fire({
+function showSuccess(title, text = "") {
+  return Swal.fire({
+    icon: "success",
     title,
-    text,
+    text: text || undefined,
+    showConfirmButton: false,
+    timer: 1200,
+    timerProgressBar: true,
+  });
+}
+
+function showError(msg) {
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: msg,
+    confirmButtonColor: "#dc2626",
+  });
+}
+
+function confirmBox(title, text) {
+  return Swal.fire({
+    title: title || "Are you sure?",
+    text: text || "This action cannot be undone",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes, delete it!",
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#dc2626",
+    cancelButtonColor: "#6b7280",
   });
+}
 
-const loading = () =>
-  Swal.fire({
-    allowOutsideClick: false,
-    showConfirmButton: false,
-    didOpen: Swal.showLoading,
-  });
+function confirmDelete(
+  title = "Delete item?",
+  text = "This action cannot be undone",
+) {
+  return confirmBox(title, text);
+}
 
-const errorBox = (msg) =>
-  Swal.fire({ icon: "error", title: "Error", text: msg });
+/* compatibility wrappers used below */
+const toast = (title) => showSuccess(title);
+const loading = (msg) => showLoading(msg);
+const errorBox = (msg) => showError(msg);
 
 /* =====================================================
    MODAL HELPERS
@@ -220,31 +248,84 @@ function toggleBlock(contentId, toggleBtnId) {
    EDIT HANDLERS
 ===================================================== */
 function editParent(id) {
-  const p = _menuData.parents.find((x) => x.id == id);
-  $("editParentId").value = p.id;
-  $("editParentTitle").value = p.title;
-  $("editParentPosition").value = p.position;
-  openModal("editParentModal");
+  (async () => {
+    const confirmed = await confirmEdit(
+      "Edit parent?",
+      "Open the editor to update this parent's title or position.",
+    );
+    if (!confirmed.isConfirmed) return;
+
+    const p = _menuData.parents.find((x) => x.id == id);
+    $("editParentId").value = p.id;
+    $("editParentTitle").value = p.title;
+    $("editParentPosition").value = p.position;
+    openModal("editParentModal");
+  })();
 }
 
 function editGroup(id) {
-  const g = _menuData.groups.find((x) => x.id == id);
-  $("editGroupId").value = g.id;
-  $("editGroupTitle").value = g.group_title;
-  $("editGroupUrl").value = g.link_url || "";
-  els.editGroupParentSelect.value = g.parent_id || "";
-  $("editGroupPosition").value = g.position;
-  openModal("editGroupModal");
+  (async () => {
+    const confirmed = await confirmEdit(
+      "Edit group?",
+      "Open the editor to update the group's title, link, parent, or position.",
+    );
+    if (!confirmed.isConfirmed) return;
+
+    const g = _menuData.groups.find((x) => x.id == id);
+    $("editGroupId").value = g.id;
+    $("editGroupTitle").value = g.group_title;
+    $("editGroupUrl").value = g.link_url || "";
+    els.editGroupParentSelect.value = g.parent_id || "";
+    $("editGroupPosition").value = g.position;
+    openModal("editGroupModal");
+  })();
 }
 
 function editItem(id) {
-  const i = _menuData.items.find((x) => x.id == id);
-  $("editItemId").value = i.id;
-  $("editItemTitle").value = i.item_title;
-  $("editItemUrl").value = i.link_url;
-  els.editItemGroupSelect.value = i.group_id;
-  $("editItemPosition").value = i.position;
-  openModal("editItemModal");
+  (async () => {
+    const confirmed = await confirmEdit(
+      "Edit item?",
+      "Open the editor to update the item's title, link, group, or position.",
+    );
+    if (!confirmed.isConfirmed) return;
+
+    const i = _menuData.items.find((x) => x.id == id);
+    $("editItemId").value = i.id;
+    $("editItemTitle").value = i.item_title;
+    $("editItemUrl").value = i.link_url;
+    els.editItemGroupSelect.value = i.group_id;
+    $("editItemPosition").value = i.position;
+    openModal("editItemModal");
+  })();
+}
+
+/* Edit confirm (match users/products style) */
+function confirmEdit(title, text) {
+  return Swal.fire({
+    icon: "question",
+    title: title || "Edit item?",
+    html: `
+      <p class="text-gray-600 mt-2">
+        ${text || "Open the editor to update this item."}
+      </p>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Edit",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#6b46c1",
+    cancelButtonColor: "#6b7280",
+  });
+}
+
+/* Centered success modal to match screenshot/style */
+function showSuccessModal(title = "Success", text = "") {
+  return Swal.fire({
+    icon: "success",
+    title,
+    text: text || undefined,
+    confirmButtonText: "OK",
+    confirmButtonColor: "#6b46c1",
+  });
 }
 
 /* =====================================================
@@ -260,8 +341,12 @@ async function deleteEntity(type, id, label) {
   loading();
   const res = await api(`delete_${type}`, { id });
   Swal.close();
-
-  res.ok ? (toast("Deleted"), loadData()) : errorBox(res.msg);
+  if (res.ok) {
+    await showSuccessModal("Deleted", `${label} removed successfully.`);
+    loadData();
+  } else {
+    errorBox(res.msg);
+  }
 }
 
 const deleteParent = (id) => deleteEntity("parent", id, "Parent");
@@ -279,9 +364,19 @@ function bindForm(form, action, closeId = null) {
     const data = Object.fromEntries(new FormData(form));
     const res = await api(action, data);
     Swal.close();
-
     if (res.ok) {
-      toast("Success");
+      // Choose message based on action type
+      let title = "Success";
+      let text = "";
+      if (action.startsWith("add_")) {
+        title = "Created";
+        text = "New item created successfully.";
+      } else if (action.startsWith("edit_")) {
+        title = "Updated";
+        text = "Changes saved successfully.";
+      }
+
+      await showSuccessModal(title, text);
       form.reset();
       if (closeId) closeModal(closeId);
       loadData();

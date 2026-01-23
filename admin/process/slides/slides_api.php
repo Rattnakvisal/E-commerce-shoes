@@ -8,11 +8,9 @@ if (session_status() === PHP_SESSION_NONE) {
 /* =====================================================
    AUTH CHECK
 ===================================================== */
-if (
-    !isset($_SESSION['user_id'], $_SESSION['role']) ||
-    $_SESSION['role'] !== 'admin'
-) {
-    header("Location: ../auth/login.php");
+// Allow both admin and staff roles to access this page
+if (!isset($_SESSION['user_id'], $_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
+    header('Location: ../auth/login.php');
     exit;
 }
 

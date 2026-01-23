@@ -36,8 +36,8 @@ function execQuery(PDO $pdo, string $sql, array $params = []): void
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         respond(true);
-    } catch (PDOException $e) {
-        respond(false, $e->getMessage());
+    } catch (Throwable) {
+        respond(false, 'Database operation failed');
     }
 }
 
@@ -48,26 +48,26 @@ $action = $_REQUEST['action'] ?? 'fetch_all';
 $inp    = input();
 
 /* ============================================================
-   FETCH ALL
+   FETCH ALL (STRICT ORDER)
 ============================================================ */
 if ($action === 'fetch_all') {
     respond(true, '', [
         'parents' => $pdo->query(
             "SELECT id, title, position
              FROM navbar_parents
-             ORDER BY position, id"
+             ORDER BY position ASC, id ASC"
         )->fetchAll(PDO::FETCH_ASSOC),
 
         'groups' => $pdo->query(
             "SELECT id, parent_id, group_title, position, link_url
              FROM navbar_groups
-             ORDER BY position, id"
+             ORDER BY parent_id ASC, position ASC, id ASC"
         )->fetchAll(PDO::FETCH_ASSOC),
 
         'items' => $pdo->query(
             "SELECT id, group_id, item_title, position, link_url
              FROM navbar_items
-             ORDER BY position, id"
+             ORDER BY group_id ASC, position ASC, id ASC"
         )->fetchAll(PDO::FETCH_ASSOC),
     ]);
 }
@@ -78,7 +78,6 @@ if ($action === 'fetch_all') {
 if ($action === 'add_parent') {
     $title = trim($inp['title'] ?? '');
     $pos   = (int)($inp['position'] ?? 1);
-
     if ($title === '') respond(false, 'Title is required');
 
     execQuery(
@@ -93,7 +92,6 @@ if ($action === 'edit_parent') {
     $id    = (int)($inp['id'] ?? 0);
     $title = trim($inp['title'] ?? '');
     $pos   = (int)($inp['position'] ?? 1);
-
     if ($id <= 0 || $title === '') respond(false, 'Invalid data');
 
     execQuery(
@@ -109,11 +107,14 @@ if ($action === 'delete_parent') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    execQuery(
-        $pdo,
-        "DELETE FROM navbar_parents WHERE id = :id",
-        [':id' => $id]
-    );
+    // 🚫 Prevent deleting parent with groups
+    $count = $pdo->prepare("SELECT COUNT(*) FROM navbar_groups WHERE parent_id = ?");
+    $count->execute([$id]);
+    if ($count->fetchColumn() > 0) {
+        respond(false, 'Cannot delete parent with existing groups');
+    }
+
+    execQuery($pdo, "DELETE FROM navbar_parents WHERE id = :id", [':id' => $id]);
 }
 
 /* ============================================================
@@ -139,7 +140,7 @@ if (in_array($action, ['add_group', 'edit_group'], true)) {
              (parent_id, group_title, position, link_url)
              VALUES (:pid, :t, :p, :u)",
             [
-                ':pid' => $parent ?: null,
+                ':pid' => $parent,
                 ':t'   => $title,
                 ':p'   => $pos,
                 ':u'   => $url
@@ -159,7 +160,7 @@ if (in_array($action, ['add_group', 'edit_group'], true)) {
                  link_url = :u
              WHERE id = :id",
             [
-                ':pid' => $parent ?: null,
+                ':pid' => $parent,
                 ':t'   => $title,
                 ':p'   => $pos,
                 ':u'   => $url,
@@ -173,11 +174,14 @@ if ($action === 'delete_group') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    execQuery(
-        $pdo,
-        "DELETE FROM navbar_groups WHERE id = :id",
-        [':id' => $id]
-    );
+    // 🚫 Prevent deleting group with items
+    $count = $pdo->prepare("SELECT COUNT(*) FROM navbar_items WHERE group_id = ?");
+    $count->execute([$id]);
+    if ($count->fetchColumn() > 0) {
+        respond(false, 'Cannot delete group with existing items');
+    }
+
+    execQuery($pdo, "DELETE FROM navbar_groups WHERE id = :id", [':id' => $id]);
 }
 
 /* ============================================================
@@ -234,11 +238,7 @@ if ($action === 'delete_item') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    execQuery(
-        $pdo,
-        "DELETE FROM navbar_items WHERE id = :id",
-        [':id' => $id]
-    );
+    execQuery($pdo, "DELETE FROM navbar_items WHERE id = :id", [':id' => $id]);
 }
 
 /* ============================================================

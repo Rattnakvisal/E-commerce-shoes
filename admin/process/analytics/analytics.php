@@ -364,76 +364,211 @@ require_once __DIR__ . '/analyties_api.php';
                 <!-- Additional Metrics -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <!-- Inventory Status -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">Inventory Status</h3>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-boxes text-blue-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900">Inventory Status</h3>
+                        </div>
+
                         <div class="space-y-4">
                             <div>
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span>Total Products</span>
-                                    <span><?= number_format($totals['products']) ?></span>
+                                <div class="flex justify-between text-sm mb-2">
+                                    <span class="text-gray-600">Total Products</span>
+                                    <span class="font-semibold"><?= number_format($totalProducts) ?></span>
                                 </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-green-500 h-2 rounded-full" style="width: <?= min(100, ($totals['products_active'] / max(1, $totals['products'])) * 100) ?>%"></div>
+
+                                <!-- Progress Bar -->
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 flex overflow-hidden">
+                                    <div class="bg-green-500 h-2.5" style="width: <?= $activePercent ?>%"></div>
+                                    <div class="bg-gray-400 h-2.5" style="width: <?= $inactivePercent ?>%"></div>
                                 </div>
-                                <div class="text-xs text-gray-500 mt-1">
-                                    Active: <?= number_format($totals['products_active']) ?> | Inactive: <?= number_format($totals['products_inactive']) ?>
+
+                                <!-- Legend -->
+                                <div class="text-xs text-gray-500 mt-2">
+                                    <span class="text-green-600 font-medium">
+                                        <?= number_format($activeProducts) ?> active
+                                    </span>
+                                    •
+                                    <span class="text-gray-600">
+                                        <?= number_format($inactiveProducts) ?> inactive
+                                    </span>
                                 </div>
                             </div>
-
-                            <?php if ($totals['products_low_stock'] > 0): ?>
+                            <?php if (($lowStockCount ?? 0) > 0): ?>
                                 <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                     <div class="flex items-center">
-                                        <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
-                                        <span class="text-sm font-medium">Low Stock Alert</span>
-                                    </div>
-                                    <p class="text-xs text-yellow-600 mt-1">
-                                        <?= $totals['products_low_stock'] ?> product(s) have low stock (≤ 10 units)
-                                    </p>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- Payment Methods -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">Payment Methods</h3>
-                        <div class="space-y-3">
-                            <?php if (!empty($paymentMethods)): ?>
-                                <?php foreach ($paymentMethods as $method): ?>
-                                    <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                                        <span class="text-sm"><?= htmlspecialchars($method['payment_method'] ?? 'Unknown') ?></span>
-                                        <div class="text-right">
-                                            <div class="font-medium"><?= number_format($method['count'] ?? 0) ?> orders</div>
-                                            <div class="text-xs text-gray-500">$<?= number_format($method['amount'] ?? 0, 2) ?></div>
+                                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-2">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-semibold text-yellow-800">Low Stock Alert</span>
+                                            <p class="text-xs text-yellow-600 mt-1">
+                                                <?= number_format($lowStockCount ?? 0) ?> product<?= ($lowStockCount ?? 0) > 1 ? 's' : '' ?> below threshold
+                                            </p>
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <p class="text-sm text-gray-500">No payment method data available</p>
+                                </div>
                             <?php endif; ?>
+
+                            <div class="pt-3 border-t border-gray-100">
+                                <a href="../view/inventory.php" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                                    View Inventory
+                                    <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="bg-white rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">Quick Stats</h3>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-chart-bar text-purple-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900">Quick Stats</h3>
+                        </div>
+
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Featured Items</span>
-                                <span class="font-medium"><?= number_format($totals['featured']) ?>
-                                    <span class="text-xs text-green-600 ml-1">
-                                        (<?= number_format($totals['featured_active']) ?> active)
-                                    </span>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-star mr-2"></i>
+                                    <span class="text-sm text-gray-700">Featured Items</span>
+                                </div>
+                                <span class="font-semibold text-gray-900">
+                                    <?= number_format($featuredCount ?? 0) ?>
                                 </span>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Today's Revenue</span>
-                                <span class="font-medium text-green-600">$<?= number_format($totals['revenue_today'], 2) ?></span>
+
+                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-money-bill-wave mr-2"></i>
+                                    <span class="text-sm text-gray-700">Today's Revenue</span>
+                                </div>
+                                <span class="font-bold text-green-600">
+                                    $<?= number_format($todaysRevenue ?? 0, 2) ?>
+                                </span>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Pending Orders</span>
-                                <span class="font-medium"><?= number_format($totals['orders_pending'] ?? 0) ?></span>
+
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                                    <span class="text-sm text-gray-700">Pending Orders</span>
+                                </div>
+                                <span class="font-bold text-gray-900">
+                                    <?= number_format($pendingOrders ?? 0) ?>
+                                </span>
                             </div>
+
+                            <div class="pt-3 border-t border-gray-100">
+                                <div class="text-xs text-gray-500">
+                                    Last updated: <?= date('h:i A') ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Gateways -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-credit-card text-indigo-600"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-900">Payment Gateways</h3>
+                            </div>
+                            <a href="../view/transactions.php" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                View all
+                                <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+
+                        <div class="space-y-4">
+                            <?php foreach ($paymentGateways as $key => $gateway):
+                                $colorConfig = [
+                                    'blue' => [
+                                        'bg' => 'from-blue-50 to-blue-100',
+                                        'border' => 'border-blue-200',
+                                        'icon-bg' => 'bg-blue-200',
+                                        'icon-text' => 'text-blue-700'
+                                    ],
+                                    'green' => [
+                                        'bg' => 'from-green-50 to-green-100',
+                                        'border' => 'border-green-200',
+                                        'icon-bg' => 'bg-green-200',
+                                        'icon-text' => 'text-green-700'
+                                    ],
+                                    'purple' => [
+                                        'bg' => 'from-purple-50 to-purple-100',
+                                        'border' => 'border-purple-200',
+                                        'icon-bg' => 'bg-purple-200',
+                                        'icon-text' => 'text-purple-700'
+                                    ],
+                                    'emerald' => [
+                                        'bg' => 'from-emerald-50 to-emerald-100',
+                                        'border' => 'border-emerald-200',
+                                        'icon-bg' => 'bg-emerald-200',
+                                        'icon-text' => 'text-emerald-700'
+                                    ]
+                                ][$gateway['color'] ?? 'blue'];
+                            ?>
+                                <div class="p-4 bg-gradient-to-r <?= $colorConfig['bg'] ?> border <?= $colorConfig['border'] ?> rounded-lg hover:shadow transition duration-300">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 flex items-center justify-center <?= $colorConfig['icon-bg'] ?> rounded-lg mr-3">
+                                                <i class="<?= $gateway['icon'] ?> <?= $colorConfig['icon-text'] ?>"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-gray-900"><?= $gateway['name'] ?></p>
+                                                <p class="text-xs text-gray-600"><?= $gateway['description'] ?></p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-xl font-bold text-gray-900">
+                                                $<?= number_format($gateway['amount'] ?? 0, 2) ?>
+                                            </p>
+                                            <p class="text-xs text-gray-600">
+                                                <?= number_format($gateway['count'] ?? 0) ?> transaction<?= ($gateway['count'] ?? 0) != 1 ? 's' : '' ?>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <?php if (isset($gateway['recent']) && !empty($gateway['recent'])): ?>
+                                        <details class="mt-3">
+                                            <summary class="cursor-pointer text-sm text-gray-700 font-medium">
+                                                Recent payments
+                                                <span class="text-xs bg-white px-2 py-1 rounded-full ml-2">
+                                                    <?= count($gateway['recent']) ?>
+                                                </span>
+                                            </summary>
+
+                                            <div class="mt-3 space-y-2">
+                                                <?php foreach (array_slice($gateway['recent'], 0, 3) as $payment): ?>
+                                                    <div class="flex items-center justify-between p-2 bg-white/50 rounded">
+                                                        <div>
+                                                            <p class="text-sm font-medium text-gray-800">
+                                                                #<?= $payment['order_id'] ?>
+                                                            </p>
+                                                            <p class="text-xs text-gray-600">
+                                                                <?= date('h:i A', strtotime($payment['payment_date'])) ?>
+                                                            </p>
+                                                        </div>
+                                                        <div class="text-right">
+                                                            <p class="font-bold text-gray-900">
+                                                                $<?= number_format($payment['amount'], 2) ?>
+                                                            </p>
+                                                            <p class="text-xs text-gray-500">
+                                                                <?= substr($payment['email'] ?? 'Guest', 0, 15) ?>...
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </details>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>

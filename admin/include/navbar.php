@@ -170,29 +170,32 @@ try {
             </div>
         </div>
         <!-- Analytics Section -->
-        <div class="pt-4">
-            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
-            <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/process/analytics/analytics.php"
-                    class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                    <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
-                    Analytics
-                </a>
+        <?php if ($currentRole === 'admin'): ?>
+            <div class="pt-4">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
+                <div class="mt-2 space-y-1">
 
-                <a href="/E-commerce-shoes/admin/process/report/report.php"
-                    class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                    <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
-                    Reports
-                </a>
+                    <a href="/E-commerce-shoes/admin/process/analytics/analytics.php"
+                        class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                        <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
+                        Analytics
+                    </a>
 
-                <a href="/E-commerce-shoes/admin/insights.php"
-                    class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                    <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
-                    Insights
-                </a>
+
+                    <a href="/E-commerce-shoes/admin/process/report/report.php"
+                        class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                        <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
+                        Reports
+                    </a>
+
+                    <a href="/E-commerce-shoes/admin/insights.php"
+                        class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                        <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
+                        Insights
+                    </a>
+                </div>
             </div>
-        </div>
-
+        <?php endif; ?>
         <!-- Settings -->
         <div class="pt-2">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</p>

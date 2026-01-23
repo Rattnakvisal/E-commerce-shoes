@@ -145,6 +145,13 @@ try {
 } catch (PDOException $e) {
     error_log('[Admin Dashboard] ' . $e->getMessage());
 }
+
+$userRate        = $total_users > 0 ? 100 : 0;
+$completedRate   = $total_orders > 0 ? (($ordersByStatus['completed'] ?? 0) / $total_orders) * 100 : 0;
+$revenueTarget   = $revenue * 1.2;
+$revenueProgress = $revenueTarget > 0 ? min(($revenue / $revenueTarget) * 100, 100) : 0;
+$conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 100) : 0;
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -186,131 +193,121 @@ try {
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
+
                 <!-- Total Users -->
-                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue animate-fade-in">
+                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Users</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900 glow-text"><?= number_format($total_users) ?></p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
-                                        <i class="fas fa-user-check mr-1 text-xs"></i>
-                                        <?= $total_users > 0 ? number_format(($total_users / max($total_users, 1)) * 100, 1) . '%' : '0%'; ?>
-                                    </span>
-                                </div>
-                            </div>
+                            <p class="text-3xl font-bold text-gray-900 glow-text mt-2">
+                                <?= number_format($total_users) ?>
+                            </p>
                         </div>
                         <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
                             <i class="fas fa-users text-lg"></i>
                         </div>
                     </div>
+
                     <div class="mt-4 relative z-10">
                         <div class="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Of Total Users</span>
-                            <span class="font-semibold"><?= $total_users > 0 ? number_format(100, 1) . '%' : '0%'; ?></span>
+                            <span class="font-semibold"><?= number_format($userRate, 1) ?>%</span>
                         </div>
                         <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500" style="--target-width: <?= $total_users > 0 ? '100' : '0'; ?>%"></div>
+                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
+                                style="--target-width: <?= $userRate ?>%"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Total Orders -->
-                <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group hover:shadow-glow-green animate-fade-in">
+                <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group hover:shadow-glow-green">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Orders</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900"><?= number_format($total_orders) ?></p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
-                                        <i class="fas fa-arrow-up mr-1 text-xs"></i>
-                                        <?= $total_orders > 0 ? '+8.3%' : '0%'; ?>
-                                    </span>
-                                </div>
-                            </div>
+                            <p class="text-3xl font-bold text-gray-900 mt-2">
+                                <?= number_format($total_orders) ?>
+                            </p>
                         </div>
                         <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
                             <i class="fas fa-shopping-cart text-lg"></i>
                         </div>
                     </div>
+
                     <div class="mt-4 relative z-10">
                         <div class="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Completed</span>
-                            <span class="font-semibold"><?= $total_orders > 0 ? number_format(($ordersByStatus['completed'] ?? 0) / max($total_orders, 1) * 100, 0) . '%' : '0%'; ?></span>
+                            <span class="font-semibold"><?= number_format($completedRate, 0) ?>%</span>
                         </div>
                         <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-emerald-400 to-emerald-600" style="--target-width: <?= $total_orders > 0 ? min((($ordersByStatus['completed'] ?? 0) / max($total_orders, 1) * 100), 100) : 0; ?>%"></div>
+                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                style="--target-width: <?= min($completedRate, 100) ?>%"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Revenue -->
-                <div class="stat-card bg-gradient-to-br from-white to-amber-50/50 rounded-2xl p-6 shadow-soft-xl border border-amber-100/50 relative overflow-hidden group hover:shadow-glow animate-fade-in">
+                <div class="stat-card bg-gradient-to-br from-white to-amber-50/50 rounded-2xl p-6 shadow-soft-xl border border-amber-100/50 relative overflow-hidden group hover:shadow-glow">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full -translate-y-10 translate-x-10"></div>
+
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Revenue</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900">$<?= number_format($revenue, 2) ?></p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-red-600 bg-red-100/80 px-2 py-1 rounded-full text-xs font-medium border border-red-200">
-                                        <i class="fas fa-arrow-down mr-1 text-xs"></i>
-                                        <?= '-' . abs(number_format(-3.2, 1)) . '%'; ?>
-                                    </span>
-                                </div>
-                            </div>
+                            <p class="text-3xl font-bold text-gray-900 mt-2">
+                                $<?= number_format($revenue, 2) ?>
+                            </p>
                         </div>
                         <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-3 rounded-xl shadow-md">
                             <i class="fas fa-dollar-sign text-lg"></i>
                         </div>
                     </div>
+
                     <div class="mt-4 relative z-10">
                         <div class="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Target</span>
-                            <span class="font-semibold">$<?= number_format($revenue * 1.2, 0) ?></span>
+                            <span class="font-semibold">$<?= number_format($revenueTarget, 0) ?></span>
                         </div>
                         <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-amber-400 to-amber-600" style="--target-width: <?= $revenue > 0 ? min(($revenue / max(($revenue * 1.2), 1)) * 100, 100) : 0; ?>%"></div>
+                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-amber-400 to-amber-600"
+                                style="--target-width: <?= $revenueProgress ?>%"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Conversion Rate -->
-                <div class="stat-card bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-6 shadow-soft-xl border border-indigo-500/30 relative overflow-hidden group hover:shadow-glow-purple animate-fade-in">
+                <div class="stat-card bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-6 shadow-soft-xl border border-indigo-500/30 relative overflow-hidden group hover:shadow-glow-purple">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-white/90 tracking-wider mb-1">Conversion Rate</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-white"><?= number_format($conversion_rate, 2) ?>%</p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center bg-white/20 text-white px-2 py-1 rounded-full text-xs font-medium border border-white/30">
-                                        <i class="fas fa-arrow-up mr-1 text-xs"></i>
-                                        <?= number_format($conversion_rate / 2, 1) . '%'; ?>
-                                    </span>
-                                </div>
-                            </div>
+                            <p class="text-3xl font-bold text-white mt-2">
+                                <?= number_format($conversion_rate, 2) ?>%
+                            </p>
                         </div>
                         <div class="bg-white/20 p-3 rounded-xl shadow-inner">
                             <i class="fas fa-chart-line text-lg text-white"></i>
                         </div>
                     </div>
+
                     <div class="mt-4 relative z-10">
                         <div class="flex justify-between text-sm text-white/80 mb-2">
                             <span>Overall Rate</span>
                             <span class="font-semibold"><?= number_format($conversion_rate, 2) ?>%</span>
                         </div>
                         <div class="w-full bg-white/30 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80" style="--target-width: <?= $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 100) : 0; ?>%"></div>
+                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80"
+                                style="--target-width: <?= $conversionBar ?>%"></div>
                         </div>
                     </div>
                 </div>
 
             </div>
+
             <!-- Orders Status & Revenue -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-2xl shadow-md lg:col-span-1">

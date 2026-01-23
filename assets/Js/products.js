@@ -9,32 +9,15 @@ const RELOAD_DELAY = 700;
 ===================================================== */
 const delayReload = () => setTimeout(() => location.reload(), RELOAD_DELAY);
 
-const esc = (text = "") => {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-};
-
 /* =====================================================
    SWEETALERT HELPERS (MATCH USERS)
 ===================================================== */
-function showToast(title, icon = "success") {
-  Swal.fire({
-    title,
-    icon,
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-  });
-}
-
 function showLoading(msg = "Loading...") {
   Swal.fire({
     title: msg,
     allowOutsideClick: false,
     allowEscapeKey: false,
+    showConfirmButton: false,
     didOpen: () => Swal.showLoading(),
   });
 }
@@ -55,20 +38,17 @@ function showError(msg) {
     icon: "error",
     title: "Error",
     text: msg,
-    confirmButtonColor: "#dc2626",
+    showConfirmButton: false,
+    timer: 2200,
+    timerProgressBar: true,
   });
 }
 
-/* Confirm edit (Products style) */
 function confirmEdit(title, text) {
   return Swal.fire({
     icon: "question",
-    title: title || "Edit product?",
-    html: `
-      <p class="text-gray-600 mt-2">
-        ${text || "Open the editor to update this product information."}
-      </p>
-    `,
+    title,
+    html: `<p class="text-gray-600 mt-2">${text}</p>`,
     showCancelButton: true,
     confirmButtonText: "Edit",
     cancelButtonText: "Cancel",
@@ -77,16 +57,16 @@ function confirmEdit(title, text) {
   });
 }
 
-/* Confirm delete */
 function confirmDelete(title, text) {
   return Swal.fire({
-    title: title || "Delete product?",
-    text: text || "This action cannot be undone",
     icon: "warning",
+    title,
+    html: `<p class="text-gray-600 mt-2">${text}</p>`,
     showCancelButton: true,
     confirmButtonText: "Delete",
     cancelButtonText: "Cancel",
     confirmButtonColor: "#dc2626",
+    cancelButtonColor: "#6b7280",
   });
 }
 
@@ -130,14 +110,13 @@ function closeModal() {
 
 function resetForm() {
   productForm?.reset();
-  if (productId) productId.value = "";
-  if (formAction) formAction.value = "add";
-  if (modalTitle) modalTitle.textContent = "Add Product";
-  if (submitText) submitText.textContent = "Add Product";
-  if (submitBtn)
-    submitBtn.className =
-      "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition";
-  imagePreview?.classList.add("hidden");
+  productId.value = "";
+  formAction.value = "add";
+  modalTitle.textContent = "Add Product";
+  submitText.textContent = "Add Product";
+  submitBtn.className =
+    "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition";
+  imagePreview.classList.add("hidden");
 }
 
 /* =====================================================
@@ -145,7 +124,7 @@ function resetForm() {
 ===================================================== */
 productImage?.addEventListener("change", (e) => {
   const file = e.target.files[0];
-  if (!file) return imagePreview?.classList.add("hidden");
+  if (!file) return imagePreview.classList.add("hidden");
 
   const reader = new FileReader();
   reader.onload = (ev) => {
@@ -159,11 +138,11 @@ productImage?.addEventListener("change", (e) => {
    EDIT PRODUCT
 ===================================================== */
 async function editProduct(id) {
-  const confirmed = await confirmEdit(
+  const ok = await confirmEdit(
     "Edit product?",
     "You can update product details, pricing, stock, or image.",
   );
-  if (!confirmed.isConfirmed) return;
+  if (!ok.isConfirmed) return;
 
   try {
     showLoading("Loading product...");
@@ -201,7 +180,7 @@ async function editProduct(id) {
       "px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition";
 
     openModal();
-  } catch (err) {
+  } catch {
     Swal.close();
     showError("Network error. Please try again.");
   }
@@ -212,13 +191,15 @@ async function editProduct(id) {
 ===================================================== */
 async function deleteProduct(id) {
   const row = document.querySelector(`tr[data-id="${id}"]`);
-  const name = row?.querySelector("td:nth-child(2) .font-medium")?.textContent;
+  const name =
+    row?.querySelector("td:nth-child(2) .font-medium")?.textContent ??
+    "this product";
 
-  const res = await confirmDelete(
+  const ok = await confirmDelete(
     "Delete product?",
-    `Are you sure you want to delete "${name || "this product"}"?`,
+    `Are you sure you want to delete <b>${name}</b>? This action cannot be undone.`,
   );
-  if (!res.isConfirmed) return;
+  if (!ok.isConfirmed) return;
 
   try {
     showLoading("Deleting product...");
@@ -239,7 +220,7 @@ async function deleteProduct(id) {
       return showError(data.message || "Delete failed");
     }
 
-    showSuccess("Product deleted", "The product has been removed.");
+    showSuccess("Product deleted successfully");
     delayReload();
   } catch {
     Swal.close();
@@ -253,9 +234,15 @@ async function deleteProduct(id) {
 productForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  if (!productName.value.trim()) return showError("Product name is required");
-  if (productPrice.value <= 0) return showError("Price must be greater than 0");
-  if (productStock.value < 0) return showError("Stock must be 0 or greater");
+  if (!productName.value.trim()) {
+    return showError("Product name is required");
+  }
+  if (productPrice.value <= 0) {
+    return showError("Price must be greater than 0");
+  }
+  if (productStock.value < 0) {
+    return showError("Stock must be 0 or greater");
+  }
 
   try {
     submitBtn.disabled = true;
@@ -280,8 +267,11 @@ productForm?.addEventListener("submit", async (e) => {
     }
 
     showSuccess(
-      formAction.value === "add" ? "Product added" : "Product updated",
+      formAction.value === "add"
+        ? "Product added successfully"
+        : "Product updated successfully",
     );
+
     closeModal();
     delayReload();
   } catch {

@@ -286,3 +286,117 @@ try {
 } catch (PDOException $e) {
     error_log('[Dashboard Analytics] ' . $e->getMessage());
 }
+// =====================================================
+// Map commonly used view variables for analytics.php
+// =====================================================
+
+// Products
+$totalProducts    = $totals['products'] ?? 0;
+$activeProducts   = $totals['products_active'] ?? 0;
+$inactiveProducts = max(0, $totalProducts - $activeProducts);
+
+// Percentages
+$activePercent    = $totalProducts > 0
+    ? ($activeProducts / $totalProducts) * 100
+    : 0;
+
+$inactivePercent  = $totalProducts > 0
+    ? ($inactiveProducts / $totalProducts) * 100
+    : 0;
+
+// Inventory alerts
+$lowStockCount    = $totals['products_low_stock'] ?? 0;
+
+// Featured items
+$featuredCount    = $totals['featured_active']
+    ?? ($totals['featured'] ?? 0);
+
+// Revenue
+$todaysRevenue    = $totals['revenue_today'] ?? 0.0;
+
+// Pending orders
+$pendingOrders = $totals['orders_pending']
+    ?? ($ordersByStatus['pending'] ?? 0);
+
+$pendingOrders = 0;
+if (isset($totals['orders_pending'])) {
+    $pendingOrders = (int)$totals['orders_pending'];
+} else {
+    foreach ($ordersByStatus as $s) {
+        if (strtolower(trim($s['order_status'] ?? '')) === 'pending') {
+            $pendingOrders = (int)($s['count'] ?? 0);
+            break;
+        }
+    }
+}
+/* =====================================================
+   PAYMENT GATEWAYS ANALYTICS (LAST 30 DAYS)
+===================================================== */
+
+$paymentGateways = [
+    'paypal' => [
+        'name' => 'PayPal',
+        'description' => 'Big Brands',
+        'icon' => 'fab fa-paypal',
+        'color' => 'blue',
+        'amount' => 0
+    ],
+    'wallet' => [
+        'name' => 'Wallet',
+        'description' => 'All payments',
+        'icon' => 'fas fa-wallet',
+        'color' => 'green',
+        'amount' => 0
+    ],
+    'card' => [
+        'name' => 'Credit Card',
+        'description' => 'All payments',
+        'icon' => 'fas fa-credit-card',
+        'color' => 'purple',
+        'amount' => 0
+    ],
+    'cash' => [
+        'name' => 'Cash',
+        'description' => 'In-store payments',
+        'icon' => 'fas fa-money-bill-wave',
+        'color' => 'emerald',
+        'amount' => 0
+    ]
+];
+
+/* =====================================================
+   TOTAL AMOUNT PER PAYMENT METHOD
+===================================================== */
+$sql = "
+    SELECT payment_method, SUM(amount) AS total
+    FROM payments
+    WHERE payment_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    GROUP BY payment_method
+";
+$stmt = $pdo->query($sql);
+
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $method = strtolower($row['payment_method']);
+    if (isset($paymentGateways[$method])) {
+        $paymentGateways[$method]['amount'] = (float)$row['total'];
+    }
+}
+
+/* =====================================================
+   RECENT PAYMENTS BY METHOD
+===================================================== */
+$paymentsByMethod = [];
+
+$sql = "
+    SELECT p.payment_method, p.amount, p.payment_date, p.order_id, u.email
+    FROM payments p
+    LEFT JOIN orders o ON o.order_id = p.order_id
+    LEFT JOIN users u ON u.user_id = o.user_id
+    ORDER BY p.payment_date DESC
+";
+$stmt = $pdo->query($sql);
+
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $method = strtolower($row['payment_method']);
+    $paymentsByMethod[$method][] = $row;
+}
