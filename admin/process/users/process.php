@@ -74,14 +74,23 @@ $hasAvatar    = columnExists('avatar_url');
 $hasLastLogin = columnExists('last_login');
 
 /* =====================================================
-   SQL NORMALIZERS
+   SQL NORMALIZERS (FIXED)
 ===================================================== */
-$roleSql = "LOWER(TRIM(REPLACE(COALESCE(u.role,''), CHAR(160), '')))";
-// Normalized status expressions used in WHERE, SUM(...) and other SQL fragments
-$statusActiveSql = "(LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1') OR u.status = '1')";
+/**
+ * Normalize role:
+ * - COALESCE to ''
+ * - remove NBSP (UTF-8 C2A0)
+ * - TRIM
+ * - LOWER
+ */
+$roleSql = "LOWER(TRIM(REPLACE(COALESCE(u.role,''), CONVERT(0xC2A0 USING utf8mb4), '')))";
+
+/**
+ * Normalize status (active/inactive) only if column exists
+ */
+$statusActiveSql   = "(LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1') OR u.status = '1')";
 $statusInactiveSql = "(LOWER(COALESCE(u.status, '')) IN ('inactive','disabled','disable','false','no','n','0') OR u.status = '0')";
-$selectStats[] = "SUM(CASE WHEN ( LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1') OR u.status = '1' ) THEN 1 ELSE 0 END) AS active_count";
-$selectStats[] = "SUM(CASE WHEN ( LOWER(COALESCE(u.status, '')) IN ('inactive','disabled','disable','false','no','n','0') OR u.status = '0' ) THEN 1 ELSE 0 END) AS inactive_count";
+
 /* =====================================================
    WHERE CLAUSE BUILDER
 ===================================================== */
@@ -90,7 +99,7 @@ $params = [];
 
 /* Status */
 if ($hasStatus && $filters['status']) {
-    $where[] = $filters['status'] === 'active'
+    $where[] = ($filters['status'] === 'active')
         ? "($statusActiveSql)"
         : "($statusInactiveSql)";
 }
@@ -148,7 +157,7 @@ $orderBy = match ($filters['sort']) {
 };
 
 /* =====================================================
-   GLOBAL STATS
+   GLOBAL STATS (FIXED: only use status SUM if column exists)
 ===================================================== */
 $stats = [
     'total_count'    => 0,
@@ -160,14 +169,22 @@ $stats = [
 ];
 
 try {
+    $selectStats = [];
+    $selectStats[] = "COUNT(*) AS total_count";
+    $selectStats[] = "SUM($roleSql = 'admin') AS admin_count";
+    $selectStats[] = "SUM($roleSql = 'staff') AS staff_count";
+    $selectStats[] = "SUM($roleSql = 'customer') AS customer_count";
+
+    if ($hasStatus) {
+        $selectStats[] = "SUM($statusActiveSql) AS active_count";
+        $selectStats[] = "SUM($statusInactiveSql) AS inactive_count";
+    } else {
+        $selectStats[] = "0 AS active_count";
+        $selectStats[] = "0 AS inactive_count";
+    }
+
     $stmt = $pdo->query("
-        SELECT
-            COUNT(*) AS total_count,
-            SUM($roleSql = 'admin')    AS admin_count,
-            SUM($roleSql = 'staff')    AS staff_count,
-            SUM($roleSql = 'customer') AS customer_count,
-            SUM($statusActiveSql)      AS active_count,
-            SUM($statusInactiveSql)    AS inactive_count
+        SELECT " . implode(",\n               ", $selectStats) . "
         FROM users u
     ");
 
@@ -203,13 +220,12 @@ $stmt = $pdo->prepare("
     $whereSql
     ORDER BY $orderBy
     LIMIT ? OFFSET ?
-    ");
+");
 
 foreach ($params as $i => $val) {
     $stmt->bindValue($i + 1, $val);
 }
 
-// Bind limit and offset as positional params after any filter params
 $stmt->bindValue(count($params) + 1, $perPage, PDO::PARAM_INT);
 $stmt->bindValue(count($params) + 2, $offset,  PDO::PARAM_INT);
 
@@ -219,8 +235,8 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 /* =====================================================
    PAGINATION
 ===================================================== */
-$totalUsers  = $stats['total_count'];
-$totalPages  = max(1, (int) ceil($filteredTotal / $perPage));
+$totalUsers = $stats['total_count'];
+$totalPages = max(1, (int) ceil($filteredTotal / $perPage));
 
 /* =====================================================
    COUNTS FOR UI

@@ -187,12 +187,6 @@ try {
                         <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                         Reports
                     </a>
-
-                    <a href="/E-commerce-shoes/admin/insights.php"
-                        class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                        <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
-                        Insights
-                    </a>
                 </div>
             </div>
         <?php endif; ?>
@@ -209,11 +203,6 @@ try {
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-clipboard-list mr-3 text-gray-500 w-5 text-center"></i>
                     Activity Logs
-                </a>
-                <a href="/E-commerce-shoes/admin/security.php"
-                    class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                    <i class="fas fa-shield-alt mr-3 text-gray-500 w-5 text-center"></i>
-                    Security
                 </a>
             </div>
         </div>
@@ -561,12 +550,6 @@ try {
                         <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                         Reports
                     </a>
-
-                    <a href="/E-commerce-shoes/admin/insights.php"
-                        class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                        <i class="fas fa-chart-line mr-3 text-gray-500 w-5 text-center"></i>
-                        Insights
-                    </a>
                 </div>
             </div>
 
@@ -584,12 +567,6 @@ try {
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-clipboard-list mr-3 text-gray-500 w-5 text-center"></i>
                         Activity Logs
-                    </a>
-
-                    <a href="/E-commerce-shoes/admin/security.php"
-                        class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
-                        <i class="fas fa-shield-alt mr-3 text-gray-500 w-5 text-center"></i>
-                        Security
                     </a>
                 </div>
             </div>
