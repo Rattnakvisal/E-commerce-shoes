@@ -1,29 +1,33 @@
+// messages_dropdown.js (CONTACT / MESSAGES)
 document.addEventListener("DOMContentLoaded", () => {
-  const dropdown = document.getElementById("notificationsDropdown");
-  const notifBtn = document.getElementById("notificationsButton");
-  const badge = document.querySelector(".badge-count");
-  const list = document.getElementById("notificationsList");
-  const viewAll = document.getElementById("viewAllNotifications");
-  const markAll = document.getElementById("markAllReadBtn");
-  const clearAllBtn = document.getElementById("clearAllNotifsBtn");
+  const dropdown = document.getElementById("messagesDropdown");
+  const msgBtn = document.getElementById("messagesButton");
+  const badge = document.querySelector("#msgBadge");
+  const list = document.getElementById("messagesList");
+  const viewAll = document.getElementById("viewAllMessages");
+  const markAll = document.getElementById("msgMarkAllReadBtn");
+  const clearAllBtn = document.getElementById("msgClearAllBtn");
 
-  const API =
-    "/E-commerce-shoes/admin/process/notification/notifications_api.php";
+  const API = "/E-commerce-shoes/admin/process/message/messages_api.php";
 
-  if (!dropdown || !notifBtn || !list) return;
+  if (!dropdown || !msgBtn || !list) return;
 
   /* ----------------------------------------
       Helpers
-      ------------------------------------- */
+  ------------------------------------- */
 
   const hideBadge = () => {
     if (badge) badge.style.display = "none";
   };
 
   const updateBadge = (delta = 0) => {
-    if (!badge || !badge.textContent) return;
+    if (!badge) return;
 
-    let count = parseInt(badge.textContent, 10) || 0;
+    const t = (badge.textContent || "").trim();
+    if (!t) return;
+
+    // handle 99+
+    let count = t === "99+" ? 100 : parseInt(t, 10) || 0;
     count = Math.max(0, count + delta);
 
     if (count === 0) {
@@ -37,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearUI = () => {
     hideBadge();
     list.innerHTML =
-      '<p class="py-6 text-center text-sm text-gray-500">No notifications</p>';
+      '<p class="py-6 text-center text-sm text-gray-500">No messages</p>';
   };
 
   const post = async (url) => {
@@ -55,27 +59,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ----------------------------------------
      Dropdown Toggle
-      ------------------------------------- */
+  ------------------------------------- */
 
-  notifBtn.addEventListener("click", async (e) => {
+  msgBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
-    dropdown.classList.toggle("hidden");
+    setTimeout(async () => {
+      if (!dropdown.classList.contains("hidden")) {
+        await post(`${API}?action=mark_all_read`);
+        hideBadge();
 
-    if (!dropdown.classList.contains("hidden")) {
-      await post(`${API}?action=mark_all_read`);
-      hideBadge();
-
-      list
-        .querySelectorAll(".notif-item")
-        .forEach((el) => el.classList.remove("bg-indigo-50"));
-    }
+        list
+          .querySelectorAll(".msg-item")
+          .forEach((el) => el.classList.remove("bg-indigo-50"));
+      }
+    }, 0);
   });
 
   /* ----------------------------------------
       Mark All / View All / Clear All
-     ------------------------------------- */
+  ------------------------------------- */
 
-  markAll?.addEventListener("click", async () => {
+  markAll?.addEventListener("click", async (e) => {
+    e?.preventDefault?.();
     await post(`${API}?action=mark_all_read`);
     clearUI();
   });
@@ -86,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (res && (res.ok || res.status === 204)) {
       window.location.href = viewAll.href;
     } else {
-      console.warn("Failed to mark notifications read before navigation", res);
+      console.warn("Failed to mark messages read before navigation", res);
       window.location.href = viewAll.href;
     }
   });
@@ -98,45 +103,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ----------------------------------------
-     Notification List (Event Delegation)
-    / * ------------------------------------- */
+     Messages List (Event Delegation)
+  ------------------------------------- */
 
   list.addEventListener("click", async (e) => {
-    const clearBtn = e.target.closest(".notif-clear");
-    const item = e.target.closest(".notif-item");
+    const clearBtn = e.target.closest(".msg-clear");
+    const item = e.target.closest(".msg-item");
 
-    // Delete notification
+    // Delete message
     if (clearBtn) {
       e.preventDefault();
       const id = clearBtn.dataset.id;
       if (!id) return;
 
       await post(`${API}?action=delete&id=${encodeURIComponent(id)}`);
-      clearBtn.closest(".notif-row")?.remove();
+      clearBtn.closest(".msg-row")?.remove();
       updateBadge(-1);
     }
 
-    // Mark single notification as read
+    // Mark single message as read
     if (item && !clearBtn) {
       e.preventDefault();
       const id = item.dataset.id;
       if (!id) return;
 
       await post(`${API}?action=mark_read&id=${encodeURIComponent(id)}`);
-      item.closest(".notif-row")?.remove();
+      item.closest(".msg-row")?.remove();
       updateBadge(-1);
     }
 
-    if (list.querySelectorAll(".notif-item").length === 0) {
+    if (list.querySelectorAll(".msg-item").length === 0) {
       clearUI();
     }
-  });
-
-  /* ----------------------------------------
-      Close on Outside Click
-     ------------------------------------- */
-
-  document.addEventListener("click", () => {
-    dropdown.classList.add("hidden");
   });
 });

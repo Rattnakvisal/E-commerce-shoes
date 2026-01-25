@@ -10,7 +10,7 @@ const $ = (id) => document.getElementById(id);
 let els = {};
 
 /* =====================================================
-   SWEETALERT HELPERS (match users.js style)
+   SWEETALERT HELPERS
 ===================================================== */
 function showLoading(msg = "Loading...") {
   Swal.fire({
@@ -18,9 +18,7 @@ function showLoading(msg = "Loading...") {
     allowOutsideClick: false,
     allowEscapeKey: false,
     showConfirmButton: false,
-    didOpen: () => {
-      Swal.showLoading();
-    },
+    didOpen: () => Swal.showLoading(),
   });
 }
 
@@ -36,19 +34,34 @@ function showSuccess(title, text = "") {
 }
 
 function showError(msg) {
-  Swal.fire({
+  return Swal.fire({
     icon: "error",
     title: "Error",
     text: msg,
-    confirmButtonColor: "#dc2626",
+    showConfirmButton: false,
+    timer: 2200,
+    timerProgressBar: true,
   });
 }
 
-function confirmBox(title, text) {
+function confirmEdit(title, text) {
   return Swal.fire({
-    title: title || "Are you sure?",
-    text: text || "This action cannot be undone",
+    icon: "question",
+    title,
+    html: `<p class="text-gray-600 mt-2">${text}</p>`,
+    showCancelButton: true,
+    confirmButtonText: "Edit",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#6b46c1",
+    cancelButtonColor: "#6b7280",
+  });
+}
+
+function confirmDelete(title, text) {
+  return Swal.fire({
     icon: "warning",
+    title,
+    html: `<p class="text-gray-600 mt-2">${text}</p>`,
     showCancelButton: true,
     confirmButtonText: "Delete",
     cancelButtonText: "Cancel",
@@ -57,14 +70,7 @@ function confirmBox(title, text) {
   });
 }
 
-function confirmDelete(
-  title = "Delete item?",
-  text = "This action cannot be undone",
-) {
-  return confirmBox(title, text);
-}
-
-/* compatibility wrappers used below */
+/* Compatibility wrappers */
 const toast = (title) => showSuccess(title);
 const loading = (msg) => showLoading(msg);
 const errorBox = (msg) => showError(msg);
@@ -99,7 +105,7 @@ async function loadData() {
   try {
     const res = await fetch(`${API_URL}?action=fetch_all`);
     const data = await res.json();
-    if (!data.ok) throw new Error(data.msg);
+    if (!data.ok) throw new Error(data.msg || "Failed to load");
 
     window._menuData = data;
 
@@ -111,7 +117,11 @@ async function loadData() {
     renderMenu(data.parents, data.groups, data.items);
   } catch (err) {
     console.error(err);
-    els.menuStructure.innerHTML = `<div class="text-center text-red-500 py-6">Failed to load menu data</div>`;
+    els.menuStructure.innerHTML = `
+      <div class="text-center text-red-500 py-6">
+        Failed to load menu data
+      </div>
+    `;
   }
 }
 
@@ -141,7 +151,9 @@ function populateSelects({ parents, groups }) {
 ===================================================== */
 function renderMenu(parents, groups, items) {
   if (!parents.length) {
-    els.menuStructure.innerHTML = `<div class="text-center py-8 text-gray-500">No menu items yet.</div>`;
+    els.menuStructure.innerHTML = `
+      <div class="text-center py-8 text-gray-500">No menu items yet.</div>
+    `;
     return;
   }
 
@@ -163,16 +175,16 @@ function renderParent(p, groups, items) {
           </button>
         </div>
         <div>
-          <button onclick="editParent(${
-            p.id
-          })" class="text-blue-600 p-2"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteParent(${
-            p.id
-          })" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
+          <button onclick="editParent(${p.id})" class="text-blue-600 p-2">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteParent(${p.id})" class="text-red-600 p-2">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </div>
 
-      <div id="parent-children-${p.id}">
+      <div id="parent-children-${p.id}" class="slide">
         ${groups
           .filter((g) => g.parent_id == p.id)
           .map((g) => renderGroup(g, items))
@@ -194,28 +206,32 @@ function renderGroup(g, items) {
           </button>
         </div>
         <div>
-          <button onclick="editGroup(${
-            g.id
-          })" class="text-blue-600 p-2"><i class="fas fa-edit"></i></button>
-          <button onclick="deleteGroup(${
-            g.id
-          })" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
+          <button onclick="editGroup(${g.id})" class="text-blue-600 p-2">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteGroup(${g.id})" class="text-red-600 p-2">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </div>
 
-      <div id="group-children-${g.id}">
+      <div id="group-children-${g.id}" class="slide">
         ${items
           .filter((i) => i.group_id == g.id)
           .map(
             (i) => `
-          <div class="ml-4 flex justify-between text-sm bg-gray-50 p-2 rounded mt-1">
-            ${i.item_title}
-            <div>
-              <button onclick="editItem(${i.id})" class="text-blue-600 p-2"><i class="fas fa-edit"></i></button>
-              <button onclick="deleteItem(${i.id})" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
-            </div>
-          </div>
-        `,
+              <div class="ml-4 flex justify-between text-sm bg-gray-50 p-2 rounded mt-1">
+                ${i.item_title}
+                <div>
+                  <button onclick="editItem(${i.id})" class="text-blue-600 p-2">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button onclick="deleteItem(${i.id})" class="text-red-600 p-2">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            `,
           )
           .join("")}
       </div>
@@ -224,24 +240,81 @@ function renderGroup(g, items) {
 }
 
 /* =====================================================
-   TOGGLES
+   SLIDE TOGGLES (SMOOTH)
+   Add this CSS once:
+   .slide{overflow:hidden;transition:max-height .35s ease}
+   .slide-hidden{max-height:0!important}
 ===================================================== */
+function slideToggle(el) {
+  if (!el) return;
+
+  if (el.classList.contains("slide-hidden")) {
+    // OPEN
+    el.classList.remove("slide-hidden");
+    el.style.maxHeight = el.scrollHeight + "px";
+    setTimeout(() => {
+      el.style.maxHeight = "none";
+    }, 350);
+    return;
+  }
+
+  // CLOSE
+  el.style.maxHeight = el.scrollHeight + "px";
+  requestAnimationFrame(() => {
+    el.classList.add("slide-hidden");
+    el.style.maxHeight = "0px";
+  });
+}
+
+function updateIcon(btn, open) {
+  const icon = btn?.querySelector("i");
+  if (!icon) return;
+  icon.classList.toggle("fa-chevron-up", open);
+  icon.classList.toggle("fa-chevron-down", !open);
+}
+
 function toggleParent(id) {
-  toggleBlock(`parent-children-${id}`, `parent-toggle-${id}`);
+  const block = $(`parent-children-${id}`);
+  const btn = $(`parent-toggle-${id}`);
+  const willOpen = block?.classList.contains("slide-hidden");
+  slideToggle(block);
+  updateIcon(btn, willOpen);
 }
 
 function toggleGroup(id) {
-  toggleBlock(`group-children-${id}`, `group-toggle-${id}`);
+  const block = $(`group-children-${id}`);
+  const btn = $(`group-toggle-${id}`);
+  const willOpen = block?.classList.contains("slide-hidden");
+  slideToggle(block);
+  updateIcon(btn, willOpen);
 }
 
-function toggleBlock(contentId, toggleBtnId) {
-  const block = $(contentId);
-  const icon = $(`${toggleBtnId}`)?.querySelector("i");
-  if (!block || !icon) return;
+/* Optional: Expand/Collapse all */
+function expandAll() {
+  document
+    .querySelectorAll('[id^="parent-children-"], [id^="group-children-"]')
+    .forEach((el) => {
+      el.classList.remove("slide-hidden");
+      el.style.maxHeight = el.scrollHeight + "px";
+      setTimeout(() => (el.style.maxHeight = "none"), 350);
+    });
 
-  block.classList.toggle("hidden");
-  icon.classList.toggle("fa-chevron-up");
-  icon.classList.toggle("fa-chevron-down");
+  document
+    .querySelectorAll('[id^="parent-toggle-"], [id^="group-toggle-"]')
+    .forEach((btn) => updateIcon(btn, true));
+}
+
+function collapseAll() {
+  document
+    .querySelectorAll('[id^="parent-children-"], [id^="group-children-"]')
+    .forEach((el) => {
+      el.classList.add("slide-hidden");
+      el.style.maxHeight = "0px";
+    });
+
+  document
+    .querySelectorAll('[id^="parent-toggle-"], [id^="group-toggle-"]')
+    .forEach((btn) => updateIcon(btn, false));
 }
 
 /* =====================================================
@@ -249,11 +322,11 @@ function toggleBlock(contentId, toggleBtnId) {
 ===================================================== */
 function editParent(id) {
   (async () => {
-    const confirmed = await confirmEdit(
+    const ok = await confirmEdit(
       "Edit parent?",
-      "Open the editor to update this parent's title or position.",
+      "You can update the parent's title or position.",
     );
-    if (!confirmed.isConfirmed) return;
+    if (!ok.isConfirmed) return;
 
     const p = _menuData.parents.find((x) => x.id == id);
     $("editParentId").value = p.id;
@@ -265,11 +338,11 @@ function editParent(id) {
 
 function editGroup(id) {
   (async () => {
-    const confirmed = await confirmEdit(
+    const ok = await confirmEdit(
       "Edit group?",
-      "Open the editor to update the group's title, link, parent, or position.",
+      "You can update the group's title, link, parent, or position.",
     );
-    if (!confirmed.isConfirmed) return;
+    if (!ok.isConfirmed) return;
 
     const g = _menuData.groups.find((x) => x.id == id);
     $("editGroupId").value = g.id;
@@ -283,69 +356,46 @@ function editGroup(id) {
 
 function editItem(id) {
   (async () => {
-    const confirmed = await confirmEdit(
+    const ok = await confirmEdit(
       "Edit item?",
-      "Open the editor to update the item's title, link, group, or position.",
+      "You can update the item's title, link, group, or position.",
     );
-    if (!confirmed.isConfirmed) return;
+    if (!ok.isConfirmed) return;
 
     const i = _menuData.items.find((x) => x.id == id);
     $("editItemId").value = i.id;
     $("editItemTitle").value = i.item_title;
-    $("editItemUrl").value = i.link_url;
-    els.editItemGroupSelect.value = i.group_id;
+    $("editItemUrl").value = i.link_url || "";
+    els.editItemGroupSelect.value = i.group_id || "";
     $("editItemPosition").value = i.position;
     openModal("editItemModal");
   })();
 }
 
-/* Edit confirm (match users/products style) */
-function confirmEdit(title, text) {
-  return Swal.fire({
-    icon: "question",
-    title: title || "Edit item?",
-    html: `
-      <p class="text-gray-600 mt-2">
-        ${text || "Open the editor to update this item."}
-      </p>
-    `,
-    showCancelButton: true,
-    confirmButtonText: "Edit",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#6b46c1",
-    cancelButtonColor: "#6b7280",
-  });
-}
-
-/* Centered success modal to match screenshot/style */
-function showSuccessModal(title = "Success", text = "") {
-  return Swal.fire({
-    icon: "success",
-    title,
-    text: text || undefined,
-    confirmButtonText: "OK",
-    confirmButtonColor: "#6b46c1",
-  });
-}
-
 /* =====================================================
-   DELETE
+   DELETE (MATCH PRODUCTS) - NO OK BUTTON
 ===================================================== */
 async function deleteEntity(type, id, label) {
-  const ok = await confirmBox(
+  const ok = await confirmDelete(
     `Delete ${label}?`,
-    "This action cannot be undone",
+    "Are you sure? This action cannot be undone.",
   );
   if (!ok.isConfirmed) return;
 
-  loading();
-  const res = await api(`delete_${type}`, { id });
-  Swal.close();
-  if (res.ok) {
-    await showSuccessModal("Deleted", `${label} removed successfully.`);
+  try {
+    showLoading(`Deleting ${label}...`);
+    const res = await api(`delete_${type}`, { id });
+    Swal.close();
+
+    if (!res.ok) {
+      return showError(res.msg || "Delete failed");
+    }
+
+    showSuccess(`${label} deleted successfully`);
     loadData();
-  } else {
-    errorBox(res.msg);
+  } catch {
+    Swal.close();
+    showError("Network error. Please try again.");
   }
 }
 
@@ -354,34 +404,36 @@ const deleteGroup = (id) => deleteEntity("group", id, "Group");
 const deleteItem = (id) => deleteEntity("item", id, "Item");
 
 /* =====================================================
-   FORMS
+   FORMS (MATCH PRODUCTS) - NO OK BUTTON
 ===================================================== */
 function bindForm(form, action, closeId = null) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    loading();
 
-    const data = Object.fromEntries(new FormData(form));
-    const res = await api(action, data);
-    Swal.close();
-    if (res.ok) {
-      // Choose message based on action type
-      let title = "Success";
-      let text = "";
-      if (action.startsWith("add_")) {
-        title = "Created";
-        text = "New item created successfully.";
-      } else if (action.startsWith("edit_")) {
-        title = "Updated";
-        text = "Changes saved successfully.";
+    try {
+      showLoading(action.startsWith("add_") ? "Creating..." : "Updating...");
+
+      const data = Object.fromEntries(new FormData(form));
+      const res = await api(action, data);
+
+      Swal.close();
+
+      if (!res.ok) {
+        return showError(res.msg || "Operation failed");
       }
 
-      await showSuccessModal(title, text);
+      showSuccess(
+        action.startsWith("add_")
+          ? "Created successfully"
+          : "Updated successfully",
+      );
+
       form.reset();
       if (closeId) closeModal(closeId);
       loadData();
-    } else {
-      errorBox(res.msg);
+    } catch {
+      Swal.close();
+      showError("Network error. Please try again.");
     }
   });
 }
@@ -415,4 +467,20 @@ document.addEventListener("DOMContentLoaded", () => {
   bindForm(els.editItemForm, "edit_item", "editItemModal");
 
   loadData();
+});
+
+/* =====================================================
+   GLOBAL EXPORTS
+===================================================== */
+Object.assign(window, {
+  toggleParent,
+  toggleGroup,
+  expandAll,
+  collapseAll,
+  editParent,
+  editGroup,
+  editItem,
+  deleteParent,
+  deleteGroup,
+  deleteItem,
 });

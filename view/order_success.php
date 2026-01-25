@@ -21,6 +21,7 @@ require_once __DIR__ . '/../config/conn.php';
     require_once __DIR__ . '/../includes/topbar.php';
     require_once __DIR__ . '/../includes/navbar.php';
     require_once __DIR__ . '/../includes/order_success.php';
+    require_once __DIR__ . '/../includes/footer.php';
     ?>
 </body>
 

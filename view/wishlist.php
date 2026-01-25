@@ -8,7 +8,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// scope wishlist and cart per user to prevent shared data
 $userId = $_SESSION['user_id'] ?? null;
 $wishlistKey = $userId ? "wishlist_user_{$userId}" : 'wishlist_guest';
 if (!isset($_SESSION[$wishlistKey])) $_SESSION[$wishlistKey] = [];

@@ -457,8 +457,6 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
 
         </main>
     </div>
-
-    <script src="/assets/Js/notifications.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             /* ================= TOP PRODUCTS ================= */

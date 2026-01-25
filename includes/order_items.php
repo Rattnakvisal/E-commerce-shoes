@@ -15,7 +15,6 @@ if (!$userId || $oid <= 0) {
 }
 
 try {
-    // Ensure the order belongs to this user
     $check = $pdo->prepare('SELECT order_id FROM orders WHERE order_id = ? AND user_id = ? LIMIT 1');
     $check->execute([$oid, $userId]);
     $found = $check->fetchColumn();

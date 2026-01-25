@@ -1,69 +1,5 @@
 <?php
-
-declare(strict_types=1);
-
-if (session_status() === PHP_SESSION_NONE) {
-    if (!headers_sent()) {
-        session_start();
-    } else {
-        error_log('[Navbar] session_start skipped: headers already sent');
-    }
-}
-
-require_once __DIR__ . '/../../config/conn.php';
-
-/*
-|--------------------------------------------------------------------------
-| Session Data
-|--------------------------------------------------------------------------
-*/
-$userId      = $_SESSION['user_id'] ?? null;
-$role        = $_SESSION['role'] ?? 'admin';
-$adminName   = $_SESSION['admin_name'] ?? $_SESSION['name'] ?? 'Admin';
-$adminRole   = ucfirst($role);
-$adminAvatar = $_SESSION['admin_avatar'] ?? $_SESSION['avatar'] ?? '';
-
-if ($adminAvatar === '') {
-    $initials    = rawurlencode($adminName);
-    $adminAvatar = "https://ui-avatars.com/api/?name={$initials}&background=ffffff&color=111827&rounded=true&size=128";
-}
-
-$currentRole = $role;
-$admin_name  = $adminName;
-$admin_role  = $adminRole;
-$admin_avatar = $adminAvatar;
-
-/*
-|--------------------------------------------------------------------------
-| Notifications
-|--------------------------------------------------------------------------
-*/
-$unreadCount = 0;
-$notifications = [];
-try {
-    $unreadStmt = $pdo->prepare(
-        "SELECT COUNT(*)
-         FROM notifications
-         WHERE is_read = 0
-           AND (user_id = :uid OR user_id IS NULL)"
-    );
-    $unreadStmt->execute(['uid' => $userId]);
-    $unreadCount = (int) $unreadStmt->fetchColumn();
-
-    $listStmt = $pdo->prepare(
-        "SELECT notification_id, title, message, is_read, created_at
-         FROM notifications
-         WHERE (user_id = :uid OR user_id IS NULL)
-         ORDER BY created_at DESC
-         LIMIT 10"
-    );
-    $listStmt->execute(['uid' => $userId]);
-    $notifications = $listStmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    error_log('[Navbar] Notifications query failed: ' . $e->getMessage());
-    $unreadCount = 0;
-    $notifications = [];
-}
+require_once __DIR__ . '/data.php';
 ?>
 
 <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
@@ -316,7 +252,7 @@ try {
                             </div>
                             <div class="p-3 border-t border-gray-200">
                                 <a id="viewAllNotifications"
-                                    href="/notifications.php"
+                                    href="#"
                                     class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all notifications
                                 </a>
@@ -325,58 +261,101 @@ try {
                     </div>
                     <!-- Messages -->
                     <div class="relative">
-                        <button id="messagesButton"
-                            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative">
+                        <button id="messagesButton" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative">
                             <i class="fas fa-envelope"></i>
-                            <span class="absolute -top-1 -right-1 bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
+
+                            <?php if ($messagesCount > 0): ?>
+                                <span id="msgBadge"
+                                    class="absolute -top-1 -right-1 bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                    <?= $messagesCount > 99 ? '99+' : $messagesCount; ?>
+                                </span>
+                            <?php else: ?>
+                                <span id="msgBadge" class="absolute -top-1 -right-1 hidden"></span>
+                            <?php endif; ?>
                         </button>
 
                         <!-- Messages Dropdown -->
                         <div id="messagesDropdown"
                             class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden dropdown-transition z-50">
-                            <div class="p-4 border-b border-gray-200">
-                                <h3 class="font-semibold text-gray-800">Messages</h3>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto">
-                                <!-- Message Items -->
-                                <a href="#" class="flex items-start px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=10b981&color=fff"
-                                        alt="Sarah"
-                                        class="w-8 h-8 rounded-full">
-                                    <div class="ml-3 flex-1">
-                                        <div class="flex items-center justify-between">
-                                            <p class="text-sm font-medium text-gray-900">Sarah Smith</p>
-                                            <span class="text-xs text-gray-400">10:42 AM</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 mt-1 truncate">Can we schedule a meeting for tomorrow?</p>
-                                    </div>
-                                </a>
 
-                                <a href="#" class="flex items-start px-4 py-3 hover:bg-gray-50">
-                                    <img src="https://ui-avatars.com/api/?name=David+Wilson&background=6366f1&color=fff"
-                                        alt="David"
-                                        class="w-8 h-8 rounded-full">
-                                    <div class="ml-3 flex-1">
-                                        <div class="flex items-center justify-between">
-                                            <p class="text-sm font-medium text-gray-900">David Wilson</p>
-                                            <span class="text-xs text-gray-400">Yesterday</span>
+                            <!-- Header -->
+                            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                <h3 class="font-semibold text-gray-800">Messages</h3>
+
+                                <!-- Optional actions like notifications -->
+                                <div class="flex items-center gap-3">
+                                    <button id="msgMarkAllReadBtn" class="text-xs text-indigo-600 hover:text-indigo-800">
+                                        Mark all as read
+                                    </button>
+                                    <button id="msgClearAllBtn" class="text-xs text-red-600 hover:text-red-800">
+                                        Clear all
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- List -->
+                            <div id="messagesList" class="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                                <?php if (empty($contactMessages)): ?>
+                                    <p class="text-center text-sm text-gray-500 py-6">No messages</p>
+                                <?php else: ?>
+                                    <?php foreach ($contactMessages as $m): ?>
+                                        <?php
+                                        $name = (string)($m['NAME'] ?? '');
+                                        $initials = rawurlencode($name);
+                                        $avatar = "https://ui-avatars.com/api/?name={$initials}&background=6b21a8&color=fff";
+                                        $isUnread = (int)($m['is_read'] ?? 0) === 0;
+                                        ?>
+
+                                        <div class="msg-row relative">
+                                            <a href="#"
+                                                data-id="<?= (int)$m['message_id']; ?>"
+                                                class="msg-item flex items-start px-4 py-3 hover:bg-gray-50 <?= $isUnread ? 'bg-indigo-50' : '' ?>">
+
+                                                <img src="<?= $avatar; ?>"
+                                                    alt="<?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>"
+                                                    class="w-8 h-8 rounded-full">
+
+                                                <div class="ml-3 flex-1 min-w-0">
+                                                    <div class="flex items-center justify-between">
+                                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                                            <?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>
+                                                        </p>
+                                                        <span class="text-xs text-gray-400 whitespace-nowrap">
+                                                            <?= date('d M Y H:i', strtotime((string)$m['created_at'])); ?>
+                                                        </span>
+                                                    </div>
+
+                                                    <p class="text-xs text-gray-500 mt-1 truncate">
+                                                        <?= htmlspecialchars((string)$m['message'], ENT_QUOTES, 'UTF-8'); ?>
+                                                    </p>
+                                                </div>
+                                            </a>
+
+                                            <?php if ($isUnread): ?>
+                                                <span class="absolute top-4 left-3 w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>
+                                            <?php endif; ?>
+
+                                            <!-- delete button (optional) -->
+                                            <button type="button"
+                                                data-id="<?= (int)$m['message_id']; ?>"
+                                                class="msg-clear absolute top-3 right-3 text-gray-400 hover:text-red-500 text-sm"
+                                                aria-label="Delete message">
+                                                &times;
+                                            </button>
                                         </div>
-                                        <p class="text-xs text-gray-500 mt-1 truncate">The report is ready for review</p>
-                                    </div>
-                                </a>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                             <div class="p-3 border-t border-gray-200">
-                                <a href="#" class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                                <a id="viewAllMessages"
+                                    href="/notifications.php"
+                                    class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all messages
                                 </a>
                             </div>
                         </div>
                     </div>
-                    <!-- Dark mode toggle -->
-                    <button id="darkModeToggle" data-theme-toggle="icon" type="button" aria-pressed="false" aria-label="Toggle dark mode"
-                        class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer">
-                        <i class="fas fa-moon"></i>
-                    </button>
+
                     <!-- Separator -->
                     <div class="h-6 w-px bg-gray-300"></div>
 
@@ -591,3 +570,4 @@ try {
     <script src="/E-commerce-shoes/admin/process/slides/media_preview.js"></script>
 <?php endif; ?>
 <script src="/E-commerce-shoes/assets/Js/notifications.js"></script>
+<script src="/E-commerce-shoes/assets/Js/message.js"></script>

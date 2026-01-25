@@ -58,7 +58,7 @@ $user_name = $_SESSION['name'] ?? $_SESSION['NAME'] ?? $_SESSION['user_name'] ??
                 <div>
                     <h4 class="text-white font-semibold mb-4">Support</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                        <li><a href="../view/contact.php" class="hover:text-white">Contact Us</a></li>
                         <li><a href="#" class="hover:text-white">Shipping & Returns</a></li>
                         <li><a href="#" class="hover:text-white">FAQs</a></li>
                         <li><a href="#" class="hover:text-white">Order Tracking</a></li>
