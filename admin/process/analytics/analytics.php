@@ -617,7 +617,7 @@ require_once __DIR__ . '/analyties_api.php';
     <script src="../../../assets/Js/reports.js"></script>
     <script>
         /* ================================
-                DATA (from PHP)
+        DATA (from PHP)
         ================================= */
         const ordersData = <?= json_encode($ordersLast7, JSON_UNESCAPED_UNICODE) ?> || [];
         const catData = <?= json_encode($productsByCategory, JSON_UNESCAPED_UNICODE) ?> || [];
@@ -627,7 +627,7 @@ require_once __DIR__ . '/analyties_api.php';
         const hourlyOrders = <?= json_encode($hourlyOrders, JSON_UNESCAPED_UNICODE) ?> || [];
 
         /* ================================
-           HELPERS
+        HELPERS
         ================================= */
         const toInt = (v, fallback = 0) => {
             const n = parseInt(v, 10);
