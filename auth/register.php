@@ -250,10 +250,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="h-px flex-1 bg-slate-200"></div>
                     </div>
 
-                    <!-- Social buttons (optional) -->
+                    <!-- Google login -->
                     <button type="button"
-                        class="w-full rounded-xl border border-slate-200 py-3 font-semibold text-slate-700
-                   hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                        onclick="window.location.href='../auth/google/google-login.php'"
+                        class="w-full rounded-xl border border-slate-200 py-3 font-semibold text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-2">
                         <i class="fa-brands fa-google"></i>
                         Sign in with Google
                     </button>
@@ -271,6 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script src="../assets/Js/register.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async></script>
 </body>
 
 </html>

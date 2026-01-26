@@ -11,8 +11,8 @@ if (!empty($_SESSION['user_id'])) {
 
     $userLogged = true;
 
-    // Prefer session name (already set at login)
-    $userName = $_SESSION['name'] ?? '';
+    // Prefer session name (set from normal login OR Google login)
+    $userName = (string)($_SESSION['name'] ?? '');
 
     // Fallback: fetch from DB if missing
     if ($userName === '') {
@@ -26,17 +26,32 @@ if (!empty($_SESSION['user_id'])) {
              LIMIT 1"
         );
         $stmt->execute([$_SESSION['user_id']]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
-        $userName = $user['name']
-            ?? $user['full_name']
-            ?? 'User';
+        $userName = (string)($user['name'] ?? $user['full_name'] ?? 'User');
+
+        // update session so next time no DB query
+        $_SESSION['name'] = $userName;
     }
 
-    /* Build initials */
-    $parts = preg_split('/\s+/', trim($userName));
+    // Build initials (works for 1 or many words)
+    $clean = trim(preg_replace('/\s+/', ' ', $userName));
+    $parts = $clean === '' ? [] : explode(' ', $clean);
+
+    $first = $parts[0] ?? '';
+    $second = $parts[1] ?? '';
+
     $initials = strtoupper(
-        substr($parts[0] ?? '', 0, 1) .
-            substr($parts[1] ?? '', 0, 1)
+        mb_substr($first, 0, 1, 'UTF-8') .
+            mb_substr($second, 0, 1, 'UTF-8')
     );
+
+    // If only 1 word name => 1 initial
+    if ($second === '') {
+        $initials = strtoupper(mb_substr($first, 0, 1, 'UTF-8'));
+    }
+
+    if ($initials === '') {
+        $initials = 'U';
+    }
 }
