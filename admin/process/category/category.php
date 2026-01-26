@@ -343,7 +343,7 @@ require_once __DIR__ . '/api_category.php';
 
     <!-- Your existing JS -->
     <script src="../../../assets/Js/category.js"></script>
-
+    <script src="../../../assets/js/reports.js"></script>
     <!-- Toggle Add Category panel -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {

@@ -546,6 +546,7 @@ $tabs = [
         </div>
     </div>
     <script src="../../../assets/Js/slides.js"></script>
+    <script src="../../../assets/js/reports.js"></script>
     <?php if (!empty($flash)): ?>
         <script>
             document.addEventListener('DOMContentLoaded', function() {

@@ -497,6 +497,7 @@ $tabs = [
 
 
     <script src="../../../assets/Js/featured.js"></script>
+    <script src="../../../assets/js/reports.js"></script>
     <script>
         /* =====================================================
    PRODUCT IMAGE AUTO-PREVIEW (FEATURED)

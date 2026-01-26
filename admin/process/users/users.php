@@ -690,6 +690,7 @@ $tabs = [
     </div>
 
     <script src="../../../assets/Js/users.js"></script>
+    <script src="../../../assets/js/reports.js"></script>
 </body>
 
 </html>

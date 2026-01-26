@@ -528,6 +528,7 @@ $tabs = [
     </main>
 
     <script src="../../../assets/Js/orders.js"></script>
+    <script src="../../../assets/js/reports.js"></script>
 </body>
 
 </html>

@@ -406,6 +406,7 @@ require_once __DIR__ . '/../../../config/connection.php';
 
     <!-- Add inline JavaScript -->
     <script src="../../../assets/Js/menu.js"></script>
+    <script src="../../../assets/js/reports.js"></script>
 </body>
 
 </html>
