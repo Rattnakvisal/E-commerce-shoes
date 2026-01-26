@@ -74,9 +74,6 @@ require_once __DIR__ . '/api_category.php';
                             <div>All categories</div>
                             <div>100%</div>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-indigo-500 w-full"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -97,9 +94,6 @@ require_once __DIR__ . '/api_category.php';
                             <div>Across all categories</div>
                             <div>100%</div>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-green-500 w-full"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -119,9 +113,6 @@ require_once __DIR__ . '/api_category.php';
                         <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                             <div><?= $uncategorizedCount > 0 ? 'Needs review' : 'All categorized' ?></div>
                             <div><?= round(($uncategorizedCount / max($totalProducts, 1)) * 100, 1) ?>%</div>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-yellow-500" style="width: <?= round(($uncategorizedCount / max($totalProducts, 1)) * 100, 1) ?>%"></div>
                         </div>
                     </div>
                 </div>

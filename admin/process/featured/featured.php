@@ -95,9 +95,6 @@ $tabs = [
                                 <div>All featured items</div>
                                 <div>100%</div>
                             </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-blue-500 w-full"></div>
-                            </div>
                         </div>
                     </div>
 
@@ -122,11 +119,6 @@ $tabs = [
                                 <div>Visible on storefront</div>
                                 <div>
                                     <?= round((($stats['active'] ?? 0) / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%
-                                </div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-green-500"
-                                    style="width: <?= round((($stats['active'] ?? 0) / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%">
                                 </div>
                             </div>
                         </div>
@@ -157,11 +149,6 @@ $tabs = [
                                     <?= round(($inactive / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%
                                 </div>
                             </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-red-500"
-                                    style="width: <?= round(($inactive / max(($stats['total'] ?? 1), 1)) * 100, 1) ?>%">
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -185,9 +172,6 @@ $tabs = [
                             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                                 <div>Display order slots</div>
                                 <div><?= number_format($stats['positions'] ?? 0) ?></div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-purple-500 w-full"></div>
                             </div>
                         </div>
                     </div>
@@ -493,76 +477,81 @@ $tabs = [
             </form>
         </div>
     </div>
-
-
-
     <script src="../../../assets/Js/featured.js"></script>
     <script src="../../../assets/js/reports.js"></script>
     <script>
-        /* =====================================================
-   PRODUCT IMAGE AUTO-PREVIEW (FEATURED)
-===================================================== */
-        const productsMap = <?= json_encode(array_column($products, null, 'product_id')) ?>;
-        const productSelect = document.getElementById("productId");
-        const previewContainer = document.getElementById("imagePreviewContainer");
-        const oldImageInput = document.getElementById("oldImage");
-
-        function updatePreviewForProduct() {
-            if (!productSelect || !previewContainer || !oldImageInput) return;
-
-            const pid = productSelect.value;
-
-            if (pid && productsMap[pid]?.image_url) {
-                const img = productsMap[pid].image_url;
-                oldImageInput.value = img;
-
-                previewContainer.innerHTML = `
-      <div class="relative">
-        <img src="${img}" alt="Product image"
-             class="w-full h-64 object-cover rounded-lg border-2 border-gray-300">
-        <div class="absolute top-2 right-2 bg-white/80 rounded-full p-2">
-          <span class="text-xs font-medium text-gray-700">
-            Product image
-          </span>
-        </div>
-      </div>
-    `;
-            } else {
-                oldImageInput.value = "";
-                previewContainer.innerHTML =
-                    '<p class="text-sm text-gray-500">No image currently set</p>';
-            }
-        }
-
-        productSelect?.addEventListener("change", updatePreviewForProduct);
-    </script>
-
-    <script>
-        /* =====================================================
-   FLASH MESSAGE (MATCH PRODUCTS & USERS)
-===================================================== */
         document.addEventListener("DOMContentLoaded", () => {
-            <?php if (!empty($flash) && ($flash['type'] ?? '') === 'success'): ?>
+            /* =====================================================
+               PRODUCT IMAGE AUTO-PREVIEW (FEATURED)
+            ===================================================== */
+            const productsMap = <?= json_encode(array_column($products ?? [], null, 'product_id'), JSON_UNESCAPED_SLASHES) ?>;
+
+            const productSelect = document.getElementById("productId");
+            const previewContainer = document.getElementById("imagePreviewContainer");
+            const oldImageInput = document.getElementById("oldImage");
+
+            function updatePreviewForProduct() {
+                if (!productSelect || !previewContainer || !oldImageInput) return;
+
+                const pid = String(productSelect.value || "");
+                const product = productsMap && productsMap[pid];
+                const img = product && product.image_url ? String(product.image_url) : "";
+
+                if (img) {
+                    oldImageInput.value = img;
+
+                    previewContainer.innerHTML = `
+                    <div class="relative">
+                    <img
+                        src="${img}"
+                        alt="Product image"
+                        class="w-full h-64 object-cover rounded-lg border-2 border-gray-300"
+                    >
+                    <div class="absolute top-2 right-2 bg-white/80 rounded-full p-2">
+                        <span class="text-xs font-medium text-gray-700">Product image</span>
+                    </div>
+                    </div>
+                `;
+                } else {
+                    oldImageInput.value = "";
+                    previewContainer.innerHTML =
+                        '<p class="text-sm text-gray-500">No image currently set</p>';
+                }
+            }
+
+            if (productSelect) {
+                productSelect.addEventListener("change", updatePreviewForProduct);
+                // optional: show preview immediately if a product is already selected
+                updatePreviewForProduct();
+            }
+
+            /* =====================================================
+               FLASH MESSAGE
+            ===================================================== */
+            const flash = <?= json_encode($flash ?? null, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+            if (!flash || !flash.type) return;
+
+            if (flash.type === "success") {
                 Swal.fire({
                     icon: "success",
                     title: "Success",
-                    text: "<?= addslashes($flash['text']) ?>",
+                    text: flash.text || "",
                     showConfirmButton: false,
                     timer: 1200,
                     timerProgressBar: true,
-                }).then(() => {
-                    window.location.reload();
-                });
-            <?php elseif (!empty($flash) && ($flash['type'] ?? '') === 'error'): ?>
+                }).then(() => window.location.reload());
+            } else if (flash.type === "error") {
                 Swal.fire({
                     icon: "error",
                     title: "Error",
-                    text: "<?= addslashes($flash['text']) ?>",
+                    text: flash.text || "",
                     confirmButtonColor: "#dc2626",
                 });
-            <?php endif; ?>
+            }
         });
     </script>
+
 </body>
 
 </html>

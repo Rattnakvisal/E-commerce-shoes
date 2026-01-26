@@ -129,9 +129,6 @@ $tabs = [
                             </div>
                             <div class="text-gray-500">Of Total Users</div>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-blue-500" style="width: <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -154,9 +151,6 @@ $tabs = [
                             </div>
                             <div class="text-gray-500"><?= $todayUsers > 0 ? 'Active growth' : 'No new users' ?></div>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 bg-green-500" style="width: <?= $totalUsers ? round($todayUsers / max($totalUsers, 1) * 100, 1) : 0 ?>%"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -177,9 +171,6 @@ $tabs = [
                             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                                 <div class="text-gray-500">Percent of users</div>
                                 <div class="text-gray-500"><?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%</div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-emerald-500" style="width: <?= round(($stats['active_count'] ?? 0) / max($totalUsers, 1) * 100, 1) ?>%"></div>
                             </div>
                         </div>
                     </div>
@@ -202,9 +193,6 @@ $tabs = [
                             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                                 <div class="text-gray-500"><?= ($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) > 0 ? 'Hidden / inactive accounts' : 'All active' ?></div>
                                 <div class="text-gray-500"><?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%</div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-red-500" style="width: <?= round((($stats['inactive_count'] ?? $statusCounts['inactive'] ?? 0) / max($totalUsers, 1)) * 100, 1) ?>%"></div>
                             </div>
                         </div>
                     </div>

@@ -145,10 +145,6 @@ require_once __DIR__ . '/analyties_api.php';
                                 </div>
                                 <div>vs yesterday</div>
                             </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 <?= $revChange >= 0 ? 'bg-green-500' : 'bg-red-500' ?>"
-                                    style="width: <?= $revPercent ?>%"></div>
-                            </div>
                         </div>
                     </div>
 
@@ -172,9 +168,6 @@ require_once __DIR__ . '/analyties_api.php';
                             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                                 <div>Avg. Order Value</div>
                                 <div>$<?= number_format($totals['avg_order_value'], 2) ?></div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-blue-500 w-full"></div>
                             </div>
                         </div>
                     </div>
@@ -200,9 +193,6 @@ require_once __DIR__ . '/analyties_api.php';
                                 <div>New today</div>
                                 <div><?= number_format($totals['users_today']) ?></div>
                             </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-green-500 w-full"></div>
-                            </div>
                         </div>
                     </div>
 
@@ -226,10 +216,6 @@ require_once __DIR__ . '/analyties_api.php';
                             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
                                 <div>Orders per customer</div>
                                 <div><?= number_format($totals['conversion_rate'], 1) ?>%</div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-purple-500"
-                                    style="width: <?= min(max($totals['conversion_rate'], 0), 100) ?>%"></div>
                             </div>
                         </div>
                     </div>

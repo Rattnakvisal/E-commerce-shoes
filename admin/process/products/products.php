@@ -143,10 +143,6 @@ $tabs = [
                                 <span>Active Products</span>
                                 <span class="font-semibold"><?= number_format($activePercent, 1) ?>%</span>
                             </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2">
-                                <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
-                                    style="--target-width: <?= $activePercent ?>%"></div>
-                            </div>
                         </div>
                     </div>
 
@@ -212,10 +208,6 @@ $tabs = [
                             <div class="flex justify-between text-sm text-white/80 mb-2">
                                 <span>Inactive Rate</span>
                                 <span class="font-semibold"><?= number_format($inactivePercent, 1) ?>%</span>
-                            </div>
-                            <div class="w-full bg-white/30 rounded-full h-2">
-                                <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80"
-                                    style="--target-width: <?= $inactivePercent ?>%"></div>
                             </div>
                         </div>
                     </div>

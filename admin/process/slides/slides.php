@@ -114,11 +114,6 @@ $tabs = [
                                 <div>All slides</div>
                                 <div>100%</div>
                             </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-green-500"
-                                    style="width: <?= round((($statusCounts['active'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%">
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -143,11 +138,6 @@ $tabs = [
                                 <div>Visible on site</div>
                                 <div>
                                     <?= round((($statusCounts['active'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%
-                                </div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-green-500"
-                                    style="width: <?= round((($statusCounts['active'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%">
                                 </div>
                             </div>
                         </div>
@@ -176,11 +166,6 @@ $tabs = [
                                 </div>
                                 <div>
                                     <?= round((($statusCounts['inactive'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%
-                                </div>
-                            </div>
-                            <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                                <div class="h-2 bg-yellow-500"
-                                    style="width: <?= round((($statusCounts['inactive'] ?? 0) / max(($statusCounts['all'] ?? 1), 1)) * 100, 1) ?>%">
                                 </div>
                             </div>
                         </div>

@@ -215,10 +215,6 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
                             <span>Of Total Users</span>
                             <span class="font-semibold"><?= number_format($userRate, 1) ?>%</span>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
-                                style="--target-width: <?= $userRate ?>%"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -242,10 +238,6 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
                         <div class="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Completed</span>
                             <span class="font-semibold"><?= number_format($completedRate, 0) ?>%</span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-emerald-400 to-emerald-600"
-                                style="--target-width: <?= min($completedRate, 100) ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -271,10 +263,6 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
                             <span>Target</span>
                             <span class="font-semibold">$<?= number_format($revenueTarget, 0) ?></span>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-amber-400 to-amber-600"
-                                style="--target-width: <?= $revenueProgress ?>%"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -298,10 +286,6 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
                         <div class="flex justify-between text-sm text-white/80 mb-2">
                             <span>Overall Rate</span>
                             <span class="font-semibold"><?= number_format($conversion_rate, 2) ?>%</span>
-                        </div>
-                        <div class="w-full bg-white/30 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80"
-                                style="--target-width: <?= $conversionBar ?>%"></div>
                         </div>
                     </div>
                 </div>

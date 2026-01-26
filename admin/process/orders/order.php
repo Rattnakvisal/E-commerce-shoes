@@ -89,10 +89,6 @@ $tabs = [
                             <span>All time</span>
                             <span class="font-semibold">100%</span>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
-                                style="--target-width: 100%"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -125,10 +121,6 @@ $tabs = [
                                 $<?= number_format((float)$todayRevenue, 2) ?>
                             </span>
                         </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-green-400 to-green-600"
-                                style="--target-width: <?= $todayRate ?>%"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -152,10 +144,6 @@ $tabs = [
                         <div class="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Paid orders only</span>
                             <span class="font-semibold">$<?= number_format((float)$totalRevenue, 0) ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-purple-400 to-purple-600"
-                                style="--target-width: 100%"></div>
                         </div>
                     </div>
                 </div>
@@ -188,10 +176,6 @@ $tabs = [
                             <span class="<?= ($stats['pending_count'] ?? 0) > 0 ? 'text-amber-600 font-semibold' : '' ?>">
                                 <?= number_format($pendingRate, 0) ?>%
                             </span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-amber-400 to-amber-600"
-                                style="--target-width: <?= $pendingRate ?>%"></div>
                         </div>
                     </div>
                 </div>
