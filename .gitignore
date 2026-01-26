@@ -1,2 +1,2 @@
-# Ignore local Google credentials file
-config/google_credentials.php
+config/google.local.php
+.env
