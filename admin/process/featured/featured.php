@@ -2,7 +2,33 @@
 require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/featured_api.php';
 
-$status = isset($_GET['status']) ? (string)$_GET['status'] : '';
+$queryBase = $_GET ?? [];
+unset($queryBase['status'], $queryBase['page']);
+
+$currentStatus = (string)($status ?? ($_GET['status'] ?? ''));
+$tabs = [
+    [
+        'label'      => 'All Featured',
+        'status'     => '',
+        'countKey'   => 'all',
+        'pill'       => 'bg-gray-100 text-gray-600',
+        'activeText' => 'text-indigo-600',
+    ],
+    [
+        'label'      => 'Active',
+        'status'     => 'active',
+        'countKey'   => 'active',
+        'pill'       => 'bg-green-100 text-green-700',
+        'activeText' => 'text-green-600',
+    ],
+    [
+        'label'      => 'Inactive',
+        'status'     => 'inactive',
+        'countKey'   => 'inactive',
+        'pill'       => 'bg-yellow-100 text-yellow-700',
+        'activeText' => 'text-yellow-600',
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -165,107 +191,83 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <?php
-                $queryBase = $_GET;
-                unset($queryBase['status'], $queryBase['page']);
-                ?>
-
-                <!-- Featured Status Tabs -->
-                <div class="bg-white">
+                <!-- Featured Tabs -->
+                <div class="bg-white rounded-xl shadow-sm mb-6">
                     <div class="border-b border-gray-200">
                         <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                            <?php foreach ($tabs as $t): ?>
+                                <?php
+                                $isActive = ($t['status'] === $currentStatus);
 
-                            <!-- ALL -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= $status === ''
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                All Featured
-                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                    <?= $statusCounts['all'] ?? 0 ?>
-                                </span>
-                            </a>
+                                $href = '?' . http_build_query(array_merge(
+                                    $queryBase,
+                                    ['status' => $t['status']]
+                                ));
 
-                            <!-- ACTIVE -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= $status === 'active'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                Active
-                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                    <?= $statusCounts['active'] ?? 0 ?>
-                                </span>
-                            </a>
+                                $linkClass = $isActive
+                                    ? "{$t['activeText']} border-b-2 border-indigo-600"
+                                    : "text-gray-500 hover:text-gray-700
+                                    border-b-2 border-transparent
+                                    transition-all duration-200";
 
-                            <!-- INACTIVE -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= $status === 'inactive'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                Inactive
-                                <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                                    <?= $statusCounts['inactive'] ?? 0 ?>
-                                </span>
-                            </a>
+                                $count = (int)($statusCounts[$t['countKey']] ?? 0);
+                                ?>
 
+                                <a href="<?= htmlspecialchars($href, ENT_QUOTES, 'UTF-8') ?>"
+                                    class="flex items-center gap-2 pb-2 text-sm font-medium <?= $linkClass ?>">
+                                    <?= htmlspecialchars($t['label'], ENT_QUOTES, 'UTF-8') ?>
+                                    <span class="px-2 py-0.5 rounded-full text-xs <?= $t['pill'] ?>">
+                                        <?= $count ?>
+                                    </span>
+                                </a>
+                            <?php endforeach; ?>
                         </nav>
                     </div>
 
-                    <!-- Filters -->
+                    <!-- Featured Filters -->
                     <form method="GET" class="p-6">
                         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
 
+                            <!-- Preserve tab -->
+                            <input type="hidden" name="status" value="<?= htmlspecialchars($currentStatus, ENT_QUOTES, 'UTF-8') ?>">
+
                             <!-- Search -->
                             <div class="lg:col-span-2">
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                    Search
-                                </label>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">Search</label>
                                 <input type="text"
                                     name="search"
-                                    value="<?= htmlspecialchars($search ?? '') ?>"
+                                    value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Featured title or product name"
-                                    class="w-full px-4 py-2 border rounded-lg
-                              focus:ring-2 focus:ring-indigo-500">
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                             </div>
 
                             <!-- From Date -->
                             <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                    From Date
-                                </label>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">From Date</label>
                                 <input type="date"
                                     name="date_from"
-                                    value="<?= $date_from ?? '' ?>"
+                                    value="<?= htmlspecialchars($date_from ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     class="w-full px-3 py-2 border rounded-lg">
                             </div>
 
                             <!-- To Date -->
                             <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                    To Date
-                                </label>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">To Date</label>
                                 <input type="date"
                                     name="date_to"
-                                    value="<?= $date_to ?? '' ?>"
+                                    value="<?= htmlspecialchars($date_to ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     class="w-full px-3 py-2 border rounded-lg">
                             </div>
 
                             <!-- Sort -->
                             <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">
-                                    Sort By
-                                </label>
-                                <select name="sort"
-                                    class="w-full px-3 py-2 border rounded-lg">
-                                    <option value="position">Position</option>
-                                    <option value="newest">Newest First</option>
-                                    <option value="oldest">Oldest First</option>
+                                <label class="text-sm font-medium text-gray-700 mb-1 block">Sort By</label>
+                                <select name="sort" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="position" <?= ($sort ?? '') === 'position' ? 'selected' : '' ?>>Position</option>
+                                    <option value="newest" <?= ($sort ?? '') === 'newest' ? 'selected' : '' ?>>Newest First</option>
+                                    <option value="oldest" <?= ($sort ?? '') === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
                                 </select>
                             </div>
 
@@ -283,22 +285,23 @@ $status = isset($_GET['status']) ? (string)$_GET['status'] : '';
                         </div>
                     </form>
                 </div>
-
                 <!-- Featured Items Table -->
                 <?php if ($totalFeatured > 0): ?>
-                    <div class="overflow-x-auto bg-white rounded-xl shadow border border-gray-200 animate-fade-in">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-gray-50 border-b">
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">ID</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Product</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Title</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Position</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Image</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Status</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Created</th>
-                                    <th class="py-4 px-6 text-left text-sm font-semibold text-gray-700">Actions</th>
-                                </tr>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 <?php foreach ($featured as $f): ?>

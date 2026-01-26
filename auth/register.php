@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
+<body class="min-h-screen flex items-center justify-center bg-white-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
 
     <!-- Card -->
     <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -243,7 +243,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="fas fa-user-plus"></i>
                         Create Account
                     </button>
+                    <!-- Divider -->
+                    <div class="flex items-center gap-3 py-2">
+                        <div class="h-px flex-1 bg-slate-200"></div>
+                        <span class="text-xs text-slate-400">OR</span>
+                        <div class="h-px flex-1 bg-slate-200"></div>
+                    </div>
 
+                    <!-- Social buttons (optional) -->
+                    <button type="button"
+                        class="w-full rounded-xl border border-slate-200 py-3 font-semibold text-slate-700
+                   hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-google"></i>
+                        Sign in with Google
+                    </button>
                     <!-- Link -->
                     <p class="text-center text-sm text-slate-600 pt-2">
                         Already have an account?

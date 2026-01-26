@@ -1,98 +1,115 @@
 <?php
-require_once __DIR__ . '/../../../config/conn.php';
 
-if (!isset($pdo) && isset($conn)) {
-    $pdo = $conn;
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../config/conn.php';
+$pdo = $pdo ?? ($conn ?? null);
+
+if (!$pdo instanceof PDO) {
+    die('Database connection missing.');
 }
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Allow both admin and staff roles to access this page
-if (!isset($_SESSION['user_id'], $_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
+// Allow admin + staff
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)) {
     header('Location: ../auth/login.php');
     exit;
 }
 
 /* ================= FLASH ================= */
-$message = $_SESSION['message'] ?? '';
+$message = (string)($_SESSION['message'] ?? '');
 unset($_SESSION['message']);
+
 $error = '';
 
 /* ================= FILTERS ================= */
-$search      = trim($_GET['search'] ?? '');
-$category_id = $_GET['category_id'] ?? '';
-$status      = strtolower($_GET['status'] ?? '');
-$date_from   = $_GET['date_from'] ?? '';
-$date_to     = $_GET['date_to'] ?? '';
-$sort        = $_GET['sort'] ?? 'newest';
+$search      = trim((string)($_GET['search'] ?? ''));
+$category_id = (string)($_GET['category_id'] ?? '');
+$status      = strtolower(trim((string)($_GET['status'] ?? ''))); // active/inactive only
+$brand       = trim((string)($_GET['brand'] ?? ''));             // Nike / Adidas / New Balance / Other
+$date_from   = (string)($_GET['date_from'] ?? '');
+$date_to     = (string)($_GET['date_to'] ?? '');
+$sort        = (string)($_GET['sort'] ?? 'newest');
 
-$page  = max(1, (int)($_GET['page'] ?? 1));
-$limit = 10;
+$page   = max(1, (int)($_GET['page'] ?? 1));
+$limit  = 10;
 $offset = ($page - 1) * $limit;
 
-/* ================= DATA ================= */
-$products   = [];
-$categories = [];
-$stats = [
-    'total'       => 0,
-    'active'      => 0,
-    'inactive'    => 0,
-    'total_stock' => 0,
+/* ================= SORT (SAFE) ================= */
+$sortMap = [
+    'newest'     => 'p.created_at DESC',
+    'oldest'     => 'p.created_at ASC',
+    'price_high' => 'p.price DESC',
+    'price_low'  => 'p.price ASC',
 ];
+$orderBy = $sortMap[$sort] ?? $sortMap['newest'];
+
+/* ================= DATA ================= */
+$products      = [];
+$categories    = [];
+$totalProducts = 0;
+$totalPages    = 1;
 
 try {
     /* ================= CATEGORIES ================= */
-    $categories = $pdo
-        ->query("SELECT category_id, category_name FROM categories ORDER BY category_name")
-        ->fetchAll(PDO::FETCH_ASSOC);
+    $categories = $pdo->query("
+        SELECT category_id, category_name
+        FROM categories
+        ORDER BY category_name
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+    /* ================= OPTIONAL: BACKWARD COMPAT =================
+       If your tabs still send ?status=Nike, map that to brand.
+    */
+    if ($brand === '' && $status !== '' && !in_array($status, ['active', 'inactive'], true)) {
+        $brand = (string)($_GET['status'] ?? '');
+        $status = '';
+    }
 
     /* ================= WHERE ================= */
     $where  = [];
     $params = [];
 
     if ($search !== '') {
-        $where[] = "(p.name LIKE ? OR p.description LIKE ?)";
-        $s = "%{$search}%";
-        $params[] = $s;
-        $params[] = $s;
+        $where[] = "(p.name LIKE :s OR p.description LIKE :s)";
+        $params[':s'] = "%{$search}%";
     }
 
     if ($category_id !== '') {
-        $where[] = "p.category_id = ?";
-        $params[] = $category_id;
+        $where[] = "p.category_id = :cat";
+        $params[':cat'] = (int)$category_id;
     }
 
     if (in_array($status, ['active', 'inactive'], true)) {
-        $where[] = "p.status = ?";
-        $params[] = $status;
+        $where[] = "p.status = :st";
+        $params[':st'] = $status;
     }
 
-    if ($date_from) {
-        $where[] = "p.created_at >= ?";
-        $params[] = $date_from . ' 00:00:00';
+    if ($brand !== '') {
+        $where[] = "c.category_name = :brand";
+        $params[':brand'] = $brand;
     }
 
-    if ($date_to) {
-        $where[] = "p.created_at <= ?";
-        $params[] = $date_to . ' 23:59:59';
+    if ($date_from !== '') {
+        $where[] = "p.created_at >= :df";
+        $params[':df'] = $date_from . ' 00:00:00';
     }
 
-    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    if ($date_to !== '') {
+        $where[] = "p.created_at <= :dt";
+        $params[':dt'] = $date_to . ' 23:59:59';
+    }
 
-    /* ================= SORT ================= */
-    $orderBy = match ($sort) {
-        'oldest'     => 'p.created_at ASC',
-        'price_high' => 'p.price DESC',
-        'price_low'  => 'p.price ASC',
-        default      => 'p.created_at DESC',
-    };
+    $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
     /* ================= COUNT ================= */
     $stmt = $pdo->prepare("
         SELECT COUNT(*)
         FROM products p
+        LEFT JOIN categories c ON c.category_id = p.category_id
         $whereSql
     ");
     $stmt->execute($params);
@@ -100,64 +117,75 @@ try {
     $totalPages = max(1, (int)ceil($totalProducts / $limit));
 
     /* ================= PRODUCTS ================= */
-    $limitInt  = (int)$limit;
-    $offsetInt = (int)$offset;
-
-    $sql = "
+    $stmt = $pdo->prepare("
         SELECT
             p.*,
             c.category_name,
             p.image_url
         FROM products p
-        LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN categories c ON c.category_id = p.category_id
         $whereSql
         ORDER BY $orderBy
-        LIMIT $limitInt OFFSET $offsetInt
-    ";
+        LIMIT :lim OFFSET :off
+    ");
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    // bind normal params
+    foreach ($params as $k => $v) {
+        $stmt->bindValue($k, $v);
+    }
+    // bind limit/offset safely
+    $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+
+    $stmt->execute();
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Normalize expected keys (optional, only if your DB columns are inconsistent)
     foreach ($products as &$p) {
-        $p['name']         = $p['name'] ?? $p['NAME'] ?? $p['Name'] ?? '';
-        $p['description']  = $p['description'] ?? $p['DESCRIPTION'] ?? '';
-        $p['sku']          = $p['sku'] ?? $p['SKU'] ?? '';
-        $p['price']        = isset($p['price']) ? $p['price'] : (isset($p['PRICE']) ? $p['PRICE'] : 0);
-        $p['cost']         = $p['cost'] ?? $p['COST'] ?? null;
-        $p['stock']        = isset($p['stock']) ? (int)$p['stock'] : (isset($p['STOCK']) ? (int)$p['STOCK'] : 0);
-        $p['category_id']  = $p['category_id'] ?? $p['CATEGORY_ID'] ?? null;
+        $p['name']        = (string)($p['name'] ?? $p['NAME'] ?? '');
+        $p['description'] = (string)($p['description'] ?? $p['DESCRIPTION'] ?? '');
+        $p['sku']         = (string)($p['sku'] ?? $p['SKU'] ?? '');
+        $p['price']       = (float)($p['price'] ?? $p['PRICE'] ?? 0);
+        $p['cost']        = $p['cost'] ?? $p['COST'] ?? null;
+        $p['stock']       = (int)($p['stock'] ?? $p['STOCK'] ?? 0);
+        $p['status']      = (string)($p['status'] ?? $p['STATUS'] ?? 'inactive');
+        $p['image_url']   = $p['image_url'] ?? $p['IMAGE_URL'] ?? null;
         $p['category_name'] = $p['category_name'] ?? $p['CATEGORY_NAME'] ?? null;
-        $p['status']       = isset($p['status']) ? $p['status'] : (isset($p['STATUS']) ? $p['STATUS'] : 'inactive');
-        $p['image_url']    = $p['image_url'] ?? $p['IMAGE_URL'] ?? null;
     }
     unset($p);
 
-    /* ================= STATS (GLOBAL) ================= */
-    $stats = $pdo->query("
+    /* ================= STATS (GLOBAL + BRAND COUNTS) ================= */
+    $stmt = $pdo->query("
         SELECT
-            COUNT(*) total,
-            SUM(status='active') active,
-            SUM(status='inactive') inactive,
-            COALESCE(SUM(stock),0) total_stock
-        FROM products
-    ")->fetch(PDO::FETCH_ASSOC);
-
-    $stats = array_map('intval', $stats);
-} catch (PDOException $e) {
+            COUNT(*) AS total,
+            SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) AS active,
+            SUM(CASE WHEN p.status='inactive' THEN 1 ELSE 0 END) AS inactive,
+            SUM(CASE WHEN c.category_name='Nike' THEN 1 ELSE 0 END) AS Nike,
+            SUM(CASE WHEN c.category_name='Adidas' THEN 1 ELSE 0 END) AS Adidas,
+            SUM(CASE WHEN c.category_name='New Balance' THEN 1 ELSE 0 END) AS `New Balance`,
+            SUM(CASE WHEN c.category_name='Other' THEN 1 ELSE 0 END) AS Other,
+            COALESCE(SUM(p.stock),0) AS total_stock
+        FROM products p
+        LEFT JOIN categories c ON c.category_id = p.category_id
+    ");
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $e) {
     $error = 'Database error';
     error_log('[products.php] ' . $e->getMessage());
+    $stats = [];
 }
 
 /* ================= STATUS COUNTS ================= */
 $statusCounts = [
-    'all'      => (int)($stats['total'] ?? 0),
-    'active'   => (int)($stats['active'] ?? 0),
-    'inactive' => (int)($stats['inactive'] ?? 0),
+    'all'         => (int)($stats['total'] ?? 0),
+    'active'      => (int)($stats['active'] ?? 0),
+    'inactive'    => (int)($stats['inactive'] ?? 0),
+    'Nike'        => (int)($stats['Nike'] ?? 0),
+    'Adidas'      => (int)($stats['Adidas'] ?? 0),
+    'New Balance' => (int)($stats['New Balance'] ?? 0),
+    'Other'       => (int)($stats['Other'] ?? 0),
 ];
 
 /* ================= SAFETY ================= */
-$products      = $products ?? [];
-$categories    = $categories ?? [];
-$totalProducts = $totalProducts ?? 0;
-$totalPages    = $totalPages ?? 1;
+$products   = $products ?: [];
+$categories = $categories ?: [];

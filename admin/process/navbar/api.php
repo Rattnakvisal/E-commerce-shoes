@@ -174,7 +174,6 @@ if ($action === 'delete_group') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    // 🚫 Prevent deleting group with items
     $count = $pdo->prepare("SELECT COUNT(*) FROM navbar_items WHERE group_id = ?");
     $count->execute([$id]);
     if ($count->fetchColumn() > 0) {

@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
+<body class="min-h-screen flex items-center justify-center bg-white-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
 
     <!-- Wrapper -->
     <div class="w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-white">

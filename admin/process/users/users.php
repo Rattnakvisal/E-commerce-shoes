@@ -1,6 +1,65 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/process.php';
+
+$queryBase = $_GET ?? [];
+unset($queryBase['status'], $queryBase['role'], $queryBase['page']);
+
+$currentStatus = (string)($filters['status'] ?? '');
+$currentRole   = (string)($filters['role'] ?? '');
+
+$tabs = [
+    [
+        'label' => 'All Users',
+        'status' => '',
+        'role' => '',
+        'count' => (int)($statusCounts['all'] ?? 0),
+        'pill' => 'bg-gray-100 text-gray-600',
+        'activeText' => 'text-indigo-600',
+    ],
+    [
+        'label' => 'Active',
+        'status' => 'active',
+        'role' => '',
+        'count' => (int)($statusCounts['active'] ?? 0),
+        'pill' => 'bg-green-100 text-green-700',
+        'activeText' => 'text-green-600',
+        'hideWhenZero' => true,
+    ],
+    [
+        'label' => 'Inactive',
+        'status' => 'inactive',
+        'role' => '',
+        'count' => (int)($statusCounts['inactive'] ?? 0),
+        'pill' => 'bg-yellow-100 text-yellow-700',
+        'activeText' => 'text-yellow-700',
+        'hideWhenZero' => true,
+    ],
+    [
+        'label' => 'Admin',
+        'status' => '',
+        'role' => 'admin',
+        'count' => (int)($roleCounts['admin'] ?? 0),
+        'pill' => 'bg-purple-100 text-purple-700',
+        'activeText' => 'text-purple-700',
+    ],
+    [
+        'label' => 'Staff',
+        'status' => '',
+        'role' => 'staff',
+        'count' => (int)($roleCounts['staff'] ?? 0),
+        'pill' => 'bg-blue-100 text-blue-700',
+        'activeText' => 'text-blue-700',
+    ],
+    [
+        'label' => 'Customers',
+        'status' => '',
+        'role' => 'customer',
+        'count' => (int)($roleCounts['customer'] ?? 0),
+        'pill' => 'bg-amber-100 text-amber-700',
+        'activeText' => 'text-amber-700',
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -159,158 +218,120 @@ require_once __DIR__ . '/process.php';
             ?>
 
             <!-- Filter Tabs -->
-            <div class="bg-white rounded-xl shadow-sm mb-6">
+            <?php
+            $queryBase = $_GET ?? [];
+            unset($queryBase['status'], $queryBase['role'], $queryBase['page']);
 
-                <!-- Tabs -->
-                <div class="border-b border-gray-200">
-                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+            $currentStatus = (string)($filters['status'] ?? '');
+            $currentRole   = (string)($filters['role'] ?? '');
+            ?>
 
-                        <!-- All Users -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => '', 'role' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
-               <?= (!$filters['status'] && !$filters['role'])
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                            All Users
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                <?= $statusCounts['all'] ?>
+            <div class="bg-white border-b border-gray-200">
+                <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                    <?php foreach ($tabs as $t): ?>
+                        <?php
+                        $isActive =
+                            ($t['status'] === $currentStatus) &&
+                            ($t['role'] === $currentRole);
+
+                        $href = '?' . http_build_query(array_merge(
+                            $queryBase,
+                            ['status' => $t['status'], 'role' => $t['role']]
+                        ));
+
+                        $linkClass = $isActive
+                            ? "{$t['activeText']} border-b-2 border-indigo-600"
+                            : "text-gray-500 hover:text-gray-700
+                   border-b-2 border-transparent
+                   transition-all duration-200";
+
+                        $count = (int)($t['count'] ?? 0);
+                        if (!empty($t['hideWhenZero']) && $count <= 0) {
+                            continue;
+                        }
+                        ?>
+
+                        <a href="<?= htmlspecialchars($href, ENT_QUOTES, 'UTF-8') ?>"
+                            class="flex items-center gap-2 pb-2 text-sm font-medium <?= $linkClass ?>">
+                            <?= htmlspecialchars($t['label'], ENT_QUOTES, 'UTF-8') ?>
+
+                            <span class="px-2 py-0.5 text-xs rounded-full <?= $t['pill'] ?>">
+                                <?= $count ?>
                             </span>
                         </a>
-
-                        <?php if (($statusCounts['active'] ?? $stats['active_count'] ?? 0) > 0): ?>
-                            <!-- Active -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active', 'role' => ''])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-               <?= ($filters['status'] === 'active')
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                : 'text-gray-500 hover:text-gray-700' ?>">
-                                Active
-                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                    <?= $statusCounts['active'] ?>
-                                </span>
-                            </a>
-                        <?php endif; ?>
-
-                        <?php if (($statusCounts['inactive'] ?? $stats['inactive_count'] ?? 0) > 0): ?>
-                            <!-- Inactive -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive', 'role' => ''])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-               <?= ($filters['status'] === 'inactive')
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                : 'text-gray-500 hover:text-gray-700' ?>">
-                                Inactive
-                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                    <?= $statusCounts['inactive'] ?>
-                                </span>
-                            </a>
-                        <?php endif; ?>
-
-                        <!-- Role: Admin -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'admin', 'status' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
-               <?= ($filters['role'] === 'admin')
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                            Admin
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                <?= $roleCounts['admin'] ?>
-                            </span>
-                        </a>
-
-                        <!-- Role: Staff -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'staff', 'status' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
-               <?= ($filters['role'] === 'staff')
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                            Staff
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                <?= $roleCounts['staff'] ?>
-                            </span>
-                        </a>
-
-                        <!-- Role: Customer -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['role' => 'customer', 'status' => ''])) ?>"
-                            class="flex items-center gap-2 text-sm font-medium
-               <?= ($filters['role'] === 'customer')
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                            Customers
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                <?= $roleCounts['customer'] ?>
-                            </span>
-                        </a>
-
-                    </nav>
-                </div>
-
-                <!-- Filter Form -->
-                <div class="p-4">
-                    <form method="GET"
-                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-
-                        <!-- Preserve tab filters -->
-                        <input type="hidden" name="status" value="<?= htmlspecialchars($filters['status']) ?>">
-                        <input type="hidden" name="role" value="<?= htmlspecialchars($filters['role']) ?>">
-
-                        <!-- Search -->
-                        <div class="lg:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text"
-                                    name="search"
-                                    value="<?= htmlspecialchars($filters['search']) ?>"
-                                    placeholder="Name, Email, Phone..."
-                                    class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300
-                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                            </div>
-                        </div>
-
-                        <!-- Role Select -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                            <select name="role"
-                                class="w-full px-3 py-2 rounded-lg border border-gray-300
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                                <option value="">All Roles</option>
-                                <option value="admin" <?= $filters['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                <option value="staff" <?= $filters['role'] === 'staff' ? 'selected' : '' ?>>Staff</option>
-                                <option value="customer" <?= $filters['role'] === 'customer' ? 'selected' : '' ?>>Customer</option>
-                            </select>
-                        </div>
-
-                        <!-- Sort -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                            <select name="sort"
-                                class="w-full px-3 py-2 rounded-lg border border-gray-300
-                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                                <option value="newest" <?= $filters['sort'] === 'newest' ? 'selected' : '' ?>>Newest First</option>
-                                <option value="oldest" <?= $filters['sort'] === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
-                                <option value="name_asc" <?= $filters['sort'] === 'name_asc' ? 'selected' : '' ?>>Name (A–Z)</option>
-                                <option value="name_desc" <?= $filters['sort'] === 'name_desc' ? 'selected' : '' ?>>Name (Z–A)</option>
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="lg:col-span-2 flex gap-2 justify-end">
-                            <a href="users.php"
-                                class="px-4 py-2 rounded-lg border border-gray-300
-                          text-gray-700 bg-white hover:bg-gray-50 transition">
-                                Clear
-                            </a>
-
-                            <button type="submit"
-                                class="px-4 py-2 rounded-lg bg-indigo-600 text-white
-                               hover:bg-indigo-700 transition inline-flex items-center">
-                                <i class="fas fa-filter mr-2"></i> Apply
-                            </button>
-                        </div>
-
-                    </form>
-                </div>
+                    <?php endforeach; ?>
+                </nav>
             </div>
+
+            <!-- User Filters -->
+            <form method="GET" class="bg-white rounded-xl shadow mb-8 p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 items-end">
+
+                    <!-- Preserve tabs -->
+                    <input type="hidden" name="status" value="<?= htmlspecialchars($currentStatus, ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="role" value="<?= htmlspecialchars($currentRole, ENT_QUOTES, 'UTF-8') ?>">
+
+                    <!-- Search -->
+                    <div class="lg:col-span-2">
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Search</label>
+                        <input type="text"
+                            name="search"
+                            value="<?= htmlspecialchars($filters['search'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                            placeholder="Name, Email, Phone..."
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- From -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">From Date</label>
+                        <input type="date"
+                            name="date_from"
+                            value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <!-- To -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">To Date</label>
+                        <input type="date"
+                            name="date_to"
+                            value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                            class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+
+                    <!-- Role -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Role</label>
+                        <select name="role" class="w-full px-3 py-2 border rounded-lg">
+                            <option value="">All Roles</option>
+                            <option value="admin" <?= $currentRole === 'admin' ? 'selected' : '' ?>>Admin</option>
+                            <option value="staff" <?= $currentRole === 'staff' ? 'selected' : '' ?>>Staff</option>
+                            <option value="customer" <?= $currentRole === 'customer' ? 'selected' : '' ?>>Customer</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort -->
+                    <select name="sort" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="newest" <?= ($filters['sort'] ?? 'newest') === 'newest' ? 'selected' : '' ?>>Newest First</option>
+                        <option value="oldest" <?= ($filters['sort'] ?? '') === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+                        <option value="name_asc" <?= ($filters['sort'] ?? '') === 'name_asc' ? 'selected' : '' ?>>Name (A–Z)</option>
+                        <option value="name_desc" <?= ($filters['sort'] ?? '') === 'name_desc' ? 'selected' : '' ?>>Name (Z–A)</option>
+                    </select>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2 justify-end lg:col-span-6">
+                        <a href="users.php"
+                            class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+                            Clear
+                        </a>
+                        <button type="submit"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                            Apply
+                        </button>
+                    </div>
+
+                </div>
+            </form>
 
             <!-- Users Table -->
             <div class="bg-white rounded-xl shadow-sm overflow-hidden table-no-hover">

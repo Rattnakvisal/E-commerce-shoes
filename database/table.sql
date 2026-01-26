@@ -136,20 +136,34 @@ CREATE TABLE order_items (
 /* =========================================================
    PAYMENTS
 ========================================================= */
+CREATE TABLE payment_methods (
+    method_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    method_code VARCHAR(30) NOT NULL UNIQUE,
+    method_name VARCHAR(100) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 CREATE TABLE payments (
     payment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_id INT UNSIGNED NOT NULL,
-    payment_method ENUM('cash','card','upi','paypal','bank') NOT NULL,
+    payment_method_id INT UNSIGNED NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     INDEX idx_order (order_id),
+    INDEX idx_method (payment_method_id),
 
     CONSTRAINT fk_payments_order
         FOREIGN KEY (order_id)
         REFERENCES orders(order_id)
-        ON DELETE CASCADE
-) ENGINE=INNODB;
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_payments_method
+        FOREIGN KEY (payment_method_id)
+        REFERENCES payment_methods(method_id)
+) ENGINE=InnoDB;
+
 
 /* =========================================================
    INVENTORY LOGS

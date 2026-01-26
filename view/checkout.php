@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../includes/checkout.php';
-$qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
 ?>
 <!doctype html>
 <html lang="en">
@@ -12,13 +11,10 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         * {
             font-family: 'Inter', sans-serif;
-        }
-
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .payment-card {
@@ -27,7 +23,7 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
 
         .payment-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, .1);
         }
 
         .payment-card.selected {
@@ -35,41 +31,19 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
             background-color: #f0f4ff;
         }
 
-        .form-input:focus {
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
         .qr-modal {
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.25s ease-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: scale(0.95);
+                transform: scale(.96);
             }
 
             to {
                 opacity: 1;
                 transform: scale(1);
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-
-            100% {
-                opacity: 1;
             }
         }
     </style>
@@ -82,41 +56,44 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
     ?>
 
     <!-- QR Code Modal -->
-    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4 qr-modal">
+    <div id="qrModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4 qr-modal">
         <div class="bg-white rounded-2xl max-w-md w-full p-6">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-gray-900">Scan to Pay</h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
+                <button type="button" onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
             <div class="text-center">
                 <div class="mb-4 p-4 bg-gray-50 rounded-lg inline-block">
-                    <img src="<?= $qrCodeData ?>" alt="QR Code" class="w-48 h-48 mx-auto">
+                    <div class="w-48 h-48 rounded-lg overflow-hidden bg-white">
+                        <img
+                            id="qrImage"
+                            src=""
+                            alt="QR Code"
+                            class="w-full h-full object-cover">
+                    </div>
                 </div>
 
                 <p class="text-sm text-gray-600 mb-2">Scan this QR code with your payment app</p>
-                <p class="font-bold text-lg text-gray-900 mb-6">$<?= number_format($total, 2) ?></p>
+                <p class="font-bold text-lg text-gray-900 mb-6">$<?= number_format((float)$total, 2) ?></p>
 
                 <div class="space-y-3">
                     <div class="flex items-center justify-center text-sm text-gray-600">
                         <i class="fas fa-clock mr-2"></i>
                         <span>Valid for 15 minutes</span>
                     </div>
-                    <div class="flex items-center justify-center text-sm text-gray-600">
-                        <i class="fas fa-receipt mr-2"></i>
-                        <span>Order ID: #<?= uniqid() ?></span>
-                    </div>
                 </div>
 
                 <div class="mt-8 pt-6 border-t border-gray-200">
-                    <button onclick="closeQRModal()"
-                        class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition duration-300">
+                    <!-- Submit after confirm -->
+                    <button type="button" onclick="confirmPaidAndSubmit()"
+                        class="w-full py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-lg transition duration-300">
                         I've Completed Payment
                     </button>
                     <p class="text-xs text-gray-500 mt-3">
-                        After payment, your order will be processed automatically
+                        After payment, your order will be processed
                     </p>
                 </div>
             </div>
@@ -124,7 +101,6 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
     </div>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Page Title -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Checkout</h1>
             <p class="text-gray-600 mt-2">Complete your purchase securely</p>
@@ -142,115 +118,75 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Checkout Form -->
             <div class="lg:col-span-2 space-y-8">
-                <!-- Shipping Information -->
                 <form method="POST" id="checkoutForm" class="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-bold text-gray-900">
                             <i class="fas fa-shipping-fast mr-2 text-blue-600"></i>
                             Shipping Information
                         </h2>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                            Required *
-                        </span>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Required *</span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Full Name *
-                            </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                             <div class="relative">
                                 <i class="fas fa-user absolute left-3 top-3.5 text-gray-400"></i>
-                                <input
-                                    name="name"
-                                    value="<?= e($_POST['name'] ?? '') ?>"
-                                    required
-                                    placeholder="John Doe"
-                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg form-input focus:border-blue-500">
+                                <input name="name" value="<?= e($_POST['name'] ?? '') ?>" required
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Email *
-                            </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                             <div class="relative">
                                 <i class="fas fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value="<?= e($_POST['email'] ?? '') ?>"
-                                    required
-                                    placeholder="john@example.com"
-                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg form-input focus:border-blue-500">
+                                <input type="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" required
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Address *
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
                         <div class="relative">
                             <i class="fas fa-map-marker-alt absolute left-3 top-3.5 text-gray-400"></i>
-                            <input
-                                name="address"
-                                value="<?= e($_POST['address'] ?? '') ?>"
-                                required
-                                placeholder="123 Main Street"
-                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg form-input focus:border-blue-500">
+                            <input name="address" value="<?= e($_POST['address'] ?? '') ?>" required
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                City
-                            </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
                             <div class="relative">
                                 <i class="fas fa-city absolute left-3 top-3.5 text-gray-400"></i>
-                                <input
-                                    name="city"
-                                    value="<?= e($_POST['city'] ?? '') ?>"
-                                    placeholder="Manila"
-                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg form-input focus:border-blue-500">
+                                <input name="city" value="<?= e($_POST['city'] ?? '') ?>"
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Country
-                            </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
                             <div class="relative">
                                 <i class="fas fa-globe absolute left-3 top-3.5 text-gray-400"></i>
-                                <select
-                                    name="country"
-                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg form-input focus:border-blue-500">
-                                    <option value="">Select Country</option>
-                                    <option value="PH" selected>Philippines</option>
-                                    <option value="US">United States</option>
-                                    <option value="UK">United Kingdom</option>
-                                </select>
+                                <input name="country" value="<?= e($_POST['country'] ?? 'Cambodia') ?>"
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Phone *
-                            </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
                             <div class="relative">
                                 <i class="fas fa-phone absolute left-3 top-3.5 text-gray-400"></i>
-                                <input
-                                    name="phone"
-                                    value="<?= e($_POST['phone'] ?? '') ?>"
-                                    required
-                                    placeholder="+63 912 345 6789"
-                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg form-input focus:border-blue-500">
+                                <input name="phone" value="<?= e($_POST['phone'] ?? '') ?>" required
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Payment Method Selection -->
+                    <!-- Payment Methods -->
                     <div class="pt-6 border-t border-gray-200">
                         <h2 class="text-xl font-bold text-gray-900 mb-6">
                             <i class="fas fa-credit-card mr-2 text-blue-600"></i>
@@ -258,100 +194,98 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
                         </h2>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div class="payment-card p-4 border-2 border-gray-200 rounded-xl cursor-pointer"
-                                onclick="selectPayment('qr')">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fas fa-qrcode text-blue-600 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">QR Code</p>
-                                        <p class="text-sm text-gray-600">Scan to pay</p>
-                                    </div>
+                            <?php if (empty($paymentMethods)): ?>
+                                <div class="text-sm text-red-600">
+                                    No payment methods found. Insert into payment_methods table.
                                 </div>
-                            </div>
+                            <?php else: ?>
+                                <?php foreach ($paymentMethods as $m):
+                                    $code = strtolower(trim($m['method_code']));
+                                    $name = $m['method_name'];
 
-                            <div class="payment-card p-4 border-2 border-gray-200 rounded-xl cursor-pointer"
-                                onclick="selectPayment('card')">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="far fa-credit-card text-purple-600 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Credit/Debit Card</p>
-                                        <p class="text-sm text-gray-600">Visa, Mastercard</p>
-                                    </div>
-                                </div>
-                            </div>
+                                    $icon = 'fas fa-money-check-alt';
+                                    $bg   = 'bg-blue-100';
+                                    $ic   = 'text-blue-600';
 
-                            <div class="payment-card p-4 border-2 border-gray-200 rounded-xl cursor-pointer"
-                                onclick="selectPayment('paypal')">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fab fa-paypal text-yellow-600 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">PayPal</p>
-                                        <p class="text-sm text-gray-600">Secure online payment</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="payment-card p-4 border-2 border-gray-200 rounded-xl cursor-pointer"
-                                onclick="selectPayment('cod')">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                                        <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Cash on Delivery</p>
-                                        <p class="text-sm text-gray-600">Pay when received</p>
-                                    </div>
-                                </div>
-                            </div>
+                                    if ($code === 'aba') {
+                                        $icon = 'fas fa-university';
+                                        $bg = 'bg-red-100';
+                                        $ic = 'text-red-600';
+                                    }
+                                    if ($code === 'acleda') {
+                                        $icon = 'fas fa-university';
+                                        $bg = 'bg-green-100';
+                                        $ic = 'text-green-600';
+                                    }
+                                    if ($code === 'wing') {
+                                        $icon = 'fas fa-wallet';
+                                        $bg = 'bg-purple-100';
+                                        $ic = 'text-purple-600';
+                                    }
+                                    if ($code === 'chipmong') {
+                                        $icon = 'fas fa-university';
+                                        $bg = 'bg-yellow-100';
+                                        $ic = 'text-yellow-600';
+                                    }
+                                    if ($code === 'bakong') {
+                                        $icon = 'fas fa-qrcode';
+                                        $bg = 'bg-cyan-100';
+                                        $ic = 'text-cyan-600';
+                                    }
+                                ?>
+                                    <button type="button"
+                                        class="payment-card text-left p-4 border-2 border-gray-200 rounded-xl cursor-pointer"
+                                        data-method="<?= e($code) ?>"
+                                        onclick="selectPayment(event,'<?= e($code) ?>')">
+                                        <div class="flex items-center">
+                                            <div class="w-12 h-12 <?= e($bg) ?> rounded-lg flex items-center justify-center mr-4">
+                                                <i class="<?= e($icon) ?> <?= e($ic) ?> text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-gray-900"><?= e($name) ?></p>
+                                                <p class="text-sm text-gray-600"><?= e(strtoupper($code)) ?> Payment</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
 
-                        <input type="hidden" name="payment_method" id="paymentMethod" value="qr">
+                        <input type="hidden" name="payment" id="paymentMethod" value="">
+                        <input type="hidden" name="confirm_paid" id="confirmPaid" value="0">
                     </div>
+
                 </form>
             </div>
-
-            <!-- Order Summary -->
+            <!-- Sumary Method Selection -->
             <div class="lg:col-span-1">
                 <div class="sticky top-24 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div class="text-white p-6">
-                        <h2 class="text-xl text-black font-bold">
-                            <i class="fas fa-receipt mr-2"></i>
-                            Order Summary
+                    <div class="p-6">
+                        <h2 class="text-xl text-gray-900 font-bold">
+                            <i class="fas fa-receipt mr-2"></i> Order Summary
                         </h2>
-                        <p class="text-black text-sm mt-1">Review your items</p>
+                        <p class="text-gray-600 text-sm mt-1">Review your items</p>
                     </div>
 
                     <div class="p-6 space-y-6 max-h-[400px] overflow-y-auto">
                         <?php foreach ($products as $p):
-                            $qty = $cart[$p['product_id']];
-                            $itemTotal = $p['price'] * $qty;
+                            $qty = $cart[$p['product_id']] ?? 0;
+                            $itemTotal = ((float)$p['price']) * (int)$qty;
                         ?>
                             <div class="flex items-center gap-4 pb-4 border-b border-gray-100">
                                 <div class="relative">
-                                    <img
-                                        src="<?= e($p['image_url']) ?>"
-                                        class="w-20 h-20 rounded-xl object-cover bg-gray-100">
+                                    <img src="<?= e($p['image_url']) ?>" class="w-20 h-20 rounded-xl object-cover bg-gray-100">
                                     <span class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
                                         <?= e($qty) ?>
                                     </span>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="font-semibold text-gray-900">
-                                        <?= e($p['name']) ?>
-                                    </p>
+                                    <p class="font-semibold text-gray-900"><?= e($p['name']) ?></p>
                                     <p class="text-sm text-gray-600 mt-1">
-                                        $<?= number_format($p['price'], 2) ?> × <?= e($qty) ?>
+                                        $<?= number_format((float)$p['price'], 2) ?> × <?= e($qty) ?>
                                     </p>
                                 </div>
-                                <p class="font-bold text-gray-900">
-                                    $<?= number_format($itemTotal, 2) ?>
-                                </p>
+                                <p class="font-bold text-gray-900">$<?= number_format((float)$itemTotal, 2) ?></p>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -359,19 +293,11 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
                     <div class="p-6 border-t border-gray-100 space-y-4">
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">Subtotal</span>
-                            <span class="font-medium">$<?= number_format($subtotal, 2) ?></span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Shipping</span>
-                            <span class="font-medium">$<?= number_format(50, 2) ?></span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Tax (12%)</span>
-                            <span class="font-medium">$<?= number_format($tax, 2) ?></span>
+                            <span class="font-medium">$<?= number_format((float)$subtotal, 2) ?></span>
                         </div>
                         <div class="flex justify-between items-center text-lg font-bold text-gray-900 pt-4 border-t border-gray-200">
                             <span>Total</span>
-                            <span class="text-blue-600">$<?= number_format($total + 50, 2) ?></span>
+                            <span class="text-blue-600">$<?= number_format((float)$total, 2) ?></span>
                         </div>
                     </div>
 
@@ -381,16 +307,12 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
                             <span>Secure SSL encryption</span>
                         </div>
 
-                        <button
-                            type="submit"
-                            form="checkoutForm"
-                            onclick="processOrder(event)"
-                            class="w-full bg-black hover:bg-gray-900 text-white py-4 rounded-xl font-bold text-lg 
-           transition-all duration-300 flex items-center justify-center shadow-lg">
-                            <i class="fas fa-lock mr-3"></i>
-                            Place Order – $<?= number_format($total + 50, 2) ?>
+                        <!-- Click => open QR modal, not submit directly -->
+                        <button type="submit" form="checkoutForm" onclick="processOrder(event)"
+                            class="w-full bg-black hover:bg-gray-900 text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-qrcode mr-3"></i>
+                            Place Order – $<?= number_format((float)$total, 2) ?>
                         </button>
-
 
                         <p class="text-center text-xs text-gray-500 mt-4">
                             By placing your order, you agree to our
@@ -399,39 +321,61 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
                     </div>
                 </div>
             </div>
+
         </div>
     </main>
 
     <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
     <script>
-        let selectedPayment = 'qr';
+        let selectedPayment = null;
 
-        function selectPayment(method) {
+        // Update paths to your real images
+        const qrMap = {
+            aba: "../view/assets/qr/aba.jpg",
+            wing: "../view/assets/qr/wing.jpg",
+            bakong: "../view/assets/qr/bakong.jpg",
+            acleda: "../view/assets/qr/acleda.jpg",
+            chipmong: "../view/assets/qr/chipmong.jpg"
+        };
+
+        function selectPayment(ev, method) {
             selectedPayment = method;
             document.getElementById('paymentMethod').value = method;
 
             document.querySelectorAll('.payment-card').forEach(card => {
-                card.classList.remove('selected');
-                card.classList.remove('border-blue-500');
+                card.classList.remove('selected', 'border-blue-500');
                 card.classList.add('border-gray-200');
             });
 
-            event.currentTarget.classList.add('selected', 'border-blue-500');
-            event.currentTarget.classList.remove('border-gray-200');
+            ev.currentTarget.classList.add('selected', 'border-blue-500');
+            ev.currentTarget.classList.remove('border-gray-200');
         }
 
-        function showQRModal() {
-            document.getElementById('qrModal').classList.remove('hidden');
-            document.getElementById('qrModal').classList.add('flex');
+        function showQRModal(method) {
+            const img = document.getElementById("qrImage");
+            const src = qrMap[method];
+
+            if (!src) {
+                alert("QR image not found for: " + method);
+                return;
+            }
+
+            img.src = src;
+
+            const modal = document.getElementById('qrModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
         function closeQRModal() {
-            document.getElementById('qrModal').classList.add('hidden');
-            document.getElementById('qrModal').classList.remove('flex');
+            const modal = document.getElementById('qrModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
-        function processOrder(event) {
+        // Click Place Order => show QR first
+        function processOrder(ev) {
             const form = document.getElementById('checkoutForm');
 
             if (!form.checkValidity()) {
@@ -439,23 +383,31 @@ $qrCodeData = "../view/assets/Acleda.jpg" . uniqid();
                 return false;
             }
 
-            event.preventDefault();
-
-            if (selectedPayment === 'qr') {
-                showQRModal();
-
-                setTimeout(() => {
-                    form.submit();
-                }, 30000);
-            } else {
-                form.submit();
+            if (!selectedPayment) {
+                alert('Please select payment method');
+                return false;
             }
+
+            ev.preventDefault();
+            showQRModal(selectedPayment);
+            return false;
+        }
+
+        // Click "I've Completed Payment" => submit (mark as confirmed)
+        function confirmPaidAndSubmit() {
+            // mark confirmation so server treats this as paid
+            const el = document.getElementById('confirmPaid');
+            if (el) el.value = '1';
+            closeQRModal();
+            document.getElementById('checkoutForm').submit();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            selectPayment('qr');
+            const first = document.querySelector('.payment-card[data-method]');
+            if (first) first.click();
         });
     </script>
+
 </body>
 
 </html>

@@ -1,7 +1,74 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/products_api.php';
+
+$queryBase = $_GET ?? [];
+unset($queryBase['status'], $queryBase['brand'], $queryBase['page']);
+
+$currentStatus = $_GET['status'] ?? '';
+$currentBrand  = $_GET['brand'] ?? '';
+
+$tabs = [
+    [
+        'label' => 'All',
+        'status' => '',
+        'brand' => '',
+        'count' => 'all',
+        'pill'  => 'bg-gray-100 text-gray-600',
+        'activeText' => 'text-indigo-600',
+    ],
+    [
+        'label' => 'Active',
+        'status' => 'active',
+        'brand' => '',
+        'count' => 'active',
+        'pill'  => 'bg-green-100 text-green-700',
+        'activeText' => 'text-green-600',
+    ],
+    [
+        'label' => 'Inactive',
+        'status' => 'inactive',
+        'brand' => '',
+        'count' => 'inactive',
+        'pill'  => 'bg-yellow-100 text-yellow-700',
+        'activeText' => 'text-yellow-600',
+    ],
+    [
+        'label' => 'Nike',
+        'status' => '',
+        'brand' => 'Nike',
+        'count' => 'Nike',
+        'pill'  => 'bg-red-100 text-red-600',
+        'activeText' => 'text-red-600',
+    ],
+    [
+        'label' => 'Adidas',
+        'status' => '',
+        'brand' => 'Adidas',
+        'count' => 'Adidas',
+        'pill'  => 'bg-blue-100 text-blue-600',
+        'activeText' => 'text-blue-600',
+    ],
+    [
+        'label' => 'New Balance',
+        'status' => '',
+        'brand' => 'New Balance',
+        'count' => 'New Balance',
+        'pill'  => 'bg-emerald-100 text-emerald-700',
+        'activeText' => 'text-emerald-600',
+    ],
+    [
+        'label' => 'Other',
+        'status' => '',
+        'brand' => 'Other',
+        'count' => 'Other',
+        'pill'  => 'bg-purple-100 text-purple-600',
+        'activeText' => 'text-purple-600',
+    ],
+];
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -275,241 +342,222 @@ require_once __DIR__ . '/products_api.php';
                         </form>
                     </div>
                 </div>
+                <div class="bg-white border-b border-gray-200">
+                    <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                        <?php foreach ($tabs as $t): ?>
+                            <?php
+                            $isActive =
+                                ($t['status'] === $currentStatus) &&
+                                ($t['brand'] === $currentBrand);
 
-                <?php
-                $queryBase = $_GET;
-                unset($queryBase['status'], $queryBase['page']);
-                ?>
+                            $href = '?' . http_build_query(array_merge(
+                                $queryBase,
+                                ['status' => $t['status'], 'brand' => $t['brand']]
+                            ));
 
-                <!-- Product Status Tabs -->
-                <div class="bg-white">
-                    <div class="border-b border-gray-200">
-                        <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
+                            $linkClass = $isActive
+                                ? "{$t['activeText']} border-b-2 border-indigo-600"
+                                : 'text-gray-500 hover:text-gray-700';
 
-                            <!-- ALL PRODUCTS -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= empty($status)
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                All Products
-                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                    <?= $statusCounts['all'] ?? 0 ?>
+                            $count = (int)($statusCounts[$t['count']] ?? 0);
+                            ?>
+
+                            <a href="<?= htmlspecialchars($href) ?>"
+                                class="flex items-center gap-2 pb-2 text-sm font-medium <?= $linkClass ?>">
+                                <?= htmlspecialchars($t['label']) ?>
+
+                                <span class="px-2 py-0.5 text-xs rounded-full <?= $t['pill'] ?>">
+                                    <?= $count ?>
                                 </span>
                             </a>
-
-                            <!-- ACTIVE -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= $status === 'active'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                Active
-                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                    <?= $statusCounts['active'] ?? 0 ?>
-                                </span>
-                            </a>
-
-                            <!-- INACTIVE -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= $status === 'inactive'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                Inactive
-                                <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                                    <?= $statusCounts['inactive'] ?? 0 ?>
-                                </span>
-                            </a>
-                        </nav>
-                    </div>
-                    <!-- Product Filters -->
-                    <form method="GET" class="bg-white rounded-xl shadow mb-8 p-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 items-end">
-
-                            <!-- Search -->
-                            <div class="lg:col-span-2">
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">Search</label>
-                                <input type="text"
-                                    name="search"
-                                    value="<?= htmlspecialchars($search ?? '') ?>"
-                                    placeholder="Product name, SKU..."
-                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-
-                            <!-- From -->
-                            <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">From Date</label>
-                                <input type="date" name="date_from"
-                                    value="<?= $date_from ?? '' ?>"
-                                    class="w-full px-3 py-2 border rounded-lg">
-                            </div>
-
-                            <!-- To -->
-                            <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">To Date</label>
-                                <input type="date" name="date_to"
-                                    value="<?= $date_to ?? '' ?>"
-                                    class="w-full px-3 py-2 border rounded-lg">
-                            </div>
-
-                            <!-- Category -->
-                            <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">Category</label>
-                                <select name="category_id" class="w-full px-3 py-2 border rounded-lg">
-                                    <option value="">All Categories</option>
-                                    <?php foreach ($categories as $cat): ?>
-                                        <option value="<?= $cat['category_id'] ?>"
-                                            <?= $category_id == $cat['category_id'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($cat['category_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <!-- Sort -->
-                            <div>
-                                <label class="text-sm font-medium text-gray-700 mb-1 block">Sort By</label>
-                                <select name="sort" class="w-full px-3 py-2 border rounded-lg">
-                                    <option value="newest">Newest First</option>
-                                    <option value="oldest">Oldest First</option>
-                                    <option value="price_high">Price: High → Low</option>
-                                    <option value="price_low">Price: Low → High</option>
-                                </select>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="flex gap-2 justify-end lg:col-span-6">
-                                <a href="products.php"
-                                    class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
-                                    Clear
-                                </a>
-                                <button type="submit"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                                    Apply
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        <?php endforeach; ?>
+                    </nav>
                 </div>
-                <!-- Products Table -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+
+                <!-- Product Filters -->
+                <form method="GET" class="bg-white rounded-xl shadow mb-8 p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 items-end">
+
+                        <!-- Search -->
+                        <div class="lg:col-span-2">
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Search</label>
+                            <input type="text"
+                                name="search"
+                                value="<?= htmlspecialchars($search ?? '') ?>"
+                                placeholder="Product name, SKU..."
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <!-- From -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">From Date</label>
+                            <input type="date" name="date_from"
+                                value="<?= $date_from ?? '' ?>"
+                                class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+
+                        <!-- To -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">To Date</label>
+                            <input type="date" name="date_to"
+                                value="<?= $date_to ?? '' ?>"
+                                class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+
+                        <!-- Category -->
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Category</label>
+                            <select name="category_id" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="">All Categories</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= $cat['category_id'] ?>"
+                                        <?= $category_id == $cat['category_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($cat['category_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Sort -->
+                        <select name="sort" class="w-full px-3 py-2 border rounded-lg">
+                            <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Newest First</option>
+                            <option value="oldest" <?= $sort === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+                            <option value="price_high" <?= $sort === 'price_high' ? 'selected' : '' ?>>Price: High → Low</option>
+                            <option value="price_low" <?= $sort === 'price_low' ? 'selected' : '' ?>>Price: Low → High</option>
+                        </select>
+
+                        <!-- Actions -->
+                        <div class="flex gap-2 justify-end lg:col-span-6">
+                            <a href="products.php"
+                                class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+                                Clear
+                            </a>
+                            <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- Products Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Category
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sku
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Price
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Cost
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Stock
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Image
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="productsTableBody">
+                        <?php if (empty($products)): ?>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    ID
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Category
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Sku
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Price
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Cost
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Stock
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Image
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
+                                        <p class="text-lg font-medium text-gray-900">No products found</p>
+                                        <p class="text-gray-500 mt-1">Try adjusting your filters or add a new product</p>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200" id="productsTableBody">
-                            <?php if (empty($products)): ?>
-                                <tr>
-                                    <td colspan="9" class="px-6 py-12 text-center text-gray-500">
-                                        <div class="flex flex-col items-center justify-center">
-                                            <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
-                                            <p class="text-lg font-medium text-gray-900">No products found</p>
-                                            <p class="text-gray-500 mt-1">Try adjusting your filters or add a new product</p>
+                        <?php else: ?>
+                            <?php foreach ($products as $product): ?>
+                                <?php
+                                $stock = (int)$product['stock'];
+                                $stockClass = $stock <= 0 ? 'stock-out' : ($stock < 10 ? 'stock-low' : '');
+                                $statusClass = $product['status'] === 'active' ? 'status-active' : 'status-inactive';
+                                ?>
+                                <tr class="hover:bg-gray-50 transition-colors" data-id="<?php echo $product['product_id']; ?>">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <?php echo $product['product_id']; ?>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <?php echo htmlspecialchars($product['name']); ?>
+                                        </div>
+                                        <div class="text-sm text-gray-500 truncate max-w-xs">
+                                            <?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 50)); ?>
+                                            <?php if (strlen($product['description'] ?? '') > 50): ?>...<?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo htmlspecialchars($product['sku'] ?? ''); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <div class="font-semibold">$<?php echo number_format($product['price'], 2); ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo $product['cost'] ? '$' . number_format($product['cost'], 2) : 'N/A'; ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $stockClass; ?>">
+                                            <?php echo number_format($stock); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
+                                            <?php echo ucfirst($product['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php if (!empty($product['image_url'])): ?>
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded object-cover"
+                                                    src="<?php echo htmlspecialchars($product['image_url']); ?>"
+                                                    alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="action-cell px-6 py-4 whitespace-nowrap text-sm">
+                                        <div class="flex items-center space-x-2">
+                                            <button type="button" onclick="editProduct(<?php echo $product['product_id']; ?>)"
+                                                class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
+                                                <i class="fas fa-edit mr-2"></i> Edit
+                                            </button>
+                                            <button type="button" onclick="deleteProduct(<?php echo $product['product_id']; ?>)"
+                                                class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
+                                                <i class="fas fa-trash mr-2"></i> Delete
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
-                            <?php else: ?>
-                                <?php foreach ($products as $product): ?>
-                                    <?php
-                                    $stock = (int)$product['stock'];
-                                    $stockClass = $stock <= 0 ? 'stock-out' : ($stock < 10 ? 'stock-low' : '');
-                                    $statusClass = $product['status'] === 'active' ? 'status-active' : 'status-inactive';
-                                    ?>
-                                    <tr class="hover:bg-gray-50 transition-colors" data-id="<?php echo $product['product_id']; ?>">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <?php echo $product['product_id']; ?>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                <?php echo htmlspecialchars($product['name']); ?>
-                                            </div>
-                                            <div class="text-sm text-gray-500 truncate max-w-xs">
-                                                <?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 50)); ?>
-                                                <?php if (strlen($product['description'] ?? '') > 50): ?>...<?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <?php echo htmlspecialchars($product['sku'] ?? ''); ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <div class="font-semibold">$<?php echo number_format($product['price'], 2); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <?php echo $product['cost'] ? '$' . number_format($product['cost'], 2) : 'N/A'; ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $stockClass; ?>">
-                                                <?php echo number_format($stock); ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
-                                                <?php echo ucfirst($product['status']); ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <?php if (!empty($product['image_url'])): ?>
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <img class="h-10 w-10 rounded object-cover"
-                                                        src="<?php echo htmlspecialchars($product['image_url']); ?>"
-                                                        alt="<?php echo htmlspecialchars($product['name']); ?>">
-                                                </div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="action-cell px-6 py-4 whitespace-nowrap text-sm">
-                                            <div class="flex items-center space-x-2">
-                                                <button type="button" onclick="editProduct(<?php echo $product['product_id']; ?>)"
-                                                    class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
-                                                    <i class="fas fa-edit mr-2"></i> Edit
-                                                </button>
-                                                <button type="button" onclick="deleteProduct(<?php echo $product['product_id']; ?>)"
-                                                    class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
-                                                    <i class="fas fa-trash mr-2"></i> Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
+        </div>
         </div>
         <!-- Pagination -->
         <?php if ($totalPages > 1): ?>

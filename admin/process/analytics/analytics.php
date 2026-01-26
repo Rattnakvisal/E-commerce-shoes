@@ -486,12 +486,18 @@ require_once __DIR__ . '/analyties_api.php';
 
                         <div class="space-y-4">
                             <?php foreach ($paymentGateways as $key => $gateway):
-                                $colorConfig = [
+                                $colorMap = [
                                     'blue' => [
                                         'bg' => 'from-blue-50 to-blue-100',
                                         'border' => 'border-blue-200',
                                         'icon-bg' => 'bg-blue-200',
                                         'icon-text' => 'text-blue-700'
+                                    ],
+                                    'red' => [
+                                        'bg' => 'from-red-50 to-red-100',
+                                        'border' => 'border-red-200',
+                                        'icon-bg' => 'bg-red-200',
+                                        'icon-text' => 'text-red-700'
                                     ],
                                     'green' => [
                                         'bg' => 'from-green-50 to-green-100',
@@ -505,13 +511,33 @@ require_once __DIR__ . '/analyties_api.php';
                                         'icon-bg' => 'bg-purple-200',
                                         'icon-text' => 'text-purple-700'
                                     ],
+                                    'amber' => [
+                                        'bg' => 'from-amber-50 to-amber-100',
+                                        'border' => 'border-amber-200',
+                                        'icon-bg' => 'bg-amber-200',
+                                        'icon-text' => 'text-amber-700'
+                                    ],
+                                    'cyan' => [
+                                        'bg' => 'from-cyan-50 to-cyan-100',
+                                        'border' => 'border-cyan-200',
+                                        'icon-bg' => 'bg-cyan-200',
+                                        'icon-text' => 'text-cyan-700'
+                                    ],
                                     'emerald' => [
                                         'bg' => 'from-emerald-50 to-emerald-100',
                                         'border' => 'border-emerald-200',
                                         'icon-bg' => 'bg-emerald-200',
                                         'icon-text' => 'text-emerald-700'
                                     ]
-                                ][$gateway['color'] ?? 'blue'];
+                                ];
+
+                                $colorKey = strtolower((string)($gateway['color'] ?? 'blue'));
+                                $colorConfig = $colorMap[$colorKey] ?? $colorMap['blue'];
+                                $gateway['icon'] = $gateway['icon'] ?? 'fas fa-money-check-alt';
+                                $gateway['name'] = $gateway['name'] ?? 'Unknown';
+                                $gateway['description'] = $gateway['description'] ?? '';
+                                $gateway['amount'] = $gateway['amount'] ?? 0.0;
+                                $gateway['count'] = $gateway['count'] ?? 0;
                             ?>
                                 <div class="p-4 bg-gradient-to-r <?= $colorConfig['bg'] ?> border <?= $colorConfig['border'] ?> rounded-lg hover:shadow transition duration-300">
                                     <div class="flex justify-between items-center">

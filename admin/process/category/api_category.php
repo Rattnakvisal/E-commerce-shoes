@@ -1,144 +1,167 @@
 <?php
+
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
 
-// --------------------------------------------------
-// Helper: JSON response for AJAX
-// --------------------------------------------------
-function jsonResponse(array $data)
-{
-    if (
-        isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-    ) {
-        header('Content-Type: application/json');
-        echo json_encode($data);
-        exit;
-    }
+$pdo = $pdo ?? ($conn ?? null);
+if (!$pdo instanceof PDO) {
+    die('Database connection missing.');
 }
 
-// --------------------------------------------------
-// Default messages
-// --------------------------------------------------
+/* =====================================================
+   JSON helper
+===================================================== */
+function isAjax(): bool
+{
+    return isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+        && strtolower((string)$_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
+function jsonResponse(bool $ok, string $message, array $extra = []): void
+{
+    if (!isAjax()) return;
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(array_merge(['success' => $ok, 'message' => $message], $extra), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+/* =====================================================
+   Defaults
+===================================================== */
 $message = '';
 $error   = '';
 
-// --------------------------------------------------
-// Handle POST (Add / Update / Delete)
-// --------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $action = $_POST['action'] ?? null;
+/* =====================================================
+   POST: Add / Update / Delete
+===================================================== */
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    $action = $_POST['action'] ?? '';
 
+    try {
         switch ($action) {
 
-            // ---------- ADD CATEGORY ----------
-            case 'add_category':
-                $name = trim($_POST['category_name'] ?? '');
+            /* ---------- ADD ---------- */
+            case 'add_category': {
+                    $name = trim((string)($_POST['category_name'] ?? ''));
 
-                if ($name === '') {
-                    throw new Exception('Category name is required');
+                    if ($name === '') {
+                        throw new RuntimeException('Category name is required.');
+                    }
+
+                    // Optional: prevent duplicate names
+                    $dup = $pdo->prepare("SELECT 1 FROM categories WHERE category_name = ? LIMIT 1");
+                    $dup->execute([$name]);
+                    if ($dup->fetchColumn()) {
+                        throw new RuntimeException('Category name already exists.');
+                    }
+
+                    $stmt = $pdo->prepare("INSERT INTO categories (category_name) VALUES (?)");
+                    $stmt->execute([$name]);
+
+                    $message = 'Category added successfully!';
+                    jsonResponse(true, $message, ['category_id' => (int)$pdo->lastInsertId()]);
+                    break;
                 }
 
-                $stmt = $conn->prepare(
-                    "INSERT INTO categories (category_name) VALUES (?)"
-                );
-                $stmt->execute([$name]);
+                /* ---------- UPDATE ---------- */
+            case 'update_category': {
+                    $id   = (int)($_POST['category_id'] ?? 0);
+                    $name = trim((string)($_POST['category_name'] ?? ''));
 
-                $message = 'Category added successfully!';
-                jsonResponse([
-                    'success' => true,
-                    'message' => $message,
-                    'category_id' => $conn->lastInsertId()
-                ]);
-                break;
+                    if ($id <= 0 || $name === '') {
+                        throw new RuntimeException('Invalid category data.');
+                    }
 
-            // ---------- UPDATE CATEGORY ----------
-            case 'update_category':
-                $id   = (int)($_POST['category_id'] ?? 0);
-                $name = trim($_POST['category_name'] ?? '');
+                    // Optional: prevent duplicate names (excluding current)
+                    $dup = $pdo->prepare("SELECT 1 FROM categories WHERE category_name = ? AND category_id <> ? LIMIT 1");
+                    $dup->execute([$name, $id]);
+                    if ($dup->fetchColumn()) {
+                        throw new RuntimeException('Category name already exists.');
+                    }
 
-                if ($id <= 0 || $name === '') {
-                    throw new Exception('Invalid category data');
+                    $stmt = $pdo->prepare("UPDATE categories SET category_name = ? WHERE category_id = ?");
+                    $stmt->execute([$name, $id]);
+
+                    $message = 'Category updated successfully!';
+                    jsonResponse(true, $message);
+                    break;
                 }
 
-                $stmt = $conn->prepare(
-                    "UPDATE categories SET category_name = ? WHERE category_id = ?"
-                );
-                $stmt->execute([$name, $id]);
+                /* ---------- DELETE ---------- */
+            case 'delete_category': {
+                    $id = (int)($_POST['category_id'] ?? 0);
 
-                $message = 'Category updated successfully!';
-                jsonResponse(['success' => true, 'message' => $message]);
-                break;
+                    if ($id <= 0) {
+                        throw new RuntimeException('Invalid category ID.');
+                    }
 
-            // ---------- DELETE CATEGORY ----------
-            case 'delete_category':
-                $id = (int)($_POST['category_id'] ?? 0);
+                    // Check linked products
+                    $check = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id = ?");
+                    $check->execute([$id]);
+                    if ((int)$check->fetchColumn() > 0) {
+                        throw new RuntimeException('Cannot delete category with products. Update products first.');
+                    }
 
-                if ($id <= 0) {
-                    throw new Exception('Invalid category ID');
+                    $stmt = $pdo->prepare("DELETE FROM categories WHERE category_id = ?");
+                    $stmt->execute([$id]);
+
+                    $message = 'Category deleted successfully!';
+                    jsonResponse(true, $message);
+                    break;
                 }
 
-                // Check linked products
-                $check = $conn->prepare(
-                    "SELECT COUNT(*) FROM products WHERE category_id = ?"
-                );
-                $check->execute([$id]);
-
-                if ($check->fetchColumn() > 0) {
-                    throw new Exception(
-                        'Cannot delete category with products. Update products first.'
-                    );
-                }
-
-                $stmt = $conn->prepare(
-                    "DELETE FROM categories WHERE category_id = ?"
-                );
-                $stmt->execute([$id]);
-
-                $message = 'Category deleted successfully!';
-                jsonResponse(['success' => true, 'message' => $message]);
-                break;
+            default:
+                // If someone posts without action
+                throw new RuntimeException('Invalid action.');
         }
     } catch (Throwable $e) {
         $error = $e->getMessage();
-        jsonResponse(['success' => false, 'message' => $error]);
+        jsonResponse(false, $error);
     }
 }
 
-// --------------------------------------------------
-// Fetch Categories
-// --------------------------------------------------
+/* =====================================================
+   FETCH DATA (Categories + Stats)
+===================================================== */
+$categories = [];
+$productCounts = [];
+$totalCategories = 0;
+$totalProducts = 0;
+$uncategorizedCount = 0;
+
 try {
     // Categories
-    $categories = $conn->query(
-        "SELECT * FROM categories ORDER BY created_at DESC"
-    )->fetchAll(PDO::FETCH_ASSOC);
+    $categories = $pdo->query("
+        SELECT category_id, category_name, created_at
+        FROM categories
+        ORDER BY created_at DESC
+    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    // Product counts per category
-    $productCounts = [];
-    $counts = $conn->query(
-        "SELECT category_id, COUNT(*) total
-         FROM products
-         WHERE category_id IS NOT NULL
-         GROUP BY category_id"
-    )->fetchAll(PDO::FETCH_ASSOC);
+    // Product counts per category (fast map)
+    $counts = $pdo->query("
+        SELECT category_id, COUNT(*) AS total
+        FROM products
+        WHERE category_id IS NOT NULL
+        GROUP BY category_id
+    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
     foreach ($counts as $row) {
-        $productCounts[$row['category_id']] = $row['total'];
+        $productCounts[(int)$row['category_id']] = (int)$row['total'];
     }
 
-    // Statistics
+    // Stats
     $totalCategories = count($categories);
-    $totalProducts   = (int)$conn->query(
-        "SELECT COUNT(*) FROM products"
-    )->fetchColumn();
 
-    $uncategorizedCount = (int)$conn->query(
-        "SELECT COUNT(*) FROM products WHERE category_id IS NULL"
-    )->fetchColumn();
-} catch (PDOException $e) {
-    $error = 'Failed to load categories: ' . $e->getMessage();
-    $categories = [];
-    $productCounts = [];
-    $totalCategories = $totalProducts = $uncategorizedCount = 0;
+    $totalProducts = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+
+    $uncategorizedCount = (int)$pdo->query("
+        SELECT COUNT(*)
+        FROM products
+        WHERE category_id IS NULL
+    ")->fetchColumn();
+} catch (Throwable $e) {
+    $error = 'Failed to load categories.';
+    error_log('[api_category] ' . $e->getMessage());
 }

@@ -1,5 +1,40 @@
 <?php
 require_once __DIR__ . '/process.php';
+$queryBase = $_GET ?? [];
+unset($queryBase['status'], $queryBase['page']);
+
+$currentStatus = (string)($filters['status'] ?? '');
+
+$tabs = [
+    [
+        'label'      => 'All Orders',
+        'status'     => '',
+        'countKey'   => 'all',
+        'pill'       => 'bg-gray-100 text-gray-600',
+        'activeText' => 'text-indigo-600',
+    ],
+    [
+        'label'      => 'Completed',
+        'status'     => 'completed',
+        'countKey'   => 'completed',
+        'pill'       => 'bg-green-100 text-green-700',
+        'activeText' => 'text-green-600',
+    ],
+    [
+        'label'      => 'Pending',
+        'status'     => 'pending',
+        'countKey'   => 'pending',
+        'pill'       => 'bg-yellow-100 text-yellow-700',
+        'activeText' => 'text-yellow-600',
+    ],
+    [
+        'label'      => 'Cancelled',
+        'status'     => 'cancelled',
+        'countKey'   => 'cancelled',
+        'pill'       => 'bg-red-100 text-red-700',
+        'activeText' => 'text-red-600',
+    ],
+];
 ?>
 <!doctype html>
 <html lang="en">
@@ -160,59 +195,44 @@ require_once __DIR__ . '/process.php';
                         </div>
                     </div>
                 </div>
-
             </div>
-
-            <!-- FILTERS -->
-            <?php
-            $queryBase = $_GET;
-            unset($queryBase['status'], $queryBase['page']);
-            ?>
 
             <div class="bg-white">
                 <div class="border-b border-gray-200">
                     <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
-                        <!-- ALL ORDERS -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
-                            class="filter-tab text-sm font-medium flex items-center gap-2
-              <?= empty($filters['status']) ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
-                            All Orders
-                            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                <?= $statusCounts['all'] ?>
-                            </span>
-                        </a>
 
-                        <!-- COMPLETED -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'completed'])) ?>"
-                            class="filter-tab text-sm font-medium flex items-center gap-2
-              <?= $filters['status'] === 'completed' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
-                            Completed
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                <?= $statusCounts['completed'] ?>
-                            </span>
-                        </a>
+                        <?php foreach ($tabs as $t): ?>
+                            <?php
+                            $isActive = ($t['status'] === $currentStatus);
 
-                        <!-- PENDING -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'pending'])) ?>"
-                            class="filter-tab text-sm font-medium flex items-center gap-2
-              <?= $filters['status'] === 'pending' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
-                            Pending
-                            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                                <?= $statusCounts['pending'] ?>
-                            </span>
-                        </a>
+                            $href = '?' . http_build_query(array_merge(
+                                $queryBase,
+                                ['status' => $t['status']]
+                            ));
 
-                        <!-- CANCELLED -->
-                        <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'cancelled'])) ?>"
-                            class="filter-tab text-sm font-medium flex items-center gap-2
-              <?= $filters['status'] === 'cancelled' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700' ?>">
-                            Cancelled
-                            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
-                                <?= $statusCounts['cancelled'] ?>
-                            </span>
-                        </a>
+                            $linkClass = $isActive
+                                ? "{$t['activeText']} border-b-2 border-indigo-600"
+                                : "text-gray-500 hover:text-gray-700
+                                border-b-2 border-transparent
+                                transition-all duration-200";
+
+                            $count = (int)($statusCounts[$t['countKey']] ?? 0);
+                            ?>
+
+                            <a href="<?= htmlspecialchars($href, ENT_QUOTES, 'UTF-8') ?>"
+                                class="flex items-center gap-2 pb-2 text-sm font-medium <?= $linkClass ?>">
+                                <?= htmlspecialchars($t['label'], ENT_QUOTES, 'UTF-8') ?>
+
+                                <span class="px-2 py-0.5 rounded-full text-xs <?= $t['pill'] ?>">
+                                    <?= $count ?>
+                                </span>
+                            </a>
+
+                        <?php endforeach; ?>
+
                     </nav>
                 </div>
+
 
                 <!-- Filter Controls -->
                 <div class="p-4 border-b border-gray-200">
@@ -294,123 +314,170 @@ require_once __DIR__ . '/process.php';
                 </div>
             </div>
             <!-- TABLE -->
-            <div class="bg-white rounded-xl shadow overflow-x-auto">
-                <table class="responsive-table w-full min-w-[720px] table-auto text-sm">
+            <div class="overflow-x-auto">
+                <table class="divide-y divide-gray-200 min-w-[820px] table-auto text-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left">Order</th>
-                            <th class="px-6 py-3 text-left">Customer</th>
-                            <th class="px-6 py-3 text-left">Total</th>
-                            <th class="px-6 py-3 text-left">Status</th>
-                            <th class="px-6 py-3 text-left">Payment</th>
-                            <th class="px-6 py-3 text-left">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y">
-                        <?php if (!$orders): ?>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php if (empty($orders)): ?>
                             <tr>
-                                <td colspan="6" class="p-12 text-center text-gray-500">
-                                    No orders found
-                                </td>
+                                <td colspan="7" class="p-12 text-center text-gray-500">No orders found</td>
                             </tr>
                             <?php else: foreach ($orders as $o): ?>
-                                <tr data-row="<?= $o['order_id'] ?>" class="hover:bg-gray-50">
-                                    <?php
-                                    // compute per-row normalized status/payment for conditional UI
-                                    $status = strtolower($o['order_status'] ?? '');
-                                    $payment = strtolower($o['payment_status'] ?? '');
-                                    ?>
+                                <?php
+                                $orderId = (int)($o['order_id'] ?? 0);
 
+                                $statusRaw  = (string)($o['order_status'] ?? '');
+                                $paymentRaw = (string)($o['payment_status'] ?? '');
+
+                                $status  = strtolower(trim($statusRaw));
+                                $payment = strtolower(trim($paymentRaw));
+
+                                // SAFE CLASS (no spaces/special chars)
+                                $statusSlug  = preg_replace('/[^a-z0-9]+/i', '-', $status);
+                                $statusSlug  = trim((string)$statusSlug, '-');
+
+                                $paymentSlug = preg_replace('/[^a-z0-9]+/i', '-', $payment);
+                                $paymentSlug = trim((string)$paymentSlug, '-');
+
+                                // Tailwind badge colors (order status)
+                                $orderBadgeClass = match ($status) {
+                                    'completed'  => 'bg-green-100 text-green-700',
+                                    'pending'    => 'bg-yellow-100 text-yellow-700',
+                                    'processing' => 'bg-blue-100 text-blue-700',
+                                    'cancelled'  => 'bg-red-100 text-red-700',
+                                    default      => 'bg-gray-100 text-gray-700',
+                                };
+
+                                // Tailwind badge colors (payment status)
+                                $payBadgeClass = match ($payment) {
+                                    'paid'      => 'bg-green-100 text-green-700',
+                                    'unpaid'    => 'bg-yellow-100 text-yellow-700',
+                                    'pending'   => 'bg-yellow-100 text-yellow-700',
+                                    'refunded'  => 'bg-red-100 text-red-700',
+                                    default     => 'bg-gray-100 text-gray-700',
+                                };
+                                ?>
+
+                                <tr data-row="<?= $orderId ?>" class="hover:bg-gray-50">
                                     <td class="px-6 py-4">
-                                        #<?= str_pad((string)$o['order_id'], 6, '0', STR_PAD_LEFT) ?><br>
-                                        <span class="text-xs text-gray-500"><?= date('M j, Y', strtotime($o['created_at'])) ?></span>
-                                    </td>
-
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium">
-                                            <?= htmlspecialchars($o['customer_name'] ?? 'Guest') ?>
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            ID: <?= (int)($o['user_id'] ?? 0) ?>
-                                            <?= !empty($o['customer_email']) ? ' • ' . htmlspecialchars($o['customer_email']) : '' ?>
-                                        </div>
-                                    </td>
-
-
-                                    <td class="px-6 py-4 font-semibold">
-                                        $<?= number_format((float)$o['total'], 2) ?>
-                                    </td>
-
-                                    <td class="px-6 py-4">
-                                        <span class="status-badge status-<?= $o['order_status'] ?>">
-                                            <?= ucfirst($o['order_status']) ?>
+                                        #<?= str_pad((string)$orderId, 6, '0', STR_PAD_LEFT) ?><br>
+                                        <span class="text-xs text-gray-500">
+                                            <?= !empty($o['created_at']) ? date('M j, Y', strtotime((string)$o['created_at'])) : '' ?>
                                         </span>
                                     </td>
 
                                     <td class="px-6 py-4">
-                                        <?= ucfirst($o['payment_status']) ?>
+                                        <div class="font-medium">
+                                            <?= htmlspecialchars((string)($o['customer_name'] ?? 'Guest'), ENT_QUOTES, 'UTF-8') ?>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            ID: <?= (int)($o['user_id'] ?? 0) ?>
+                                            <?= !empty($o['customer_email']) ? ' • ' . htmlspecialchars((string)$o['customer_email'], ENT_QUOTES, 'UTF-8') : '' ?>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 font-semibold">
+                                        $<?= number_format((float)($o['total'] ?? 0), 2) ?>
+                                    </td>
+
+                                    <!-- ✅ ORDER STATUS BADGE (FIXED) -->
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium <?= $orderBadgeClass ?>">
+                                            <?= htmlspecialchars($statusRaw !== '' ? ucfirst($statusRaw) : '—', ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+
+                                        <!-- If you MUST keep your CSS status-badge system, use this instead:
+                        <span class="status-badge status-<?= htmlspecialchars($statusSlug, ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars(ucfirst($statusRaw), ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                        -->
+                                    </td>
+
+                                    <!-- ✅ PAYMENT STATUS BADGE (IMPROVED) -->
+                                    <td class="px-6 py-4">
+                                        <div class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium <?= $payBadgeClass ?>">
+                                            <?= htmlspecialchars($paymentRaw !== '' ? ucfirst($paymentRaw) : '—', ENT_QUOTES, 'UTF-8') ?>
+                                        </div>
+
+                                        <?php if ($payment === 'paid'): ?>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                $<?= number_format((float)($o['paid_amount'] ?? 0), 2) ?>
+                                                <?php if (!empty($o['payment_date'])): ?>
+                                                    • <?= date('M j, Y H:i', strtotime((string)$o['payment_date'])) ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
 
                                     <td class="px-6 py-4">
-                                        <div class="flex gap-2">
+                                        <?php if (!empty($o['payment_method_name'])): ?>
+                                            <div class="font-medium">
+                                                <?= htmlspecialchars((string)$o['payment_method_name'], ENT_QUOTES, 'UTF-8') ?>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                <?= htmlspecialchars(strtoupper((string)($o['payment_method_code'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-xs text-gray-400 italic">—</span>
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex gap-2 flex-wrap">
                                             <button type="button"
                                                 class="btn-view px-3 py-2 bg-indigo-50 text-indigo-700 rounded"
                                                 data-action="view"
-                                                data-id="<?= $o['order_id'] ?>">
+                                                data-id="<?= $orderId ?>">
                                                 <i class="fas fa-eye mr-1"></i> View
                                             </button>
 
-                                            <!-- PAYMENT (allowed unless refunded) -->
                                             <?php if ($payment !== 'refunded'): ?>
-                                                <button
-                                                    type="button"
+                                                <button type="button"
                                                     class="btn-payment px-3 py-2 bg-blue-50 text-blue-700 rounded"
                                                     data-action="payment"
-                                                    data-id="<?= $o['order_id'] ?>"
-                                                    data-payment="<?= $payment ?>">
+                                                    data-id="<?= $orderId ?>"
+                                                    data-payment="<?= htmlspecialchars($payment, ENT_QUOTES, 'UTF-8') ?>">
                                                     <i class="fas fa-credit-card mr-1"></i> Payment
                                                 </button>
                                             <?php endif; ?>
 
                                             <?php if (in_array($status, ['pending', 'processing'], true) && $payment !== 'paid'): ?>
-
-                                                <!-- EDIT -->
-                                                <button
-                                                    type="button"
+                                                <button type="button"
                                                     class="btn-edit px-3 py-2 bg-yellow-50 text-yellow-700 rounded"
                                                     data-action="edit"
-                                                    data-id="<?= $o['order_id'] ?>"
-                                                    data-status="<?= $status ?>">
+                                                    data-id="<?= $orderId ?>"
+                                                    data-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>">
                                                     <i class="fas fa-edit mr-1"></i> Edit
                                                 </button>
 
                                             <?php elseif (in_array($status, ['pending', 'processing'], true) && $payment === 'paid'): ?>
-
-                                                <!-- COMPLETE -->
-                                                <button
-                                                    type="button"
+                                                <button type="button"
                                                     class="btn-complete px-3 py-2 bg-green-50 text-green-700 rounded"
                                                     data-action="complete"
-                                                    data-id="<?= $o['order_id'] ?>">
+                                                    data-id="<?= $orderId ?>">
                                                     <i class="fas fa-check mr-1"></i> Complete
                                                 </button>
 
-                                                <!-- REFUND -->
-                                                <button
-                                                    type="button"
+                                                <button type="button"
                                                     class="btn-refund px-3 py-2 bg-red-50 text-red-700 rounded"
                                                     data-action="refund"
-                                                    data-id="<?= $o['order_id'] ?>">
+                                                    data-id="<?= $orderId ?>">
                                                     <i class="fas fa-undo mr-1"></i> Refund
                                                 </button>
 
                                             <?php else: ?>
-
-                                                <!-- LOCKED -->
-                                                <span class="text-xs text-gray-400 italic px-3 py-2">
-                                                    Locked
-                                                </span>
+                                                <span class="text-xs text-gray-400 italic px-3 py-2">Locked</span>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -421,8 +488,6 @@ require_once __DIR__ . '/process.php';
                 </table>
             </div>
         </div>
-        </div>
-
         <!-- Pagination -->
         <?php if ($totalPages > 1): ?>
             <div id="usersPagination" class="px-6 py-4 border-t border-gray-200">

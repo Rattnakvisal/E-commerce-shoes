@@ -1,5 +1,33 @@
 <?php
 require_once __DIR__ . '/slides_api.php';
+$queryBase = $_GET ?? [];
+unset($queryBase['status'], $queryBase['page']);
+
+$currentStatus = (string)($_GET['status'] ?? '');
+
+$tabs = [
+    [
+        'label'      => 'All Slides',
+        'status'     => '',
+        'countKey'   => 'all',
+        'pill'       => 'bg-gray-100 text-gray-600',
+        'activeText' => 'text-indigo-600',
+    ],
+    [
+        'label'      => 'Active',
+        'status'     => 'active',
+        'countKey'   => 'active',
+        'pill'       => 'bg-green-100 text-green-700',
+        'activeText' => 'text-green-600',
+    ],
+    [
+        'label'      => 'Inactive',
+        'status'     => 'inactive',
+        'countKey'   => 'inactive',
+        'pill'       => 'bg-gray-100 text-gray-700',
+        'activeText' => 'text-gray-700',
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -158,51 +186,44 @@ require_once __DIR__ . '/slides_api.php';
                         </div>
                     </div>
                 </div>
-                <?php
-                $queryBase = $_GET;
-                unset($queryBase['status'], $queryBase['page']);
-                ?>
+
                 <div class="bg-white">
                     <div class="border-b border-gray-200">
                         <nav class="flex gap-6 px-6 py-4 overflow-x-auto">
-                            <!-- ALL SLIDES -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => ''])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= empty($_GET['status'])
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                All Slides
-                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                                    <span><?= $statusCounts['all'] ?></span>
-                                </span>
-                            </a>
 
-                            <!-- ACTIVE -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'active'])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= ($_GET['status'] ?? '') === 'active'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                Active
-                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                    <span><?= $statusCounts['active'] ?></span>
-                                </span>
-                            </a>
+                            <?php foreach ($tabs as $t): ?>
+                                <?php
+                                $isActive = ($t['status'] === $currentStatus);
 
-                            <!-- INACTIVE -->
-                            <a href="?<?= http_build_query(array_merge($queryBase, ['status' => 'inactive'])) ?>"
-                                class="flex items-center gap-2 text-sm font-medium
-              <?= ($_GET['status'] ?? '') === 'inactive'
-                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700' ?>">
-                                Inactive
-                                <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                    <span><?= $statusCounts['inactive'] ?></span>
-                                </span>
-                            </a>
+                                $href = '?' . http_build_query(array_merge(
+                                    $queryBase,
+                                    ['status' => $t['status']]
+                                ));
+
+                                $linkClass = $isActive
+                                    ? "{$t['activeText']} border-b-2 border-indigo-600"
+                                    : "text-gray-500 hover:text-gray-700
+                                    border-b-2 border-transparent
+                                    transition-all duration-200";
+
+                                $count = (int)($statusCounts[$t['countKey']] ?? 0);
+                                ?>
+
+                                <a href="<?= htmlspecialchars($href, ENT_QUOTES, 'UTF-8') ?>"
+                                    class="flex items-center gap-2 pb-2 text-sm font-medium <?= $linkClass ?>">
+                                    <?= htmlspecialchars($t['label'], ENT_QUOTES, 'UTF-8') ?>
+
+                                    <span class="px-2 py-0.5 rounded-full text-xs <?= $t['pill'] ?>">
+                                        <?= $count ?>
+                                    </span>
+                                </a>
+
+                            <?php endforeach; ?>
+
                         </nav>
                     </div>
                 </div>
+
                 <!-- Slides Filters (products-style) -->
                 <form method="GET" class="bg-white rounded-xl shadow mb-8 p-6">
                     <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 items-end">

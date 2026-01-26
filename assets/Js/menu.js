@@ -1,4 +1,9 @@
 /* =====================================================
+   MENU.JS — FINAL VERSION
+   SweetAlert style SAME AS users.js
+===================================================== */
+
+/* =====================================================
    CONFIG
 ===================================================== */
 const API_URL = "api.php";
@@ -10,7 +15,7 @@ const $ = (id) => document.getElementById(id);
 let els = {};
 
 /* =====================================================
-   SWEETALERT HELPERS
+   SWEETALERT HELPERS (USERS STYLE)
 ===================================================== */
 function showLoading(msg = "Loading...") {
   Swal.fire({
@@ -34,17 +39,18 @@ function showSuccess(title, text = "") {
 }
 
 function showError(msg) {
-  return Swal.fire({
+  Swal.fire({
     icon: "error",
     title: "Error",
     text: msg,
-    showConfirmButton: false,
-    timer: 2200,
-    timerProgressBar: true,
+    confirmButtonColor: "#dc2626",
   });
 }
 
-function confirmEdit(title, text) {
+function confirmEdit(
+  title = "Edit item?",
+  text = "Open the editor to update this information.",
+) {
   return Swal.fire({
     icon: "question",
     title,
@@ -57,11 +63,14 @@ function confirmEdit(title, text) {
   });
 }
 
-function confirmDelete(title, text) {
+function confirmDelete(
+  title = "Delete item?",
+  text = "This action cannot be undone",
+) {
   return Swal.fire({
-    icon: "warning",
     title,
-    html: `<p class="text-gray-600 mt-2">${text}</p>`,
+    text,
+    icon: "warning",
     showCancelButton: true,
     confirmButtonText: "Delete",
     cancelButtonText: "Cancel",
@@ -70,10 +79,28 @@ function confirmDelete(title, text) {
   });
 }
 
-/* Compatibility wrappers */
-const toast = (title) => showSuccess(title);
-const loading = (msg) => showLoading(msg);
-const errorBox = (msg) => showError(msg);
+/* =====================================================
+   SUCCESS BY ACTION (ONE SOURCE OF TRUTH)
+===================================================== */
+function menuSuccess(action, label = "Item") {
+  const map = {
+    add: {
+      title: `${label} created successfully`,
+      text: `The ${label.toLowerCase()} has been created successfully.`,
+    },
+    update: {
+      title: `${label} updated successfully`,
+      text: `The ${label.toLowerCase()} has been updated successfully.`,
+    },
+    delete: {
+      title: `${label} deleted successfully`,
+      text: `The ${label.toLowerCase()} has been removed successfully.`,
+    },
+  };
+
+  const msg = map[action];
+  if (msg) showSuccess(msg.title, msg.text);
+}
 
 /* =====================================================
    MODAL HELPERS
@@ -82,7 +109,7 @@ const openModal = (id) => $(id)?.classList.replace("hidden", "flex");
 const closeModal = (id) => $(id)?.classList.replace("flex", "hidden");
 
 /* =====================================================
-   API
+   API (JSON)
 ===================================================== */
 async function api(action, payload = {}) {
   const res = await fetch(`${API_URL}?action=${action}`, {
@@ -91,11 +118,9 @@ async function api(action, payload = {}) {
     body: JSON.stringify(payload),
   });
 
-  try {
-    return await res.json();
-  } catch {
-    throw new Error("Invalid API response");
-  }
+  const data = await res.json().catch(() => null);
+  if (!data) throw new Error("Invalid API response");
+  return data;
 }
 
 /* =====================================================
@@ -105,7 +130,7 @@ async function loadData() {
   try {
     const res = await fetch(`${API_URL}?action=fetch_all`);
     const data = await res.json();
-    if (!data.ok) throw new Error(data.msg || "Failed to load");
+    if (!data.ok) throw new Error(data.msg);
 
     window._menuData = data;
 
@@ -115,287 +140,153 @@ async function loadData() {
 
     populateSelects(data);
     renderMenu(data.parents, data.groups, data.items);
-  } catch (err) {
-    console.error(err);
-    els.menuStructure.innerHTML = `
-      <div class="text-center text-red-500 py-6">
-        Failed to load menu data
-      </div>
-    `;
+  } catch (e) {
+    console.error(e);
+    els.menuStructure.innerHTML = `<div class="text-center text-red-500 py-6">Failed to load menu data</div>`;
   }
 }
 
 /* =====================================================
-   SELECT POPULATION
+   SELECTS
 ===================================================== */
 function populateSelects({ parents, groups }) {
-  const parentOptions =
+  els.parentSelect.innerHTML =
     `<option value="">-- No parent --</option>` +
-    parents.map((p) => `<option value="${p.id}">${p.title}</option>`).join("");
-
-  els.parentSelect.innerHTML = parentOptions;
-  els.editGroupParentSelect.innerHTML = parentOptions;
-
-  const groupOptions =
-    `<option value="">-- Select Group --</option>` +
-    groups
-      .map((g) => `<option value="${g.id}">${g.group_title}</option>`)
+    parents
+      .map((p) => `<option value="${p.id}">${esc(p.title)}</option>`)
       .join("");
 
-  els.groupSelect.innerHTML = groupOptions;
-  els.editItemGroupSelect.innerHTML = groupOptions;
+  els.editGroupParentSelect.innerHTML = els.parentSelect.innerHTML;
+
+  els.groupSelect.innerHTML =
+    `<option value="">-- Select Group --</option>` +
+    groups
+      .map((g) => `<option value="${g.id}">${esc(g.group_title)}</option>`)
+      .join("");
+
+  els.editItemGroupSelect.innerHTML = els.groupSelect.innerHTML;
+}
+
+function esc(text = "") {
+  const d = document.createElement("div");
+  d.textContent = text;
+  return d.innerHTML;
 }
 
 /* =====================================================
-   RENDER MENU TREE
+   RENDER TREE
 ===================================================== */
 function renderMenu(parents, groups, items) {
   if (!parents.length) {
-    els.menuStructure.innerHTML = `
-      <div class="text-center py-8 text-gray-500">No menu items yet.</div>
-    `;
+    els.menuStructure.innerHTML = `<div class="text-center py-8 text-gray-500">No menu items yet.</div>`;
     return;
   }
 
   els.menuStructure.innerHTML = parents
     .sort((a, b) => a.position - b.position)
-    .map((p) => renderParent(p, groups, items))
-    .join("");
-}
-
-function renderParent(p, groups, items) {
-  return `
-    <div class="border rounded-lg p-4 bg-white">
-      <div class="flex justify-between mb-2">
-        <div class="flex items-center gap-3">
-          <b>${p.title}</b>
-          <button id="parent-toggle-${p.id}" onclick="toggleParent(${p.id})"
-            class="text-gray-400 hover:text-gray-600 p-1">
-            <i class="fas fa-chevron-up"></i>
-          </button>
+    .map(
+      (p) => `
+      <div class="border rounded-lg p-4 bg-white">
+        <div class="flex justify-between mb-2">
+          <b>${esc(p.title)}</b>
+          <div>
+            <button onclick="editParent(${p.id})" class="text-blue-600 p-2"><i class="fas fa-edit"></i></button>
+            <button onclick="deleteParent(${p.id})" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
+          </div>
         </div>
-        <div>
-          <button onclick="editParent(${p.id})" class="text-blue-600 p-2">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button onclick="deleteParent(${p.id})" class="text-red-600 p-2">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
 
-      <div id="parent-children-${p.id}" class="slide">
         ${groups
           .filter((g) => g.parent_id == p.id)
-          .map((g) => renderGroup(g, items))
-          .join("")}
-      </div>
-    </div>
-  `;
-}
-
-function renderGroup(g, items) {
-  return `
-    <div class="ml-4 border-l pl-4 mt-2">
-      <div class="flex justify-between">
-        <div class="flex items-center gap-3">
-          <span>${g.group_title}</span>
-          <button id="group-toggle-${g.id}" onclick="toggleGroup(${g.id})"
-            class="text-gray-400 hover:text-gray-600 p-1">
-            <i class="fas fa-chevron-up"></i>
-          </button>
-        </div>
-        <div>
-          <button onclick="editGroup(${g.id})" class="text-blue-600 p-2">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button onclick="deleteGroup(${g.id})" class="text-red-600 p-2">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-
-      <div id="group-children-${g.id}" class="slide">
-        ${items
-          .filter((i) => i.group_id == g.id)
           .map(
-            (i) => `
-              <div class="ml-4 flex justify-between text-sm bg-gray-50 p-2 rounded mt-1">
-                ${i.item_title}
+            (g) => `
+            <div class="ml-4 border-l pl-4 mt-2">
+              <div class="flex justify-between">
+                <span>${esc(g.group_title)}</span>
                 <div>
-                  <button onclick="editItem(${i.id})" class="text-blue-600 p-2">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button onclick="deleteItem(${i.id})" class="text-red-600 p-2">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  <button onclick="editGroup(${g.id})" class="text-blue-600 p-2"><i class="fas fa-edit"></i></button>
+                  <button onclick="deleteGroup(${g.id})" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
                 </div>
               </div>
-            `,
+
+              ${items
+                .filter((i) => i.group_id == g.id)
+                .map(
+                  (i) => `
+                  <div class="ml-4 flex justify-between text-sm bg-gray-50 p-2 rounded mt-1">
+                    ${esc(i.item_title)}
+                    <div>
+                      <button onclick="editItem(${i.id})" class="text-blue-600 p-2"><i class="fas fa-edit"></i></button>
+                      <button onclick="deleteItem(${i.id})" class="text-red-600 p-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                  </div>
+                `,
+                )
+                .join("")}
+            </div>
+          `,
           )
           .join("")}
       </div>
-    </div>
-  `;
+    `,
+    )
+    .join("");
 }
 
 /* =====================================================
-   SLIDE TOGGLES (SMOOTH)
-   Add this CSS once:
-   .slide{overflow:hidden;transition:max-height .35s ease}
-   .slide-hidden{max-height:0!important}
+   EDIT
 ===================================================== */
-function slideToggle(el) {
-  if (!el) return;
-
-  if (el.classList.contains("slide-hidden")) {
-    // OPEN
-    el.classList.remove("slide-hidden");
-    el.style.maxHeight = el.scrollHeight + "px";
-    setTimeout(() => {
-      el.style.maxHeight = "none";
-    }, 350);
+async function editParent(id) {
+  if (
+    !(await confirmEdit("Edit parent?", "Update parent details.")).isConfirmed
+  )
     return;
-  }
-
-  // CLOSE
-  el.style.maxHeight = el.scrollHeight + "px";
-  requestAnimationFrame(() => {
-    el.classList.add("slide-hidden");
-    el.style.maxHeight = "0px";
-  });
+  const p = _menuData.parents.find((x) => x.id == id);
+  $("editParentId").value = p.id;
+  $("editParentTitle").value = p.title;
+  $("editParentPosition").value = p.position;
+  openModal("editParentModal");
 }
 
-function updateIcon(btn, open) {
-  const icon = btn?.querySelector("i");
-  if (!icon) return;
-  icon.classList.toggle("fa-chevron-up", open);
-  icon.classList.toggle("fa-chevron-down", !open);
+async function editGroup(id) {
+  if (!(await confirmEdit("Edit group?", "Update group details.")).isConfirmed)
+    return;
+  const g = _menuData.groups.find((x) => x.id == id);
+  $("editGroupId").value = g.id;
+  $("editGroupTitle").value = g.group_title;
+  $("editGroupUrl").value = g.link_url || "";
+  els.editGroupParentSelect.value = g.parent_id;
+  $("editGroupPosition").value = g.position;
+  openModal("editGroupModal");
 }
 
-function toggleParent(id) {
-  const block = $(`parent-children-${id}`);
-  const btn = $(`parent-toggle-${id}`);
-  const willOpen = block?.classList.contains("slide-hidden");
-  slideToggle(block);
-  updateIcon(btn, willOpen);
-}
-
-function toggleGroup(id) {
-  const block = $(`group-children-${id}`);
-  const btn = $(`group-toggle-${id}`);
-  const willOpen = block?.classList.contains("slide-hidden");
-  slideToggle(block);
-  updateIcon(btn, willOpen);
-}
-
-/* Optional: Expand/Collapse all */
-function expandAll() {
-  document
-    .querySelectorAll('[id^="parent-children-"], [id^="group-children-"]')
-    .forEach((el) => {
-      el.classList.remove("slide-hidden");
-      el.style.maxHeight = el.scrollHeight + "px";
-      setTimeout(() => (el.style.maxHeight = "none"), 350);
-    });
-
-  document
-    .querySelectorAll('[id^="parent-toggle-"], [id^="group-toggle-"]')
-    .forEach((btn) => updateIcon(btn, true));
-}
-
-function collapseAll() {
-  document
-    .querySelectorAll('[id^="parent-children-"], [id^="group-children-"]')
-    .forEach((el) => {
-      el.classList.add("slide-hidden");
-      el.style.maxHeight = "0px";
-    });
-
-  document
-    .querySelectorAll('[id^="parent-toggle-"], [id^="group-toggle-"]')
-    .forEach((btn) => updateIcon(btn, false));
+async function editItem(id) {
+  if (!(await confirmEdit("Edit item?", "Update item details.")).isConfirmed)
+    return;
+  const i = _menuData.items.find((x) => x.id == id);
+  $("editItemId").value = i.id;
+  $("editItemTitle").value = i.item_title;
+  $("editItemUrl").value = i.link_url || "";
+  els.editItemGroupSelect.value = i.group_id;
+  $("editItemPosition").value = i.position;
+  openModal("editItemModal");
 }
 
 /* =====================================================
-   EDIT HANDLERS
-===================================================== */
-function editParent(id) {
-  (async () => {
-    const ok = await confirmEdit(
-      "Edit parent?",
-      "You can update the parent's title or position.",
-    );
-    if (!ok.isConfirmed) return;
-
-    const p = _menuData.parents.find((x) => x.id == id);
-    $("editParentId").value = p.id;
-    $("editParentTitle").value = p.title;
-    $("editParentPosition").value = p.position;
-    openModal("editParentModal");
-  })();
-}
-
-function editGroup(id) {
-  (async () => {
-    const ok = await confirmEdit(
-      "Edit group?",
-      "You can update the group's title, link, parent, or position.",
-    );
-    if (!ok.isConfirmed) return;
-
-    const g = _menuData.groups.find((x) => x.id == id);
-    $("editGroupId").value = g.id;
-    $("editGroupTitle").value = g.group_title;
-    $("editGroupUrl").value = g.link_url || "";
-    els.editGroupParentSelect.value = g.parent_id || "";
-    $("editGroupPosition").value = g.position;
-    openModal("editGroupModal");
-  })();
-}
-
-function editItem(id) {
-  (async () => {
-    const ok = await confirmEdit(
-      "Edit item?",
-      "You can update the item's title, link, group, or position.",
-    );
-    if (!ok.isConfirmed) return;
-
-    const i = _menuData.items.find((x) => x.id == id);
-    $("editItemId").value = i.id;
-    $("editItemTitle").value = i.item_title;
-    $("editItemUrl").value = i.link_url || "";
-    els.editItemGroupSelect.value = i.group_id || "";
-    $("editItemPosition").value = i.position;
-    openModal("editItemModal");
-  })();
-}
-
-/* =====================================================
-   DELETE (MATCH PRODUCTS) - NO OK BUTTON
+   DELETE
 ===================================================== */
 async function deleteEntity(type, id, label) {
-  const ok = await confirmDelete(
-    `Delete ${label}?`,
-    "Are you sure? This action cannot be undone.",
-  );
-  if (!ok.isConfirmed) return;
+  if (!(await confirmDelete(`Delete ${label}?`)).isConfirmed) return;
 
   try {
     showLoading(`Deleting ${label}...`);
     const res = await api(`delete_${type}`, { id });
     Swal.close();
-
-    if (!res.ok) {
-      return showError(res.msg || "Delete failed");
-    }
-
-    showSuccess(`${label} deleted successfully`);
+    if (!res.ok) return showError(res.msg);
+    menuSuccess("delete", label);
     loadData();
-  } catch {
+  } catch (e) {
     Swal.close();
-    showError("Network error. Please try again.");
+    showError(e.message);
   }
 }
 
@@ -404,36 +295,32 @@ const deleteGroup = (id) => deleteEntity("group", id, "Group");
 const deleteItem = (id) => deleteEntity("item", id, "Item");
 
 /* =====================================================
-   FORMS (MATCH PRODUCTS) - NO OK BUTTON
+   FORMS
 ===================================================== */
-function bindForm(form, action, closeId = null) {
-  form.addEventListener("submit", async (e) => {
+function bindForm(form, action, closeId) {
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     try {
       showLoading(action.startsWith("add_") ? "Creating..." : "Updating...");
-
-      const data = Object.fromEntries(new FormData(form));
-      const res = await api(action, data);
-
+      const payload = Object.fromEntries(new FormData(e.target));
+      const res = await api(action, payload);
       Swal.close();
+      if (!res.ok) return showError(res.msg);
 
-      if (!res.ok) {
-        return showError(res.msg || "Operation failed");
-      }
+      const label = action.includes("parent")
+        ? "Parent"
+        : action.includes("group")
+          ? "Group"
+          : "Item";
 
-      showSuccess(
-        action.startsWith("add_")
-          ? "Created successfully"
-          : "Updated successfully",
-      );
+      menuSuccess(action.startsWith("add_") ? "add" : "update", label);
 
-      form.reset();
+      e.target.reset();
       if (closeId) closeModal(closeId);
       loadData();
-    } catch {
+    } catch (e) {
       Swal.close();
-      showError("Network error. Please try again.");
+      showError(e.message);
     }
   });
 }
@@ -445,12 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
   els = {
     parentSelect: $("parentSelect"),
     groupSelect: $("groupSelect"),
-    addParentForm: $("addParentForm"),
-    addGroupForm: $("addGroupForm"),
-    addItemForm: $("addItemForm"),
-    editParentForm: $("editParentForm"),
-    editGroupForm: $("editGroupForm"),
-    editItemForm: $("editItemForm"),
     editGroupParentSelect: $("editGroupParentSelect"),
     editItemGroupSelect: $("editItemGroupSelect"),
     parentCount: $("parentCount"),
@@ -459,12 +340,13 @@ document.addEventListener("DOMContentLoaded", () => {
     menuStructure: $("menuStructure"),
   };
 
-  bindForm(els.addParentForm, "add_parent");
-  bindForm(els.addGroupForm, "add_group");
-  bindForm(els.addItemForm, "add_item");
-  bindForm(els.editParentForm, "edit_parent", "editParentModal");
-  bindForm(els.editGroupForm, "edit_group", "editGroupModal");
-  bindForm(els.editItemForm, "edit_item", "editItemModal");
+  bindForm($("addParentForm"), "add_parent", "addParentModal");
+  bindForm($("addGroupForm"), "add_group", "addGroupModal");
+  bindForm($("addItemForm"), "add_item", "addItemModal");
+
+  bindForm($("editParentForm"), "edit_parent", "editParentModal");
+  bindForm($("editGroupForm"), "edit_group", "editGroupModal");
+  bindForm($("editItemForm"), "edit_item", "editItemModal");
 
   loadData();
 });
@@ -473,10 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
    GLOBAL EXPORTS
 ===================================================== */
 Object.assign(window, {
-  toggleParent,
-  toggleGroup,
-  expandAll,
-  collapseAll,
+  loadData,
   editParent,
   editGroup,
   editItem,

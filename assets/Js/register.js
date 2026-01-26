@@ -74,11 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   togglePasswordBtn?.addEventListener("click", () =>
-    toggleVisibility(passwordInput, togglePasswordBtn)
+    toggleVisibility(passwordInput, togglePasswordBtn),
   );
 
   toggleConfirmBtn?.addEventListener("click", () =>
-    toggleVisibility(confirmInput, toggleConfirmBtn)
+    toggleVisibility(confirmInput, toggleConfirmBtn),
   );
 
   /* -----------------------------
@@ -119,7 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateStrengthUI(score) {
-    // extra defensive checks: ensure elements exist and strengthBar supports .style
     if (
       !strengthBar ||
       !strengthText ||

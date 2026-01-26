@@ -1,16 +1,9 @@
-/* =====================================================
-   CONFIG
-===================================================== */
 const PRODUCTS_API_URL = "add-product.php";
 const RELOAD_DELAY = 700;
-
-/* =====================================================
-   UTILITIES
-===================================================== */
 const delayReload = () => setTimeout(() => location.reload(), RELOAD_DELAY);
 
 /* =====================================================
-   SWEETALERT HELPERS (MATCH USERS)
+   SWEETALERT HELPERS
 ===================================================== */
 function showLoading(msg = "Loading...") {
   Swal.fire({
@@ -38,9 +31,7 @@ function showError(msg) {
     icon: "error",
     title: "Error",
     text: msg,
-    showConfirmButton: false,
-    timer: 2200,
-    timerProgressBar: true,
+    confirmButtonColor: "#dc2626",
   });
 }
 
@@ -50,9 +41,9 @@ function confirmEdit(title, text) {
     title,
     html: `<p class="text-gray-600 mt-2">${text}</p>`,
     showCancelButton: true,
-    confirmButtonText: "Edit",
+    confirmButtonText: "Update",
     cancelButtonText: "Cancel",
-    confirmButtonColor: "#6b46c1",
+    confirmButtonColor: "#4f46e5",
     cancelButtonColor: "#6b7280",
   });
 }
@@ -63,11 +54,35 @@ function confirmDelete(title, text) {
     title,
     html: `<p class="text-gray-600 mt-2">${text}</p>`,
     showCancelButton: true,
-    confirmButtonText: "Delete",
+    confirmButtonText: "Confirm",
     cancelButtonText: "Cancel",
     confirmButtonColor: "#dc2626",
     cancelButtonColor: "#6b7280",
   });
+}
+
+/* =====================================================
+   action: create | update | delete
+===================================================== */
+function productSuccess(action, name = "Product") {
+  const map = {
+    create: {
+      title: `${name} added successfully`,
+      text: `The ${name.toLowerCase()} has been added successfully.`,
+    },
+    update: {
+      title: `${name} updated successfully`,
+      text: `The ${name.toLowerCase()} information has been updated successfully.`,
+    },
+    delete: {
+      title: `${name} deleted successfully`,
+      text: `The ${name.toLowerCase()} has been removed successfully.`,
+    },
+  };
+
+  const msg = map[action];
+  if (!msg) return;
+  showSuccess(msg.title, msg.text);
 }
 
 /* =====================================================
@@ -208,19 +223,14 @@ async function deleteProduct(id) {
     fd.append("action", "delete");
     fd.append("id", id);
 
-    const r = await fetch(PRODUCTS_API_URL, {
-      method: "POST",
-      body: fd,
-    });
+    const r = await fetch(PRODUCTS_API_URL, { method: "POST", body: fd });
     const data = await r.json();
 
     Swal.close();
 
-    if (!data.success) {
-      return showError(data.message || "Delete failed");
-    }
+    if (!data.success) return showError(data.message || "Delete failed");
 
-    showSuccess("Product deleted successfully");
+    productSuccess("delete", "Product");
     delayReload();
   } catch {
     Swal.close();
@@ -234,43 +244,32 @@ async function deleteProduct(id) {
 productForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  if (!productName.value.trim()) {
-    return showError("Product name is required");
-  }
-  if (productPrice.value <= 0) {
+  if (!productName.value.trim()) return showError("Product name is required");
+  if (Number(productPrice.value) <= 0)
     return showError("Price must be greater than 0");
-  }
-  if (productStock.value < 0) {
+  if (Number(productStock.value) < 0)
     return showError("Stock must be 0 or greater");
-  }
 
   try {
     submitBtn.disabled = true;
     submitText.textContent =
       formAction.value === "add" ? "Adding..." : "Updating...";
 
-    const fd = new FormData(productForm);
-    fd.append("action", formAction.value === "add" ? "create" : "update");
+    const action = formAction.value === "add" ? "create" : "update";
 
-    const res = await fetch(PRODUCTS_API_URL, {
-      method: "POST",
-      body: fd,
-    });
+    const fd = new FormData(productForm);
+    fd.append("action", action);
+
+    const res = await fetch(PRODUCTS_API_URL, { method: "POST", body: fd });
     const data = await res.json();
 
     submitBtn.disabled = false;
     submitText.textContent =
       formAction.value === "add" ? "Add Product" : "Update Product";
 
-    if (!data.success) {
-      return showError(data.message || "Operation failed");
-    }
+    if (!data.success) return showError(data.message || "Operation failed");
 
-    showSuccess(
-      formAction.value === "add"
-        ? "Product added successfully"
-        : "Product updated successfully",
-    );
+    productSuccess(action, "Product");
 
     closeModal();
     delayReload();
