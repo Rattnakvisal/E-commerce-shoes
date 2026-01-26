@@ -1,69 +1,161 @@
 <?php
-session_start();
+
+declare(strict_types=1);
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../config/conn.php';
-require_once __DIR__ . '/../auth.php';
 require_once __DIR__ . '/../token.php';
 require_once __DIR__ . '/../helpers.php';
 
+/* ---------------------------------
+   Ensure PDO ($conn)
+---------------------------------- */
+if (!isset($conn) || !($conn instanceof PDO)) {
+    if (isset($pdo) && $pdo instanceof PDO) {
+        $conn = $pdo;
+    }
+}
+if (!isset($conn) || !($conn instanceof PDO)) {
+    http_response_code(500);
+    die('Database connection not available');
+}
 
+/* ---------------------------------
+   Load Google config (local first)
+---------------------------------- */
 $cfg = file_exists(__DIR__ . '/../../config/google.local.php')
     ? require __DIR__ . '/../../config/google.local.php'
     : require __DIR__ . '/../../config/google.php';
 
-$client = new Google_Client();
-$client->setClientId($cfg['client_id']);
-$client->setClientSecret($cfg['client_secret']);
-$client->setRedirectUri($cfg['redirect_uri']);
-
-if (!isset($_GET['code'])) {
-    header('Location: /E-commerce-shoes/auth/login.php');
+function go_login(string $q = ''): void
+{
+    header('Location: /E-commerce-shoes/auth/login.php' . $q);
     exit;
 }
 
-$token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
+/* ---------------------------------
+   Validate query
+---------------------------------- */
+if (!isset($_GET['code'])) {
+    go_login('?error=no_code');
+}
 
-if (isset($token['error'])) {
-    header('Location: /E-commerce-shoes/auth/login.php');
-    exit;
+/* ---------------------------------
+   OAuth STATE check (CSRF)
+---------------------------------- */
+$sessionState = (string)($_SESSION['google_oauth_state'] ?? '');
+$queryState   = (string)($_GET['state'] ?? '');
+
+if ($sessionState === '' || $queryState === '' || !hash_equals($sessionState, $queryState)) {
+    unset($_SESSION['google_oauth_state']);
+    go_login('?error=oauth_state');
+}
+unset($_SESSION['google_oauth_state']);
+
+/* ---------------------------------
+   Google client
+---------------------------------- */
+$clientId     = (string)($cfg['client_id'] ?? '');
+$clientSecret = (string)($cfg['client_secret'] ?? '');
+$redirectUri  = (string)($cfg['redirect_uri'] ?? '');
+
+if ($clientId === '' || $clientSecret === '' || $redirectUri === '') {
+    go_login('?error=google_config');
+}
+
+$client = new Google_Client();
+$client->setClientId($clientId);
+$client->setClientSecret($clientSecret);
+$client->setRedirectUri($redirectUri);
+
+$token = $client->fetchAccessTokenWithAuthCode((string)$_GET['code']);
+if (!empty($token['error'])) {
+    error_log('Google token error: ' . json_encode($token));
+    go_login('?error=google_token');
 }
 
 $client->setAccessToken($token);
 
+/* ---------------------------------
+   Get Google user info
+---------------------------------- */
 $oauth = new Google_Service_Oauth2($client);
-$userInfo = $oauth->userinfo->get();
+$gUser = $oauth->userinfo->get();
 
-$email = $userInfo->email ?? ($userInfo->getEmail() ?? null);
-$name  = $userInfo->name ?? ($userInfo->getName() ?? null);
+$googleId = (string)($gUser->id ?? '');
+$email    = strtolower(trim((string)($gUser->email ?? '')));
+$name     = trim((string)($gUser->name ?? ''));
 
-if (!$email) {
-    header('Location: /E-commerce-shoes/auth/login.php');
-    exit;
+if ($googleId === '' || $email === '') {
+    go_login('?error=google_userinfo');
 }
+if ($name === '') $name = 'User';
 
-$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-$stmt->execute([$email]);
+/* ---------------------------------
+   1) Find by google_id
+---------------------------------- */
+$stmt = $conn->prepare(
+    "SELECT user_id, name, email, role
+     FROM users
+     WHERE google_id = ?
+     LIMIT 1"
+);
+$stmt->execute([$googleId]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+/* ---------------------------------
+   2) If not found: link by email OR create
+---------------------------------- */
 if (!$user) {
-    $googleId = $userInfo->id ?? ($userInfo->getId() ?? null);
-
+    // try existing email
     $stmt = $conn->prepare(
-        "INSERT INTO users (name, email, role, provider, google_id, created_at) VALUES (?, ?, 'customer', 'google', ?, NOW())"
+        "SELECT user_id, name, email, role
+         FROM users
+         WHERE email = ?
+         LIMIT 1"
     );
-    $stmt->execute([$name, $email, $googleId]);
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $user_id = $conn->lastInsertId();
-    $user = ['user_id' => $user_id, 'role' => 'customer'];
-} else {
-    $user_id = $user['user_id'];
+    if ($user) {
+        // link google to existing account
+        $stmt = $conn->prepare(
+            "UPDATE users
+             SET google_id = ?, provider = 'google'
+             WHERE user_id = ?"
+        );
+        $stmt->execute([$googleId, $user['user_id']]);
+
+        // update name if empty
+        if (empty($user['name'])) {
+            $stmt = $conn->prepare("UPDATE users SET name = ? WHERE user_id = ?");
+            $stmt->execute([$name, $user['user_id']]);
+            $user['name'] = $name;
+        }
+    } else {
+        // create new user (DEFAULT ROLE = customer)
+        $stmt = $conn->prepare(
+            "INSERT INTO users (name, email, role, provider, google_id, created_at)
+             VALUES (?, ?, 'customer', 'google', ?, NOW())"
+        );
+        $stmt->execute([$name, $email, $googleId]);
+
+        $user = [
+            'user_id' => (int)$conn->lastInsertId(),
+            'name'    => $name,
+            'email'   => $email,
+            'role'    => 'customer',
+        ];
+    }
 }
 
-$_SESSION['user_id'] = $user_id;
-$_SESSION['email']   = $email;
-$_SESSION['name']    = $name;
-$_SESSION['role']    = $user['role'] ?? 'user';
-
-header('Location: /E-commerce-shoes/view/index.php');
-exit;
+/* ---------------------------------
+   Login + Redirect by role
+---------------------------------- */
+login_set_session_and_cookie($conn, $user);
+regenerate_csrf_token();
+redirect_by_role((string)($user['role'] ?? 'customer'));

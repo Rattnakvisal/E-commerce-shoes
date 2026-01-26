@@ -17,5 +17,13 @@ $client->addScope('profile');
 $client->setAccessType('offline');
 $client->setPrompt('select_account consent');
 
+try {
+	$state = bin2hex(random_bytes(16));
+} catch (Exception $e) {
+	$state = bin2hex(openssl_random_pseudo_bytes(16));
+}
+$_SESSION['google_oauth_state'] = $state;
+$client->setState($state);
+
 header('Location: ' . $client->createAuthUrl());
 exit;
