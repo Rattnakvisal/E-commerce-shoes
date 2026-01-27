@@ -7,8 +7,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 require_once __DIR__ . '/../../config/conn.php';
-require_once __DIR__ . '/../token.php';
-require_once __DIR__ . '/../mail_helper.php';
+require_once __DIR__ . '/../Helper/token.php';
+require_once __DIR__ . '/../Helper/mail_helper.php';
 
 $error = '';
 $success = '';

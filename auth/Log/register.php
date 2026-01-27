@@ -10,7 +10,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 require_once __DIR__ . '/../../config/conn.php';
-require_once __DIR__ . '/../token.php';
+require_once __DIR__ . '/../Helper/token.php';
 
 /* =========================
    Ensure PDO
@@ -95,12 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $userId = (int)$conn->lastInsertId();
 
-                    // Create verification token (24 hours)
                     $token = bin2hex(random_bytes(32));
                     $tokenHash = hash('sha256', $token);
                     $expiresAt = date('Y-m-d H:i:s', time() + 24 * 60 * 60);
 
-                    // remove old tokens just in case
                     $conn->prepare("DELETE FROM email_verifications WHERE user_id = ?")->execute([$userId]);
 
                     $conn->prepare(
@@ -111,12 +109,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $conn->commit();
 
                     // Send verification email (after commit)
-                    require_once __DIR__ . '/../mail_helper.php';
+                    require_once __DIR__ . '/../Helper/mail_helper.php';
 
                     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
-                    $verifyUrl = $scheme . '://' . $host . '/auth/verify-email.php?token=' . urlencode($token);
+                    $verifyUrl = $scheme . '://' . $host . '/auth/Helper/verify-email.php?token=' . urlencode($token);
 
                     $subject = 'Verify your email';
                     $html = "

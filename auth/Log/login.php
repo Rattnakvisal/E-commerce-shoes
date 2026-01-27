@@ -10,8 +10,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 require_once __DIR__ . '/../../config/conn.php';
-require_once __DIR__ . '/../token.php';
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../Helper/token.php';
+require_once __DIR__ . '/../Helper/helpers.php';
 
 /* =========================
    Ensure PDO
@@ -235,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </p>
                         <p>
                             Go to
-                            <a href="../view/index.php" class="font-semibold hover:underline">View Page</a>
+                            <a href="../../view/content/index.php" class="font-semibold hover:underline">View Page</a>
                         </p>
                     </div>
                 </form>

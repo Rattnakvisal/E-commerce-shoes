@@ -8,8 +8,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../config/conn.php';
-require_once __DIR__ . '/../token.php';
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../Helper/token.php';
+require_once __DIR__ . '/../Helper/helpers.php';
 
 /* ---------------------------------
    Ensure PDO ($conn)

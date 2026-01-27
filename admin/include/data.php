@@ -71,7 +71,17 @@ $unreadCount = 0;
 $notifications = [];
 
 try {
-    $sqlCount = "
+    $hasReadsTable = false;
+    try {
+        $checker = $pdo->prepare("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'notification_reads' LIMIT 1");
+        $checker->execute();
+        $hasReadsTable = (bool)$checker->fetchColumn();
+    } catch (Throwable) {
+        $hasReadsTable = false;
+    }
+
+    if ($hasReadsTable) {
+        $sqlCount = "
                 SELECT COUNT(*)
                 FROM notifications n
                 LEFT JOIN notification_reads nr ON nr.notification_id = n.notification_id AND nr.user_id = :uid
@@ -81,11 +91,11 @@ try {
                         OR (n.user_id IS NULL AND nr.notification_id IS NULL)
                     )
         ";
-    $stmt = $pdo->prepare($sqlCount);
-    $stmt->execute([':uid' => $userId]);
-    $unreadCount = (int)$stmt->fetchColumn();
+        $stmt = $pdo->prepare($sqlCount);
+        $stmt->execute([':uid' => $userId]);
+        $unreadCount = (int)$stmt->fetchColumn();
 
-    $sqlList = "
+        $sqlList = "
                 SELECT n.notification_id, n.title, n.message,
                 CASE WHEN n.user_id IS NULL THEN IF(nr.notification_id IS NULL, 0, 1) ELSE n.is_read END AS is_read,
                 n.created_at
@@ -95,9 +105,23 @@ try {
                 ORDER BY n.created_at DESC
                 LIMIT 10
         ";
-    $stmt = $pdo->prepare($sqlList);
-    $stmt->execute([':uid' => $userId]);
-    $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $pdo->prepare($sqlList);
+        $stmt->execute([':uid' => $userId]);
+        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = :uid AND is_read = 0");
+        $stmt->execute([':uid' => $userId]);
+        $userUnread = (int)$stmt->fetchColumn();
+
+        $stmt = $pdo->query("SELECT COUNT(*) FROM notifications WHERE user_id IS NULL");
+        $globalCount = (int)$stmt->fetchColumn();
+
+        $unreadCount = $userUnread + $globalCount;
+
+        $stmt = $pdo->prepare("SELECT notification_id, title, message, is_read, created_at FROM notifications WHERE user_id = :uid OR user_id IS NULL ORDER BY created_at DESC LIMIT 10");
+        $stmt->execute([':uid' => $userId]);
+        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (Throwable $e) {
     error_log('[Navbar] Notifications query failed: ' . $e->getMessage());
     $unreadCount = 0;

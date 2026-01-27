@@ -44,13 +44,13 @@ if (($action === '' || $action === 'submit')
 
     if ($name === '' || $email === '' || $message === '') {
         $_SESSION['flash']['error'] = '1';
-        header('Location: /E-commerce-shoes/view/contact.php');
+        header('Location: /E-commerce-shoes/view/content/contact.php');
         exit;
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['flash']['error'] = '2';
-        header('Location: /E-commerce-shoes/view/contact.php');
+        header('Location: /E-commerce-shoes/view/content/contact.php');
         exit;
     }
 
@@ -60,12 +60,12 @@ if (($action === '' || $action === 'submit')
 
         $_SESSION['flash']['success'] = 1;
         unset($_SESSION['flash']['old']);
-        header('Location: /E-commerce-shoes/view/contact.php');
+        header('Location: /E-commerce-shoes/view/content/contact.php');
         exit;
     } catch (Throwable $e) {
         error_log('[messages_api][submit] ' . $e->getMessage());
         $_SESSION['flash']['error'] = '3';
-        header('Location: /E-commerce-shoes/view/contact.php');
+        header('Location: /E-commerce-shoes/view/content/contact.php');
         exit;
     }
 }
