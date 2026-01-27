@@ -31,11 +31,9 @@ function inputId(): int
 }
 
 /* -----------------------------------------
-   Security
+    Security
 ----------------------------------------- */
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-    respond(false, 'Method not allowed');
-}
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 $userId = $_SESSION['user_id'] ?? null;
 $role   = (string)($_SESSION['role'] ?? '');
@@ -62,6 +60,8 @@ try {
     switch ($action) {
 
         case 'fetch_unread_count': {
+                // allow GET or POST for read-only actions
+                if (!in_array($method, ['GET', 'POST'], true)) respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
                     "SELECT COUNT(*)
                  FROM notifications
@@ -73,6 +73,8 @@ try {
             }
 
         case 'fetch_latest': {
+                // allow GET or POST for read-only actions
+                if (!in_array($method, ['GET', 'POST'], true)) respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
                     "SELECT notification_id, title, message, is_read, created_at
                  FROM notifications
@@ -85,6 +87,7 @@ try {
             }
 
         case 'mark_all_read': {
+                if ($method !== 'POST') respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
                     "UPDATE notifications
                  SET is_read = 1
@@ -96,6 +99,7 @@ try {
             }
 
         case 'mark_read': {
+                if ($method !== 'POST') respond(false, 'Method not allowed');
                 $id = inputId();
                 if ($id <= 0) respond(false, 'Invalid id');
 
@@ -111,6 +115,7 @@ try {
             }
 
         case 'delete': {
+                if ($method !== 'POST') respond(false, 'Method not allowed');
                 $id = inputId();
                 if ($id <= 0) respond(false, 'Invalid id');
 
@@ -125,6 +130,7 @@ try {
             }
 
         case 'delete_all': {
+                if ($method !== 'POST') respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
                     "DELETE FROM notifications
                  WHERE (user_id = :uid OR user_id IS NULL)"

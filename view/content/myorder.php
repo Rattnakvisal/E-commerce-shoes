@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/conn.php';
-require_once __DIR__ . '/../../includes/contract/my-orders.php';
+require_once __DIR__ . '/../../includes/contract/myorders.php';
 ?>
 <!doctype html>
 <html lang="en">

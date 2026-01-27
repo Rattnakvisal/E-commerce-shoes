@@ -94,11 +94,11 @@ if ($method === 'GET' && $action === 'view') {
         $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
         $paymentInfo = [
-            'payment_id'  => $order['payment_id'] ?? null,
-            'method_id'   => $order['payment_method_id'] ?? null,
-            'method_code' => $order['payment_method_code'] ?? null,
-            'method_name' => $order['payment_method_name'] ?? null,
-            'amount'      => (float)($order['paid_amount'] ?? 0),
+            'payment_id'   => $order['payment_id'] ?? null,
+            'method_id'    => $order['payment_method_id'] ?? null,
+            'method_code'  => $order['payment_method_code'] ?? null,
+            'method_name'  => $order['payment_method_name'] ?? null,
+            'amount'       => (float)($order['paid_amount'] ?? 0),
             'payment_date' => $order['payment_date'] ?? null,
         ];
 
@@ -136,7 +136,8 @@ if ($method === 'POST' && $action === 'complete') {
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("SELECT order_status FROM orders WHERE order_id = ? FOR UPDATE");
+        // Lock order
+        $stmt = $pdo->prepare("SELECT order_status, user_id FROM orders WHERE order_id = ? FOR UPDATE");
         $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -145,31 +146,78 @@ if ($method === 'POST' && $action === 'complete') {
             respond(['success' => false, 'error' => 'Order not found'], 404);
         }
 
-        if (strtolower((string)$order['order_status']) === 'completed') {
+        $currentStatus = strtolower((string)($order['order_status'] ?? ''));
+        if ($currentStatus === 'completed') {
             $pdo->rollBack();
             respond(['success' => true, 'message' => 'Order already completed']);
         }
 
-        // Reduce stock (only if you DID NOT reduce stock at checkout)
-        $items = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
-        $items->execute([$orderId]);
+        // Reduce stock safely (ONLY if you did NOT reduce at checkout)
+        // 1) Read items
+        $itemsStmt = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+        $itemsStmt->execute([$orderId]);
+        $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach ($items as $item) {
-            $pdo->prepare("
-                UPDATE products SET stock = stock - ?
-                WHERE product_id = ?
-            ")->execute([(int)$item['quantity'], (int)$item['product_id']]);
+        if (!$items) {
+            $pdo->rollBack();
+            respond(['success' => false, 'error' => 'No items found for this order'], 400);
         }
 
-        $pdo->prepare("
-            UPDATE orders SET order_status = 'completed'
-            WHERE order_id = ?
-        ")->execute([$orderId]);
+        // 2) Check stock before reducing
+        $checkStock = $pdo->prepare("SELECT stock FROM products WHERE product_id = ? FOR UPDATE");
+        foreach ($items as $item) {
+            $pid = (int)$item['product_id'];
+            $qty = (int)$item['quantity'];
+
+            if ($pid <= 0 || $qty <= 0) {
+                $pdo->rollBack();
+                respond(['success' => false, 'error' => 'Invalid item quantity'], 400);
+            }
+
+            $checkStock->execute([$pid]);
+            $row = $checkStock->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                $pdo->rollBack();
+                respond(['success' => false, 'error' => "Product not found: {$pid}"], 404);
+            }
+
+            $stock = (int)$row['stock'];
+            if ($stock < $qty) {
+                $pdo->rollBack();
+                respond(['success' => false, 'error' => "Insufficient stock for product {$pid}"], 400);
+            }
+        }
+
+        // 3) Reduce stock now
+        $reduce = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE product_id = ?");
+        foreach ($items as $item) {
+            $reduce->execute([(int)$item['quantity'], (int)$item['product_id']]);
+        }
+
+        // Mark completed
+        $pdo->prepare("UPDATE orders SET order_status = 'completed' WHERE order_id = ?")
+            ->execute([$orderId]);
+
+        // Notification (registered user only)
+        $userIdForNotif = isset($order['user_id']) ? (int)$order['user_id'] : 0;
+        if ($userIdForNotif > 0) {
+            $title = 'Order Completed';
+            $message = sprintf('Your order #%d has been completed.', $orderId);
+
+            $ins = $pdo->prepare("
+                INSERT INTO notifications (user_id, title, message, is_read, created_at)
+                VALUES (:uid, :title, :msg, 0, NOW())
+            ");
+            $ins->execute([':uid' => $userIdForNotif, ':title' => $title, ':msg' => $message]);
+        }
 
         $pdo->commit();
         respond(['success' => true, 'message' => 'Order completed successfully']);
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         error_log('[orders_api complete] ' . $e->getMessage());
         respond(['success' => false, 'error' => 'Server error'], 500);
     }
@@ -226,12 +274,24 @@ if ($method === 'POST' && $action === 'update_items') {
             WHERE product_id = ?
         ");
 
+        // Stock safety: check stock BEFORE reducing
+        $checkStock = $pdo->prepare("SELECT stock FROM products WHERE product_id = ? FOR UPDATE");
+
         foreach ($items as $item) {
             $pid = (int)($item['product_id'] ?? 0);
             $qty = (int)($item['quantity'] ?? 0);
 
             if ($pid <= 0 || $qty <= 0) {
                 throw new RuntimeException('Invalid item data');
+            }
+
+            $checkStock->execute([$pid]);
+            $row = $checkStock->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                throw new RuntimeException("Product not found: {$pid}");
+            }
+            if ((int)$row['stock'] < $qty) {
+                throw new RuntimeException("Insufficient stock for product {$pid}");
             }
 
             $updateItem->execute([$qty, $orderId, $pid]);
@@ -260,9 +320,11 @@ if ($method === 'POST' && $action === 'update_items') {
         $pdo->commit();
         respond(['success' => true, 'message' => 'Order items updated']);
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         error_log('[orders_api update_items] ' . $e->getMessage());
-        respond(['success' => false, 'error' => 'Server error'], 500);
+        respond(['success' => false, 'error' => $e->getMessage()], 500);
     }
 }
 
@@ -322,7 +384,6 @@ if ($method === 'POST' && $action === 'update_payment') {
 
         // Keep payments.amount consistent
         if ($payment === 'paid') {
-            // set payments.amount = orders.total
             $pdo->prepare("
                 UPDATE payments p
                 JOIN orders o ON o.order_id = p.order_id
@@ -330,16 +391,16 @@ if ($method === 'POST' && $action === 'update_payment') {
                 WHERE p.order_id = ?
             ")->execute([$orderId]);
         } else {
-            // pending/failed/refunded -> set amount 0
             $pdo->prepare("UPDATE payments SET amount = 0 WHERE order_id = ?")
                 ->execute([$orderId]);
         }
 
         $pdo->commit();
-
         respond(['success' => true, 'message' => 'Payment status updated']);
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         error_log('[orders_api update_payment] ' . $e->getMessage());
         respond(['success' => false, 'error' => 'Server error'], 500);
     }
@@ -361,7 +422,7 @@ if ($method === 'POST' && $action === 'update_status') {
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("SELECT order_status FROM orders WHERE order_id = ? FOR UPDATE");
+        $stmt = $pdo->prepare("SELECT order_status, user_id FROM orders WHERE order_id = ? FOR UPDATE");
         $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -370,7 +431,7 @@ if ($method === 'POST' && $action === 'update_status') {
             respond(['success' => false, 'error' => 'Order not found'], 404);
         }
 
-        $current = strtolower((string)$order['order_status']);
+        $current = strtolower((string)($order['order_status'] ?? ''));
         if ($current === $status) {
             $pdo->rollBack();
             respond(['success' => true, 'message' => 'Order already has requested status']);
@@ -382,24 +443,63 @@ if ($method === 'POST' && $action === 'update_status') {
         }
 
         if ($status === 'completed') {
-            // Reduce stock (only if you did NOT reduce at checkout)
-            $items = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
-            $items->execute([$orderId]);
+            // Reuse complete logic: reduce stock safely
+            $itemsStmt = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+            $itemsStmt->execute([$orderId]);
+            $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-            foreach ($items as $item) {
-                $pdo->prepare("UPDATE products SET stock = stock - ? WHERE product_id = ?")
-                    ->execute([(int)$item['quantity'], (int)$item['product_id']]);
+            if (!$items) {
+                $pdo->rollBack();
+                respond(['success' => false, 'error' => 'No items found for this order'], 400);
             }
 
-            $pdo->prepare("UPDATE orders SET order_status = 'completed' WHERE order_id = ?")->execute([$orderId]);
+            $checkStock = $pdo->prepare("SELECT stock FROM products WHERE product_id = ? FOR UPDATE");
+            foreach ($items as $item) {
+                $pid = (int)$item['product_id'];
+                $qty = (int)$item['quantity'];
+
+                $checkStock->execute([$pid]);
+                $row = $checkStock->fetch(PDO::FETCH_ASSOC);
+
+                if (!$row) {
+                    $pdo->rollBack();
+                    respond(['success' => false, 'error' => "Product not found: {$pid}"], 404);
+                }
+                if ((int)$row['stock'] < $qty) {
+                    $pdo->rollBack();
+                    respond(['success' => false, 'error' => "Insufficient stock for product {$pid}"], 400);
+                }
+            }
+
+            $reduce = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE product_id = ?");
+            foreach ($items as $item) {
+                $reduce->execute([(int)$item['quantity'], (int)$item['product_id']]);
+            }
+
+            $pdo->prepare("UPDATE orders SET order_status = 'completed' WHERE order_id = ?")
+                ->execute([$orderId]);
+
+            $userIdForNotif = isset($order['user_id']) ? (int)$order['user_id'] : 0;
+            if ($userIdForNotif > 0) {
+                $title = 'Order Completed';
+                $message = sprintf('Your order #%d has been completed.', $orderId);
+                $ins = $pdo->prepare("
+                    INSERT INTO notifications (user_id, title, message, is_read, created_at)
+                    VALUES (:uid, :title, :msg, 0, NOW())
+                ");
+                $ins->execute([':uid' => $userIdForNotif, ':title' => $title, ':msg' => $message]);
+            }
         } else {
-            $pdo->prepare("UPDATE orders SET order_status = ? WHERE order_id = ?")->execute([$status, $orderId]);
+            $pdo->prepare("UPDATE orders SET order_status = ? WHERE order_id = ?")
+                ->execute([$status, $orderId]);
         }
 
         $pdo->commit();
         respond(['success' => true, 'message' => 'Order status updated']);
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         error_log('[orders_api update_status] ' . $e->getMessage());
         respond(['success' => false, 'error' => 'Server error'], 500);
     }
@@ -451,12 +551,15 @@ if ($method === 'POST' && $action === 'refund') {
             ->execute([$orderId]);
 
         // payments amount -> 0
-        $pdo->prepare("UPDATE payments SET amount = 0 WHERE order_id = ?")->execute([$orderId]);
+        $pdo->prepare("UPDATE payments SET amount = 0 WHERE order_id = ?")
+            ->execute([$orderId]);
 
         $pdo->commit();
         respond(['success' => true, 'message' => 'Order refunded and items restocked']);
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         error_log('[orders_api refund] ' . $e->getMessage());
         respond(['success' => false, 'error' => 'Server error'], 500);
     }
