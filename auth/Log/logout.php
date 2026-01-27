@@ -13,7 +13,7 @@ $userId = $_SESSION['user_id'] ?? null;
 ---------------------------- */
 if ($userId) {
     try {
-        require_once __DIR__ . '/../config/conn.php';
+        require_once __DIR__ . '/../../config/conn.php';
 
         // Support either $conn or $pdo
         if (!isset($conn) || !($conn instanceof PDO)) {
@@ -55,8 +55,8 @@ if (ini_get('session.use_cookies')) {
 ---------------------------- */
 setcookie('auth_token', '', [
     'expires'  => time() - 3600,
-    'path'     => '/',           // must match how you set it
-    'secure'   => false,         // true if https
+    'path'     => '/',
+    'secure'   => false,
     'httponly' => true,
     'samesite' => 'Lax',
 ]);
@@ -66,5 +66,5 @@ session_destroy();
 /* ----------------------------
    Redirect
 ---------------------------- */
-header('Location: /E-commerce-shoes/auth/login.php?loggedout=1');
+header('Location: /E-commerce-shoes/auth/Log/login.php?loggedout=1');
 exit;

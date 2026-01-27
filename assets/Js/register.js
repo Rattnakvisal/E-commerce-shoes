@@ -2,31 +2,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
   if (!form) return;
 
-  // Helpers to find inputs by id OR by name
-  const $ = (id, selectorFallback) =>
-    document.getElementById(id) || form.querySelector(selectorFallback);
+  // Helper: get element by id OR fallback selector inside form
+  const getEl = (id, fallbackSelector) =>
+    document.getElementById(id) || form.querySelector(fallbackSelector);
 
-  const nameInput = $("name", 'input[name="name"]');
-  const emailInput = $("email", 'input[name="email"]');
-  const passwordInput = $("password", 'input[name="password"]');
-  const confirmInput = $("confirm_password", 'input[name="confirm_password"]');
-  const agreeTerms = $("agree_terms", 'input[name="agree_terms"]');
+  const nameInput = getEl("name", 'input[name="name"]');
+  const emailInput = getEl("email", 'input[name="email"]');
+  const passwordInput = getEl("password", 'input[name="password"]');
+  const confirmInput = getEl(
+    "confirm_password",
+    'input[name="confirm_password"]',
+  );
+  const agreeTerms = getEl("agree_terms", 'input[name="agree_terms"]');
 
-  const togglePasswordBtn = $("togglePassword", "#togglePassword");
-  const toggleConfirmBtn = $("toggleConfirmPassword", "#toggleConfirmPassword");
+  const strengthBar = getEl("strengthBar", "#strengthBar");
+  const strengthText = getEl("strengthText", "#strengthText");
+  const matchDiv = getEl("passwordMatch", "#passwordMatch");
+  const mismatchDiv = getEl("passwordMismatch", "#passwordMismatch");
 
-  const strengthBar = $("strengthBar", "#strengthBar");
-  const strengthText = $("strengthText", "#strengthText");
-
-  const matchDiv = $("passwordMatch", "#passwordMatch");
-  const mismatchDiv = $("passwordMismatch", "#passwordMismatch");
-
-  // If required inputs missing, stop (avoid runtime errors)
   if (!nameInput || !emailInput || !passwordInput || !confirmInput) return;
 
-  /* -----------------------------
-      Error message helper
-  ------------------------------ */
+  /* ----------------------------------------
+     Error helper
+  ----------------------------------------- */
   function removeError() {
     const existing = document.getElementById("registerError");
     if (existing) existing.remove();
@@ -53,53 +51,89 @@ document.addEventListener("DOMContentLoaded", () => {
     window.setTimeout(removeError, 5000);
   }
 
-  /* -----------------------------
-      Toggle password visibility
-  ------------------------------ */
-  function toggleVisibility(input, btn) {
-    if (!input || !btn) return;
+  /* ----------------------------------------
+     Create "view password" buttons if missing
+  ----------------------------------------- */
+  function ensurePasswordWrapper(input) {
+    // If already wrapped or input has parent with relative, keep it
+    const parent = input.parentElement;
+    const hasRelativeParent =
+      parent && parent.classList && parent.classList.contains("relative");
 
-    const icon = btn.querySelector("i");
-    const isHidden = input.type === "password";
+    if (hasRelativeParent) return parent;
 
-    input.type = isHidden ? "text" : "password";
+    // Wrap input inside relative div
+    const wrap = document.createElement("div");
+    wrap.className = "relative";
 
-    // If you use fa-eye initially, this will switch correctly
-    if (icon) {
-      icon.classList.toggle("fa-eye", !isHidden);
-      icon.classList.toggle("fa-eye-slash", isHidden);
-    }
+    // Insert wrapper before input, then move input into wrapper
+    parent.insertBefore(wrap, input);
+    wrap.appendChild(input);
 
-    btn.setAttribute("aria-pressed", String(isHidden));
+    // Add right padding for icon button
+    input.classList.add("pr-12");
+
+    return wrap;
   }
 
-  togglePasswordBtn?.addEventListener("click", () =>
-    toggleVisibility(passwordInput, togglePasswordBtn),
+  function createToggleButton() {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className =
+      "absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900";
+    btn.setAttribute("aria-label", "Toggle password visibility");
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = `<i class="fa-regular fa-eye"></i>`;
+    return btn;
+  }
+
+  function setIcon(btn, isVisible) {
+    const icon = btn.querySelector("i");
+    if (!icon) return;
+    // visible => eye-slash, hidden => eye
+    icon.className = isVisible
+      ? "fa-regular fa-eye-slash"
+      : "fa-regular fa-eye";
+    btn.setAttribute("aria-pressed", String(isVisible));
+  }
+
+  function attachVisibilityToggle(input, existingBtn) {
+    const wrapper = ensurePasswordWrapper(input);
+
+    let btn = existingBtn;
+    if (!btn) {
+      btn = createToggleButton();
+      wrapper.appendChild(btn);
+    }
+
+    // default icon based on input type
+    setIcon(btn, input.type !== "password");
+
+    btn.addEventListener("click", () => {
+      const nowVisible = input.type === "password";
+      input.type = nowVisible ? "text" : "password";
+      setIcon(btn, nowVisible);
+      input.focus();
+    });
+  }
+
+  // If you have buttons in HTML with these IDs, they will be used; otherwise created automatically.
+  const togglePasswordBtn = getEl("togglePassword", "#togglePassword");
+  const toggleConfirmBtn = getEl(
+    "toggleConfirmPassword",
+    "#toggleConfirmPassword",
   );
 
-  toggleConfirmBtn?.addEventListener("click", () =>
-    toggleVisibility(confirmInput, toggleConfirmBtn),
-  );
+  attachVisibilityToggle(passwordInput, togglePasswordBtn);
+  attachVisibilityToggle(confirmInput, toggleConfirmBtn);
 
-  /* -----------------------------
-      Password strength checker
-  ------------------------------ */
+  /* ----------------------------------------
+     Password strength
+  ----------------------------------------- */
   const strengthStyles = {
-    weak: {
-      bar: "bg-rose-500",
-      text: "text-rose-600",
-      label: "Weak",
-    },
-    fair: {
-      bar: "bg-amber-500",
-      text: "text-amber-600",
-      label: "Fair",
-    },
-    good: {
-      bar: "bg-sky-500",
-      text: "text-sky-600",
-      label: "Good",
-    },
+    weak: { bar: "bg-rose-500", text: "text-rose-600", label: "Weak" },
+    fair: { bar: "bg-amber-500", text: "text-amber-600", label: "Fair" },
+    good: { bar: "bg-sky-500", text: "text-sky-600", label: "Good" },
     strong: {
       bar: "bg-emerald-500",
       text: "text-emerald-600",
@@ -119,12 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateStrengthUI(score) {
-    if (
-      !strengthBar ||
-      !strengthText ||
-      typeof strengthBar.style === "undefined"
-    )
-      return;
+    if (!strengthBar || !strengthText) return;
 
     let key = "weak";
     if (score >= 90) key = "strong";
@@ -132,18 +161,15 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (score >= 40) key = "fair";
 
     const s = strengthStyles[key];
-
     strengthBar.style.width = `${score}%`;
-
-    // keep rounded + height and only swap color class
     strengthBar.className = `h-2 rounded-full transition-all ${s.bar}`;
     strengthText.textContent = s.label;
     strengthText.className = `text-xs font-medium ${s.text}`;
   }
 
-  /* -----------------------------
-      Password match checker
-  ------------------------------ */
+  /* ----------------------------------------
+     Password match checker
+  ----------------------------------------- */
   function checkPasswordMatch() {
     if (!matchDiv || !mismatchDiv) return;
 
@@ -165,24 +191,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Bind events (only if optional UI exists)
   passwordInput.addEventListener("input", () => {
-    const score = getStrengthScore(passwordInput.value);
-    if (
-      strengthBar &&
-      strengthText &&
-      typeof strengthBar.style !== "undefined"
-    ) {
-      updateStrengthUI(score);
-    }
+    updateStrengthUI(getStrengthScore(passwordInput.value));
     checkPasswordMatch();
   });
 
   confirmInput.addEventListener("input", checkPasswordMatch);
 
-  /* -----------------------------
-      Form validation
-  ------------------------------ */
+  /* ----------------------------------------
+     Form validation
+  ----------------------------------------- */
   form.addEventListener("submit", (e) => {
     removeError();
 

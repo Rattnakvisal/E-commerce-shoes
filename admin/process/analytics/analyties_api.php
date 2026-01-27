@@ -17,7 +17,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (($_SESSION['role'] ?? '') !== 'admin') {
-    header('Location: ../auth/login.php');
+    header('Location: ../auth/Log/login.php');
     exit;
 }
 

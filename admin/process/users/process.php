@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (empty($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
-    header('Location: ../auth/login.php');
+    header('Location: ../auth/Log/login.php');
     exit;
 }
 
@@ -76,18 +76,7 @@ $hasLastLogin = columnExists('last_login');
 /* =====================================================
    SQL NORMALIZERS (FIXED)
 ===================================================== */
-/**
- * Normalize role:
- * - COALESCE to ''
- * - remove NBSP (UTF-8 C2A0)
- * - TRIM
- * - LOWER
- */
 $roleSql = "LOWER(TRIM(REPLACE(COALESCE(u.role,''), CONVERT(0xC2A0 USING utf8mb4), '')))";
-
-/**
- * Normalize status (active/inactive) only if column exists
- */
 $statusActiveSql   = "(LOWER(COALESCE(u.status, '')) IN ('active','enabled','enable','true','yes','y','1') OR u.status = '1')";
 $statusInactiveSql = "(LOWER(COALESCE(u.status, '')) IN ('inactive','disabled','disable','false','no','n','0') OR u.status = '0')";
 
@@ -205,7 +194,6 @@ $select = [
     'u.user_id',
     'u.name',
     'u.email',
-    'u.phone',
     'u.role',
     'u.created_at',
 ];

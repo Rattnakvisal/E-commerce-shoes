@@ -9,8 +9,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-require_once __DIR__ . '/../config/conn.php';
-require_once __DIR__ . '/token.php';
+require_once __DIR__ . '/../../config/conn.php';
+require_once __DIR__ . '/../token.php';
 
 /* =========================
    Ensure PDO
@@ -35,7 +35,6 @@ $default_role = 'customer';
 ========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // ✅ CSRF
     if (empty($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
         $error = 'Invalid request. Please refresh the page.';
     } else {
@@ -70,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($existing) {
-                // Google-only account
                 if (($existing['provider'] ?? '') === 'google' || empty($existing['password'])) {
                     $error = 'This email is registered with Google. Please sign in using Google.';
                 } else {
@@ -78,12 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } else {
 
-                /* ---------- Create user ---------- */
+                /* ---------- Create user + verify token ---------- */
                 try {
+                    $conn->beginTransaction();
+
                     $stmt = $conn->prepare(
                         "INSERT INTO users
-                         (name, email, password, role, provider, created_at)
-                         VALUES (?, ?, ?, ?, 'local', NOW())"
+                         (name, email, password, role, provider, email_verified, created_at)
+                         VALUES (?, ?, ?, ?, 'local', 0, NOW())"
                     );
 
                     $stmt->execute([
@@ -93,12 +93,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $default_role
                     ]);
 
-                    // regenerate CSRF after success
+                    $userId = (int)$conn->lastInsertId();
+
+                    // Create verification token (24 hours)
+                    $token = bin2hex(random_bytes(32));
+                    $tokenHash = hash('sha256', $token);
+                    $expiresAt = date('Y-m-d H:i:s', time() + 24 * 60 * 60);
+
+                    // remove old tokens just in case
+                    $conn->prepare("DELETE FROM email_verifications WHERE user_id = ?")->execute([$userId]);
+
+                    $conn->prepare(
+                        "INSERT INTO email_verifications (user_id, token_hash, expires_at)
+                         VALUES (?, ?, ?)"
+                    )->execute([$userId, $tokenHash, $expiresAt]);
+
+                    $conn->commit();
+
+                    // Send verification email (after commit)
+                    require_once __DIR__ . '/../mail_helper.php';
+
+                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+                    $verifyUrl = $scheme . '://' . $host . '/auth/verify-email.php?token=' . urlencode($token);
+
+                    $subject = 'Verify your email';
+                    $html = "
+                        <div style='font-family:Arial,sans-serif'>
+                          <h2>Verify your email</h2>
+                          <p>Hello <b>" . htmlspecialchars($name) . "</b>,</p>
+                          <p>Please verify your email by clicking the button below:</p>
+                          <p style='margin:18px 0'>
+                            <a href='{$verifyUrl}'
+                               style='background:#0f172a;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;display:inline-block'>
+                              Verify Email
+                            </a>
+                          </p>
+                          <p style='color:#64748b;font-size:12px'>This link expires in 24 hours.</p>
+                        </div>
+                    ";
+                    $text = "Verify your email: {$verifyUrl}";
+
+                    $sent = send_mail($email, $name, $subject, $html, $text);
+                    if (!$sent) {
+                        error_log('[Register] verify email send failed for ' . $email);
+                    }
+
                     regenerate_csrf_token();
 
-                    header('Location: login.php?registered=1&email=' . urlencode($email));
+                    header('Location: login.php?registered=1&verify=1&email=' . urlencode($email));
                     exit;
                 } catch (Throwable $e) {
+                    if ($conn->inTransaction()) {
+                        $conn->rollBack();
+                    }
                     error_log('[Register] ' . $e->getMessage());
                     $error = 'Something went wrong. Please try again later.';
                 }
@@ -125,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Left image -->
             <div class="relative hidden md:block">
-                <img src="../assets/Images/Login image detail.avif"
+                <img src="../../assets/Images/Login image detail.avif"
                     class="h-full w-full object-cover" alt="Register">
                 <div class="absolute inset-0 bg-black/50"></div>
                 <div class="absolute inset-0 p-10 flex flex-col justify-end">
@@ -139,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h1 class="text-3xl font-extrabold text-center">Sign Up</h1>
                 <p class="text-slate-500 text-center mt-2 mb-8">It only takes a minute</p>
 
-                <?php if ($error): ?>
+                <?php if (!empty($error)): ?>
                     <div class="mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
                         <i class="fas fa-exclamation-circle mr-1"></i>
                         <?= htmlspecialchars($error) ?>
@@ -150,30 +199,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?= csrf_input_field(); ?>
 
                     <!-- Name -->
-                    <input type="text" name="name" required
+                    <input id="name" type="text" name="name" required
                         value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
                         placeholder="Full Name"
-                        class="w-full px-4 py-3 rounded-xl border bg-slate-50">
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
 
                     <!-- Email -->
-                    <input type="email" name="email" required
+                    <input id="email" type="email" name="email" required
                         value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
                         placeholder="Email Address"
-                        class="w-full px-4 py-3 rounded-xl border bg-slate-50">
+                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
 
                     <!-- Password -->
-                    <input type="password" name="password" required
-                        placeholder="Password (min 8 chars)"
-                        class="w-full px-4 py-3 rounded-xl border bg-slate-50">
+                    <div class="space-y-2">
+                        <div class="relative">
+                            <input id="password" type="password" name="password" required
+                                placeholder="Password (min 8 chars)"
+                                class="w-full px-4 py-3 pr-12 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
 
-                    <!-- Confirm -->
-                    <input type="password" name="confirm_password" required
-                        placeholder="Confirm Password"
-                        class="w-full px-4 py-3 rounded-xl border bg-slate-50">
+                            <button id="togglePassword" type="button"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                                aria-label="Toggle password">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <!-- Strength -->
+                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div id="strengthBar" class="h-2 w-0 rounded-full transition-all bg-rose-500"></div>
+                        </div>
+                        <div id="strengthText" class="text-xs font-medium text-slate-500">Weak</div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="space-y-2">
+                        <div class="relative">
+                            <input id="confirm_password" type="password" name="confirm_password" required
+                                placeholder="Confirm Password"
+                                class="w-full px-4 py-3 pr-12 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
+
+                            <button id="toggleConfirmPassword" type="button"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                                aria-label="Toggle confirm password">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <!-- Match / Mismatch -->
+                        <div id="passwordMatch" class="hidden text-xs text-emerald-600 font-medium">
+                            Passwords match ✓
+                        </div>
+                        <div id="passwordMismatch" class="hidden text-xs text-rose-600 font-medium">
+                            Passwords do not match ✗
+                        </div>
+                    </div>
 
                     <!-- Terms -->
                     <label class="flex items-center gap-2 text-sm text-slate-600">
-                        <input type="checkbox" name="agree_terms" required>
+                        <input id="agree_terms" type="checkbox" name="agree_terms" required>
                         I agree to the Terms & Conditions
                     </label>
 
@@ -183,7 +266,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         Create Account
                     </button>
 
-                    <!-- Divider -->
+                    <div class="text-right">
+                        <a href="forgot-password.php"
+                            class="text-sm text-slate-600 hover:text-slate-900 hover:underline">
+                            Forgot password?
+                        </a>
+                    </div>
+
                     <div class="flex items-center gap-3">
                         <div class="flex-1 h-px bg-slate-200"></div>
                         <span class="text-xs text-slate-400">OR</span>
@@ -192,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- Google -->
                     <button type="button"
-                        onclick="window.location.href='../auth/google/google-login.php'"
+                        onclick="window.location.href='../google/google-login.php'"
                         class="w-full border py-3 rounded-xl font-semibold flex justify-center gap-2">
                         <i class="fa-brands fa-google"></i>
                         Sign up with Google
@@ -206,7 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
-    <script src="../assets/Js/register.js"></script>
+
+    <script src="../../assets/Js/register.js"></script>
 </body>
 
 </html>

@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../../config/conn.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)) {
-    header('Location: ../auth/login.php');
+    header('Location: ../auth/Log/login.php');
     exit;
 }
 

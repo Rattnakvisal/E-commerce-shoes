@@ -304,9 +304,7 @@ $total = $subtotal + $tax;
                 Checkout
             </button>
         </aside>
-
     </main>
-    <?php require_once __DIR__ . '/../includes/featured.php'; ?>
     <?php require_once __DIR__ . '/../includes/footer.php'; ?>
     <!-- Js -->
     <script src="../view/assets/Js/prodcuts.js"></script>

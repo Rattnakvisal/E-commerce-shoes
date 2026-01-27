@@ -2,10 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
   if (!form) return;
 
-  // Find inputs by id first, then fallback to name
   const emailInput =
     document.getElementById("email") ||
     form.querySelector('input[name="email"]');
+
   const passwordInput =
     document.getElementById("password") ||
     form.querySelector('input[name="password"]');
@@ -16,28 +16,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const submitBtn = form.querySelector('button[type="submit"]');
 
-  // If essential fields are missing, stop (avoid errors)
   if (!emailInput || !passwordInput || !submitBtn) return;
 
   const originalBtnHTML = submitBtn.innerHTML;
-  const originalBtnDisabled = submitBtn.disabled;
 
-  /* -----------------------------
-      Helpers: error UI
-  ------------------------------ */
+  /* =========================
+     Error UI
+  ========================= */
+  const ERROR_ID = "loginError";
+
   function removeError() {
-    const error = document.getElementById("loginError");
-    if (error) error.remove();
+    document.getElementById(ERROR_ID)?.remove();
   }
 
   function showError(message) {
     removeError();
 
-    const errorDiv = document.createElement("div");
-    errorDiv.id = "loginError";
-    errorDiv.className =
+    const div = document.createElement("div");
+    div.id = ERROR_ID;
+    div.className =
       "mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm";
-    errorDiv.innerHTML = `
+    div.innerHTML = `
       <div class="flex items-start gap-2">
         <i class="fas fa-exclamation-circle mt-0.5"></i>
         <div>
@@ -46,16 +45,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
+    form.prepend(div);
 
-    form.prepend(errorDiv);
-
-    // Auto-hide after 5 seconds
     window.setTimeout(removeError, 5000);
   }
 
-  /* -----------------------------
-      Loading state
-  ------------------------------ */
+  /* =========================
+     Loading state
+  ========================= */
   function setLoading(isLoading) {
     submitBtn.disabled = isLoading;
 
@@ -64,47 +61,42 @@ document.addEventListener("DOMContentLoaded", () => {
         '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
     } else {
       submitBtn.innerHTML = originalBtnHTML;
-      submitBtn.disabled = originalBtnDisabled;
     }
   }
 
-  /* -----------------------------
-      Toggle password visibility
-  ------------------------------ */
+  /* =========================
+     Toggle password visibility
+  ========================= */
+  function setEyeIcon(isVisible) {
+    const icon = toggleBtn?.querySelector("i");
+    if (!icon) return;
+    // visible => eye-slash, hidden => eye
+    icon.className = isVisible ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+    toggleBtn?.setAttribute("aria-pressed", String(isVisible));
+  }
+
   if (toggleBtn) {
-    // ensure we look up the password input inside the same form/container
-    const localPassword =
-      passwordInput ||
-      toggleBtn.closest("form")?.querySelector('input[name="password"]');
+    setEyeIcon(false);
 
     toggleBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      const icon = toggleBtn.querySelector("i");
-      const input = localPassword || passwordInput;
-      if (!input) return;
 
-      const nowVisible = input.type === "password";
-      input.type = nowVisible ? "text" : "password";
+      const willShow = passwordInput.type === "password";
+      passwordInput.type = willShow ? "text" : "password";
 
-      if (icon) {
-        icon.className = nowVisible
-          ? "fa-solid fa-eye"
-          : "fa-solid fa-eye-slash";
-      }
-
-      // accessibility: reflect current visible state
-      toggleBtn.setAttribute("aria-pressed", String(nowVisible));
+      setEyeIcon(willShow);
+      passwordInput.focus();
     });
   }
 
-  /* -----------------------------
-      Form validation
-  ------------------------------ */
+  /* =========================
+     Form validation
+  ========================= */
   form.addEventListener("submit", (e) => {
     removeError();
 
     const email = String(emailInput.value || "").trim();
-    const password = String(passwordInput.value || "").trim();
+    const password = String(passwordInput.value || "");
 
     if (!email || !password) {
       e.preventDefault();
@@ -112,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Simple email validation
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
       e.preventDefault();
@@ -120,19 +111,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Lock UI while submitting (server will respond normally)
     setLoading(true);
 
-    // Optional safety: if the request hangs, re-enable after 10s
+    // fallback unlock (if server is slow / network issue)
     window.setTimeout(() => setLoading(false), 10000);
-  });
-
-  /* -----------------------------
-      Social login (demo only)
-  ------------------------------ */
-  document.querySelectorAll("[data-social]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      alert(`Social login with ${btn.dataset.social} coming soon.`);
-    });
   });
 });

@@ -72,22 +72,29 @@ $notifications = [];
 
 try {
     $sqlCount = "
-        SELECT COUNT(*)
-        FROM notifications
-        WHERE is_read = 0
-          AND (:uid IS NULL OR user_id = :uid OR user_id IS NULL)
-    ";
+                SELECT COUNT(*)
+                FROM notifications n
+                LEFT JOIN notification_reads nr ON nr.notification_id = n.notification_id AND nr.user_id = :uid
+                WHERE (n.user_id = :uid OR n.user_id IS NULL)
+                    AND (
+                        (n.user_id = :uid AND n.is_read = 0)
+                        OR (n.user_id IS NULL AND nr.notification_id IS NULL)
+                    )
+        ";
     $stmt = $pdo->prepare($sqlCount);
     $stmt->execute([':uid' => $userId]);
     $unreadCount = (int)$stmt->fetchColumn();
 
     $sqlList = "
-        SELECT notification_id, title, message, is_read, created_at
-        FROM notifications
-        WHERE (:uid IS NULL OR user_id = :uid OR user_id IS NULL)
-        ORDER BY created_at DESC
-        LIMIT 10
-    ";
+                SELECT n.notification_id, n.title, n.message,
+                CASE WHEN n.user_id IS NULL THEN IF(nr.notification_id IS NULL, 0, 1) ELSE n.is_read END AS is_read,
+                n.created_at
+                FROM notifications n
+                LEFT JOIN notification_reads nr ON nr.notification_id = n.notification_id AND nr.user_id = :uid
+                WHERE (n.user_id = :uid OR n.user_id IS NULL)
+                ORDER BY n.created_at DESC
+                LIMIT 10
+        ";
     $stmt = $pdo->prepare($sqlList);
     $stmt->execute([':uid' => $userId]);
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);

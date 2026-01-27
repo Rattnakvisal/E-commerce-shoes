@@ -393,7 +393,7 @@ require_once __DIR__ . '/data.php';
                                 </a>
                             </div>
                             <div class="p-2 border-t border-gray-200">
-                                <a href="/E-commerce-shoes/auth/logout.php"
+                                <a href="/E-commerce-shoes/auth/Log/logout.php"
                                     onclick="return confirm('Are you sure you want to logout?');"
                                     class="flex items-center px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg">
                                     <i class="fas fa-sign-out-alt mr-3 text-red-500 w-5 text-center"></i>

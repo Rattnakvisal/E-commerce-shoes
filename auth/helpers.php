@@ -55,7 +55,7 @@ function restore_login_from_cookie(PDO $conn): void
 
     try {
         $stmt = $conn->prepare(
-            "SELECT user_id, name, email, role
+            "SELECT user_id, name, email, role, status
              FROM users
              WHERE auth_token = ?
              LIMIT 1"
@@ -64,6 +64,13 @@ function restore_login_from_cookie(PDO $conn): void
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
+            $rawStatus = strtolower(trim((string)($user['status'] ?? '')));
+            $isInactive = in_array($rawStatus, ['0', 'false', 'no', 'n', 'inactive', 'disabled', 'disable'], true);
+
+            if ($isInactive) {
+                return;
+            }
+
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['role']    = $user['role'] ?? 'customer';
             $_SESSION['email']   = $user['email'] ?? '';

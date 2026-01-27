@@ -29,9 +29,45 @@ CREATE TABLE users (
 ALTER TABLE
     users
 ADD
+    auth_token VARCHAR(128) NULL;
+
+ADD
     google_id VARCHAR(255) NULL,
 ADD
     provider ENUM('local', 'google') DEFAULT 'local';
+
+ALTER TABLE
+    users
+MODIFY
+    PASSWORD VARCHAR(255) NULL;
+
+CREATE TABLE password_resets (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_pr_user_id (user_id),
+    UNIQUE INDEX uq_pr_token_hash (token_hash),
+    INDEX idx_pr_expires (expires_at),
+    CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE email_verifications (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_ev_token_hash (token_hash),
+    KEY idx_ev_user_id (user_id),
+    KEY idx_ev_expires_at (expires_at),
+    CONSTRAINT fk_email_verifications_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE = INNODB DEFAULT CHARSET = utf8mb4;
 
 /* =========================================================
  CATEGORIES (SELF REFERENCE)
@@ -115,7 +151,7 @@ CREATE TABLE payment_methods (
     method_name VARCHAR(100) NOT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE = InnoDB;
+) ENGINE = INNODB;
 
 CREATE TABLE payments (
     payment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -127,7 +163,16 @@ CREATE TABLE payments (
     INDEX idx_method (payment_method_id),
     CONSTRAINT fk_payments_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     CONSTRAINT fk_payments_method FOREIGN KEY (payment_method_id) REFERENCES payment_methods(method_id)
-) ENGINE = InnoDB;
+) ENGINE = INNODB;
+
+INSERT INTO
+    payment_methods (method_code, method_name)
+VALUES
+    ('aba', 'ABA Bank'),
+    ('acleda', 'ACLEDA Bank'),
+    ('wing', 'Wing'),
+    ('chipmong', 'Chip Mong Bank'),
+    ('bakong', 'Bakong (NBC)');
 
 /* =========================================================
  INVENTORY LOGS
@@ -179,6 +224,8 @@ CREATE TABLE notifications (
     CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE = INNODB;
 
+DROP TABLE notification_reads;
+
 /* =========================================================
  FEATURED ITEMS
  ========================================================= */
@@ -204,3 +251,13 @@ CREATE TABLE contact_messages (
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = INNODB;
+
+ALTER TABLE
+    contact_messages
+ADD
+    COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE
+    contact_messages
+ADD
+    COLUMN read_at TIMESTAMP NULL DEFAULT NULL;

@@ -91,7 +91,7 @@ $tabs = [
                     <!-- Title -->
                     <div>
                         <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Users<span class="gradient-text font-extrabold">Management</span></h1>
+                            <h1 class="text-3xl font-bold text-gray-900">Users<span class="gradient-text font-extrabold ml-2">Management</span></h1>
                         </div>
                         <p class="text-gray-600 ml-1">Manage user accounts, roles, and permissions</p>
                     </div>

@@ -12,7 +12,7 @@ if (
     !isset($_SESSION['user_id'], $_SESSION['role']) ||
     $_SESSION['role'] !== 'admin'
 ) {
-    header('Location: ../auth/login.php');
+    header('Location: ../auth/Log/login.php');
     exit;
 }
 

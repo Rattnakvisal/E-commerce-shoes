@@ -322,53 +322,7 @@ try {
                                 </div>
                             </div>
 
-                            <!-- Quick Actions Panel
-                            <div class="bg-white rounded-xl shadow-md p-6">
-                                <h2 class="text-xl font-semibold text-gray-800 mb-6">Quick Actions</h2>
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    <a href="../pos/new-order.php" class="quick-action-btn flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-5 transition">
-                                        <div class="bg-blue-500 p-3 rounded-full mb-3">
-                                            <i class="fas fa-plus text-white text-xl"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-800">New Order</span>
-                                    </a>
-
-                                    <a href="../pos/orders.php" class="quick-action-btn flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl p-5 transition">
-                                        <div class="bg-green-500 p-3 rounded-full mb-3">
-                                            <i class="fas fa-list text-white text-xl"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-800">View Orders</span>
-                                    </a>
-
-                                    <a href="../products/" class="quick-action-btn flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-5 transition">
-                                        <div class="bg-purple-500 p-3 rounded-full mb-3">
-                                            <i class="fas fa-boxes text-white text-xl"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-800">Products</span>
-                                    </a>
-
-                                    <a href="../customers/" class="quick-action-btn flex flex-col items-center justify-center bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded-xl p-5 transition">
-                                        <div class="bg-yellow-500 p-3 rounded-full mb-3">
-                                            <i class="fas fa-users text-white text-xl"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-800">Customers</span>
-                                    </a>
-
-                                    <a href="../pos/scan-barcode.php" class="quick-action-btn flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl p-5 transition">
-                                        <div class="bg-red-500 p-3 rounded-full mb-3">
-                                            <i class="fas fa-barcode text-white text-xl"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-800">Scan Barcode</span>
-                                    </a>
-
-                                    <a href="../reports/daily-sales.php" class="quick-action-btn flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl p-5 transition">
-                                        <div class="bg-indigo-500 p-3 rounded-full mb-3">
-                                            <i class="fas fa-chart-bar text-white text-xl"></i>
-                                        </div>
-                                        <span class="font-medium text-gray-800">Daily Report</span>
-                                    </a>
-                                </div>
-                            </div> -->
+                            <!-- Quick Actions -->
                         </div>
 
                         <!-- Right Column: Popular Products & Activity -->

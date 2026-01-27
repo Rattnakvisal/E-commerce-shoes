@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
+require_once __DIR__ . '/../../../config/conn.php';
 
 $pdo = $pdo ?? ($conn ?? null);
 if (!$pdo instanceof PDO) {

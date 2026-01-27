@@ -169,7 +169,7 @@ foreach ($items as $item) {
 			<div class="hidden md:block relative">
 				<input id="desktopSearchInput"
 					class="w-44 bg-gray-100 rounded-full py-2 pl-12 pr-4 text-sm
-                              focus:w-64 focus:ring-2 focus:ring-black transition-all"
+                            focus:w-64 focus:ring-2 focus:ring-black transition-all"
 					placeholder="Search products...">
 				<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
 			</div>
@@ -233,7 +233,7 @@ foreach ($items as $item) {
 						<a href="myorder.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">My Orders</a>
 						<a href="wishlist.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">Wishlist</a>
 						<div class="border-t my-2"></div>
-						<a href="/E-commerce-shoes/auth/logout.php"
+						<a href="/E-commerce-shoes/auth/Log/logout.php"
 							class="block px-4 py-3 text-red-600 hover:bg-gray-100">
 							Logout
 						</a>
@@ -242,7 +242,7 @@ foreach ($items as $item) {
 				<?php else: ?>
 
 					<!-- Sign in -->
-					<a href="/E-commerce-shoes/auth/login.php"
+					<a href="/E-commerce-shoes/auth/Log/login.php"
 						class="flex items-center gap-2 text-gray-700 hover:text-black">
 						<div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
 							<i class="far fa-user text-gray-600"></i>

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../config/conn.php'; // PDO connection
+require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/api_category.php';
 ?>
 <!DOCTYPE html>

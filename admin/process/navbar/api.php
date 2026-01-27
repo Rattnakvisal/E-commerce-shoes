@@ -107,7 +107,7 @@ if ($action === 'delete_parent') {
     $id = (int)($inp['id'] ?? 0);
     if ($id <= 0) respond(false, 'Invalid ID');
 
-    // 🚫 Prevent deleting parent with groups
+    // Prevent deleting parent with groups
     $count = $pdo->prepare("SELECT COUNT(*) FROM navbar_groups WHERE parent_id = ?");
     $count->execute([$id]);
     if ($count->fetchColumn() > 0) {

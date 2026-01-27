@@ -23,7 +23,6 @@ $subtotal     = (float) $order['total'];
 $platformFee = $subtotal * 0.20;
 $takeHome    = $subtotal - $platformFee;
 
-/* Demo timeline (replace later if needed) */
 $orderDates = [
     date('l, j F Y', strtotime('-2 days')),
     date('l, j F Y', strtotime('today')),

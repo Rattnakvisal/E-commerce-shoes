@@ -20,7 +20,7 @@ $cart = &$_SESSION[$cartSessionKey];
 
 if (!$userId) {
     $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/view/checkout.php';
-    header('Location: ../auth/login.php');
+    header('Location: ../auth/Log/login.php');
     exit;
 }
 

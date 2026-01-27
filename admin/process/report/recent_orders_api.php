@@ -21,8 +21,8 @@ if (!isset($conn) || !$conn instanceof PDO) {
 /* =====================================================
    INPUT & LIMITS
 ===================================================== */
-$days  = max(1, min(90, (int)($_GET['days'] ?? 7)));   // cap to 90 days
-$limit = max(1, min(20, (int)($_GET['limit'] ?? 5))); // cap recent orders
+$days  = max(1, min(90, (int)($_GET['days'] ?? 7)));
+$limit = max(1, min(20, (int)($_GET['limit'] ?? 5)));
 
 $end   = date('Y-m-d');
 $start = date('Y-m-d', strtotime('-' . ($days - 1) . ' days'));
