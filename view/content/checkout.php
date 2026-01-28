@@ -68,26 +68,19 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
             <div class="text-center">
                 <div class="mb-4 p-4 bg-gray-50 rounded-lg inline-block">
                     <div class="w-48 h-48 rounded-lg overflow-hidden bg-white">
-                        <img
-                            id="qrImage"
-                            src=""
-                            alt="QR Code"
-                            class="w-full h-full object-cover">
+                        <img id="qrImage" src="" alt="QR Code" class="w-full h-full object-cover">
                     </div>
                 </div>
 
                 <p class="text-sm text-gray-600 mb-2">Scan this QR code with your payment app</p>
                 <p class="font-bold text-lg text-gray-900 mb-6">$<?= number_format((float)$total, 2) ?></p>
 
-                <div class="space-y-3">
-                    <div class="flex items-center justify-center text-sm text-gray-600">
-                        <i class="fas fa-clock mr-2"></i>
-                        <span>Valid for 15 minutes</span>
-                    </div>
+                <div class="flex items-center justify-center text-sm text-gray-600">
+                    <i class="fas fa-clock mr-2"></i>
+                    <span>Valid for 15 minutes</span>
                 </div>
 
                 <div class="mt-8 pt-6 border-t border-gray-200">
-                    <!-- Submit after confirm -->
                     <button type="button" onclick="confirmPaidAndSubmit()"
                         class="w-full py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-lg transition duration-300">
                         I've Completed Payment
@@ -121,10 +114,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                 <form method="POST" id="checkoutForm" class="bg-white rounded-2xl shadow-lg p-6 space-y-6">
 
                     <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-bold text-gray-900">
-                            <i class="fas fa-shipping-fast mr-2 text-blue-600"></i>
-                            Shipping Information
-                        </h2>
+                        <h2 class="text-xl font-bold text-gray-900">Shipping Information</h2>
                         <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Required *</span>
                     </div>
 
@@ -186,14 +176,10 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                         </div>
                     </div>
 
-                    <!-- Payment Methods -->
                     <div class="pt-6 border-t border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 mb-6">
-                            <i class="fas fa-credit-card mr-2 text-blue-600"></i>
-                            Payment Method
-                        </h2>
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Payment Method</h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 rounded-lg">
                             <?php if (empty($paymentMethods)): ?>
                                 <div class="text-sm text-red-600">
                                     No payment methods found. Insert into payment_methods table.
@@ -203,44 +189,25 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                                     $code = strtolower(trim($m['method_code']));
                                     $name = $m['method_name'];
 
-                                    $icon = 'fas fa-money-check-alt';
-                                    $bg   = 'bg-blue-100';
-                                    $ic   = 'text-blue-600';
-
-                                    if ($code === 'aba') {
-                                        $icon = 'fas fa-university';
-                                        $bg = 'bg-red-100';
-                                        $ic = 'text-red-600';
-                                    }
-                                    if ($code === 'acleda') {
-                                        $icon = 'fas fa-university';
-                                        $bg = 'bg-green-100';
-                                        $ic = 'text-green-600';
-                                    }
-                                    if ($code === 'wing') {
-                                        $icon = 'fas fa-wallet';
-                                        $bg = 'bg-purple-100';
-                                        $ic = 'text-purple-600';
-                                    }
-                                    if ($code === 'chipmong') {
-                                        $icon = 'fas fa-university';
-                                        $bg = 'bg-yellow-100';
-                                        $ic = 'text-yellow-600';
-                                    }
-                                    if ($code === 'bakong') {
-                                        $icon = 'fas fa-qrcode';
-                                        $bg = 'bg-cyan-100';
-                                        $ic = 'text-cyan-600';
-                                    }
+                                    $logo = '../assets/Payments/logo.png';
+                                    if ($code === 'aba') $logo = '../assets/Payments/aba.png';
+                                    elseif ($code === 'acleda') $logo = '../assets/Payments/acleda.png';
+                                    elseif ($code === 'wing') $logo = '../assets/Payments/wing.png';
+                                    elseif ($code === 'chipmong') $logo = '../assets/Payments/chipmong.png';
+                                    elseif ($code === 'bakong') $logo = '../assets/Payments/icon.png';
                                 ?>
                                     <button type="button"
-                                        class="payment-card text-left p-4 border-2 border-gray-200 rounded-xl cursor-pointer"
+                                        class="payment-card text-left p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 transition"
                                         data-method="<?= e($code) ?>"
                                         onclick="selectPayment(event,'<?= e($code) ?>')">
-                                        <div class="flex items-center">
-                                            <div class="w-12 h-12 <?= e($bg) ?> rounded-lg flex items-center justify-center mr-4">
-                                                <i class="<?= e($icon) ?> <?= e($ic) ?> text-xl"></i>
+
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center border border-gray-200">
+                                                <img src="<?= e($logo) ?>" alt="<?= e($name) ?>"
+                                                    class="max-h-8 max-w-10 object-contain"
+                                                    onerror="this.style.display='none';">
                                             </div>
+
                                             <div>
                                                 <p class="font-semibold text-gray-900"><?= e($name) ?></p>
                                                 <p class="text-sm text-gray-600"><?= e(strtoupper($code)) ?> Payment</p>
@@ -254,10 +221,10 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                         <input type="hidden" name="payment" id="paymentMethod" value="">
                         <input type="hidden" name="confirm_paid" id="confirmPaid" value="0">
                     </div>
-
                 </form>
             </div>
-            <!-- Sumary Method Selection -->
+
+            <!-- Summary -->
             <div class="lg:col-span-1">
                 <div class="sticky top-24 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                     <div class="p-6">
@@ -307,7 +274,6 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <span>Secure SSL encryption</span>
                         </div>
 
-                        <!-- Click => open QR modal, not submit directly -->
                         <button type="submit" form="checkoutForm" onclick="processOrder(event)"
                             class="w-full bg-black hover:bg-gray-900 text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center shadow-lg">
                             <i class="fas fa-qrcode mr-3"></i>
@@ -330,7 +296,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
     <script>
         let selectedPayment = null;
 
-        // Update paths to your real images
+        // QR image paths
         const qrMap = {
             aba: "../assets/qr/aba.jpg",
             wing: "../assets/qr/wing.jpg",
@@ -339,7 +305,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
             chipmong: "../assets/qr/chipmong.jpg"
         };
 
-        function selectPayment(ev, method) {
+        function selectPayment(event, method) {
             selectedPayment = method;
             document.getElementById('paymentMethod').value = method;
 
@@ -348,20 +314,18 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                 card.classList.add('border-gray-200');
             });
 
-            ev.currentTarget.classList.add('selected', 'border-blue-500');
-            ev.currentTarget.classList.remove('border-gray-200');
+            const card = event.currentTarget;
+            card.classList.add('selected', 'border-blue-500');
+            card.classList.remove('border-gray-200');
         }
 
         function showQRModal(method) {
-            const img = document.getElementById("qrImage");
             const src = qrMap[method];
-
             if (!src) {
                 alert("QR image not found for: " + method);
                 return;
             }
-
-            img.src = src;
+            document.getElementById('qrImage').src = src;
 
             const modal = document.getElementById('qrModal');
             modal.classList.remove('hidden');
@@ -374,40 +338,36 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
             modal.classList.remove('flex');
         }
 
-        // Click Place Order => show QR first
-        function processOrder(ev) {
+        function processOrder(event) {
             const form = document.getElementById('checkoutForm');
 
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return false;
             }
-
             if (!selectedPayment) {
                 alert('Please select payment method');
                 return false;
             }
 
-            ev.preventDefault();
+            event.preventDefault();
             showQRModal(selectedPayment);
             return false;
         }
 
-        // Click "I've Completed Payment" => submit (mark as confirmed)
         function confirmPaidAndSubmit() {
-            // mark confirmation so server treats this as paid
-            const el = document.getElementById('confirmPaid');
-            if (el) el.value = '1';
+            const confirmInput = document.getElementById('confirmPaid');
+            if (confirmInput) confirmInput.value = '1';
+
             closeQRModal();
             document.getElementById('checkoutForm').submit();
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             const first = document.querySelector('.payment-card[data-method]');
             if (first) first.click();
         });
     </script>
-
 </body>
 
 </html>

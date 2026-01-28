@@ -1,124 +1,125 @@
 <?php
-require_once __DIR__ . '/../contract/order_success.php';
+
+declare(strict_types=1);
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+$last = $_SESSION['last_order'] ?? null;
+
+function e($s): string
+{
+    return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+}
+
+if (!$last) {
+    header('Location: /E-commerce-shoes/view/content/products.php');
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>Order Complete</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Tailwind -->
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Order Success</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="bg-gray-100">
-    <?php require_once __DIR__ . '/navbar.php'; ?>
+<body class="bg-gray-50">
 
-    <main class="min-h-screen flex items-center justify-center px-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+    <?php
+    require_once __DIR__ . '/../../includes/shader/topbar.php';
+    require_once __DIR__ . '/../../includes/shader/navbar.php';
+    ?>
 
-            <!-- ================= LEFT : SUCCESS ================= -->
-            <div class="p-10 flex flex-col items-center justify-center text-center">
+    <main class="max-w-4xl mx-auto px-4 py-10">
+        <div class="bg-white rounded-2xl shadow p-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <i class="fas fa-check text-green-600"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">Order placed successfully</h1>
+            </div>
 
-                <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                    <i class="fas fa-check text-3xl text-green-600"></i>
+            <p class="text-gray-600 mb-6">
+                Order <b>#<?= e($last['order_id']) ?></b> has been received.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-5 rounded-xl border">
+                    <h2 class="font-semibold text-gray-900 mb-2">Customer</h2>
+                    <p class="text-sm text-gray-700">Name: <?= e($last['name']) ?></p>
+                    <p class="text-sm text-gray-700">Email: <?= e($last['email']) ?></p>
+                    <p class="text-sm text-gray-700">Phone: <?= e($last['phone']) ?></p>
                 </div>
 
-                <h2 class="text-2xl font-bold mb-2">
-                    Order Submitted
-                </h2>
-
-                <p class="text-gray-600 max-w-sm mb-8">
-                    Your order has been placed successfully and is on its way.
-                    We’ve sent a confirmation to your email.
-                </p>
-
-                <div class="flex flex-col gap-3 w-full max-w-xs">
-
-                    <button onclick="window.print()"
-                        class="w-full py-3 rounded-full bg-black text-white font-semibold hover:bg-gray-900 transition">
-                        Print / Save PDF
-                    </button>
-
-                    <a href="products.php"
-                        class="w-full py-3 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-                        Continue Shopping
-                    </a>
-
+                <div class="p-5 rounded-xl border">
+                    <h2 class="font-semibold text-gray-900 mb-2">Shipping</h2>
+                    <p class="text-sm text-gray-700"><?= e($last['address']) ?></p>
+                    <p class="text-sm text-gray-700"><?= e($last['city']) ?> <?= e($last['country']) ?></p>
+                    <p class="text-sm text-gray-700">Payment: <?= e(strtoupper($last['payment'])) ?></p>
                 </div>
             </div>
 
-            <!-- ================= RIGHT : SUMMARY ================= -->
-            <div class="bg-gray-50 p-8 md:p-10">
+            <div class="mt-8">
+                <h2 class="font-semibold text-gray-900 mb-3">Items</h2>
 
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <p class="text-sm text-gray-500">Order Summary</p>
-                        <p class="font-bold text-lg">#<?= e($order['order_id']) ?></p>
-                    </div>
-                    <a href="products.php" class="text-gray-400 hover:text-gray-600 text-xl">
-                        &times;
-                    </a>
-                </div>
+                <div class="space-y-3">
+                    <?php
+                    $items = $last['items'] ?? [];
+                    $qtyMap = $last['quantities'] ?? [];
 
-                <div class="space-y-5 text-sm">
-
-                    <div>
-                        <p class="text-gray-500">Client</p>
-                        <p class="font-medium"><?= e($order['name']) ?></p>
-                    </div>
-
-                    <div>
-                        <p class="text-gray-500">Service</p>
-                        <p class="font-medium">Product Purchase</p>
-                    </div>
-
-                    <!-- Timeline -->
-                    <div class="bg-white rounded-xl p-4 space-y-3">
-                        <?php foreach ($orderDates as $i => $d): ?>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600"><?= $d ?></span>
-                                <span class="font-medium"><?= $orderTimes[$i] ?></span>
+                    foreach ($items as $p):
+                        $pid = (int)$p['product_id'];
+                        $qty = (int)($qtyMap[$pid] ?? 0);
+                        if ($qty < 1) continue;
+                    ?>
+                        <div class="flex items-center justify-between border rounded-xl p-4">
+                            <div class="flex items-center gap-3">
+                                <img src="<?= e($p['image_url']) ?>" class="w-14 h-14 rounded-lg object-cover bg-gray-100">
+                                <div>
+                                    <div class="font-semibold text-gray-900"><?= e($p['name']) ?></div>
+                                    <div class="text-sm text-gray-600">$<?= number_format((float)$p['price'], 2) ?> × <?= $qty ?></div>
+                                </div>
                             </div>
-                        <?php endforeach; ?>
-
-                        <div class="pt-3 border-t flex justify-between font-semibold">
-                            <span>Total Time</span>
-                            <span><?= $totalHours ?></span>
+                            <div class="font-bold">
+                                $<?= number_format(((float)$p['price'] * $qty), 2) ?>
+                            </div>
                         </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="mt-6 border-t pt-4 space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span>$<?= number_format((float)$last['subtotal'], 2) ?></span>
                     </div>
-
-                    <!-- Payment -->
-                    <div class="pt-4 space-y-3">
-
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Order Value</span>
-                            <span>$<?= number_format($subtotal, 2) ?></span>
-                        </div>
-
-                        <div class="flex justify-between text-red-600">
-                            <span>Platform Fee (20%)</span>
-                            <span>- $<?= number_format($platformFee, 2) ?></span>
-                        </div>
-
-                        <div class="flex justify-between text-green-600 text-lg font-bold pt-3 border-t">
-                            <span>Take Home</span>
-                            <span>$<?= number_format($takeHome, 2) ?></span>
-                        </div>
-
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tax</span>
+                        <span>$<?= number_format((float)$last['tax'], 2) ?></span>
                     </div>
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Total</span>
+                        <span class="text-blue-600">$<?= number_format((float)$last['total'], 2) ?></span>
+                    </div>
+                </div>
 
+                <div class="mt-8 flex gap-3">
+                    <a href="/E-commerce-shoes/view/content/products.php"
+                        class="px-5 py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">
+                        Continue shopping
+                    </a>
+                    <a href="/E-commerce-shoes/view/content/orders.php"
+                        class="px-5 py-3 rounded-xl border font-semibold hover:bg-gray-50">
+                        View my orders
+                    </a>
                 </div>
             </div>
-
         </div>
     </main>
 
+    <?php require_once __DIR__ . '/../../includes/shader/footer.php'; ?>
 </body>
 
 </html>

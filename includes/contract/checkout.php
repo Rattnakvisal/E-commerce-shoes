@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // payment is now method_code (aba/acleda/wing/...)
     $paymentCode = strtolower(trim($_POST['payment'] ?? 'aba'));
 
-    if ($name === '' || $email === '' || $address === '') {
+    if ($name === '' || $email === '' || $address === '' || $phone === '') {
         $error = 'Please fill required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format.';
@@ -203,9 +203,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             // Admin notification
+            $noteTitle = ($payment_status === 'paid') ? 'New paid order' : 'New order placed';
+            $noteMsg = sprintf('Order #%d by %s (%s) — %s', $dbOrderId, $name, $email, number_format($total, 2));
+
             try {
-                $noteTitle = ($payment_status === 'paid') ? 'New paid order' : 'New order placed';
-                $noteMsg = sprintf('Order #%d by %s (%s) — %s', $dbOrderId, $name, $email, number_format($total, 2));
                 $nstmt = $pdo->prepare("
                     INSERT INTO notifications (user_id, title, message, type, reference_id, is_read, created_at)
                     VALUES (NULL, :title, :msg, :type, :ref, 0, NOW())
@@ -221,20 +222,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             try {
-                if (!empty($userId)) {
-                    $userNoteTitle = 'Order confirmed';
-                    $userNoteMsg = sprintf('Your order #%d has been received. Total: %s', $dbOrderId, number_format($total, 2));
-                    $unstmt = $pdo->prepare(
-                        "INSERT INTO notifications (user_id, title, message, type, reference_id, is_read, created_at)
-                        VALUES (:uid, :title, :msg, :type, :ref, 0, NOW())"
+                $userNoteTitle = 'Order confirmed';
+                $userNoteMsg = sprintf('Your order #%d has been received. Total: %s', $dbOrderId, number_format($total, 2));
+
+                $unstmt = $pdo->prepare("
+                    INSERT INTO notifications (user_id, title, message, type, reference_id, is_read, created_at)
+                    VALUES (:uid, :title, :msg, :type, :ref, 0, NOW())
+                ");
+                $unstmt->execute([
+                    ':uid'   => $userId,
+                    ':title' => $userNoteTitle,
+                    ':msg'   => $userNoteMsg,
+                    ':type'  => 'order',
+                    ':ref'   => $dbOrderId,
+                ]);
+            } catch (Throwable) {
+                // ignore
+            }
+
+            // Telegram notify (PAID only)
+            try {
+                if ($payment_status === 'paid') {
+                    require_once __DIR__ . '/../../auth/Helper/telegram.php';
+                    telegram_notify_payment_success(
+                        $dbOrderId,
+                        $name,
+                        $email,
+                        $phone,
+                        $address,
+                        $city,
+                        $country,
+                        $paymentCode,
+                        (float)$total,
+                        $products,
+                        $cart
                     );
-                    $unstmt->execute([
-                        ':uid'   => $userId,
-                        ':title' => $userNoteTitle,
-                        ':msg'   => $userNoteMsg,
-                        ':type'  => 'order',
-                        ':ref'   => $dbOrderId,
-                    ]);
                 }
             } catch (Throwable) {
                 // ignore
@@ -243,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Clear cart
             $_SESSION[$cartSessionKey] = [];
 
-            header('Location: order_success.php');
+            header('Location: /E-commerce-shoes/view/content/order_success.php');
             exit;
         } catch (Throwable $ex) {
             if ($pdo->inTransaction()) $pdo->rollBack();

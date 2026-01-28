@@ -10,7 +10,7 @@ $userId = $_SESSION['user_id'] ?? null;
 $oid = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
 if (!$userId || $oid <= 0) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid request']);
+    echo json_encode(['success' => false, 'error' => 'Invalid request']);
     exit;
 }
 
@@ -20,20 +20,20 @@ try {
     $found = $check->fetchColumn();
     if (!$found) {
         http_response_code(403);
-        echo json_encode(['error' => 'Order not found or access denied']);
+        echo json_encode(['success' => false, 'error' => 'Order not found or access denied']);
         exit;
     }
 
     // Fetch items
-    $itStmt = $pdo->prepare("SELECT oi.product_id, oi.quantity, oi.price, COALESCE(p.name, '') AS name, COALESCE(p.image_url, '') AS image_url
+    $itStmt = $pdo->prepare("SELECT oi.product_id, oi.quantity, oi.price, COALESCE(p.name, '') AS name, COALESCE(p.image_url, '') AS image
         FROM order_items oi
         LEFT JOIN products p ON p.product_id = oi.product_id
         WHERE oi.order_id = :oid");
     $itStmt->execute(['oid' => $oid]);
     $items = $itStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(['items' => $items]);
+    echo json_encode(['success' => true, 'items' => $items]);
 } catch (PDOException $ex) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database error', 'details' => $ex->getMessage()]);
+    echo json_encode(['success' => false, 'error' => 'Database error', 'details' => $ex->getMessage()]);
 }
