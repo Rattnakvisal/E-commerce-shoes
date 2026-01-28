@@ -130,22 +130,6 @@ require_once __DIR__ . '/../contract/contact.php';
                                 class="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm outline-none
                        focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" />
                         </div>
-
-                        <!-- Industry (optional like reference) -->
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Industry</label>
-                            <select
-                                name="industry"
-                                class="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm outline-none
-                       focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
-                                <option value="">Select</option>
-                                <option>Retail</option>
-                                <option>E-commerce</option>
-                                <option>Logistics</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-
                         <!-- Message -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Message</label>

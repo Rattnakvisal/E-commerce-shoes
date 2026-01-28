@@ -4,16 +4,7 @@ require_once __DIR__ . '/../contract/navbar.php';
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="../../assets/Css/navbar.css">
-
-<!-- ===============================
-  NAVBAR (FIXED STRUCTURE)
-  - nav z-30 (below overlay z-40, drawer z-50, dropdown z-60)
-  - mobileSearchBar moved OUTSIDE flex row
-  - overlay + drawer moved OUTSIDE nav
-  - unique IDs (closeMobileMenuBtn)
-  - notification dropdown: fixed max height, only list scrolls, responsive fixed panel on mobile
-=============================== -->
+<link rel="stylesheet" href="../../view/assets/Css/navbar.css">
 <nav class="sticky top-0 bg-white shadow-sm border-b z-30">
 	<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 
@@ -34,7 +25,7 @@ require_once __DIR__ . '/../contract/navbar.php';
 							<?= htmlspecialchars($p['title']) ?>
 						</button>
 
-						<!-- Desktop Mega Menu (your navbar.css controls this) -->
+						<!-- Desktop Mega Menu -->
 						<div class="mega-menu-container">
 							<div class="p-6 grid grid-cols-5 gap-8">
 								<?php foreach ($groups as $g): ?>
@@ -89,13 +80,55 @@ require_once __DIR__ . '/../contract/navbar.php';
 					placeholder="Search products...">
 				<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
 			</div>
+			<!-- Search results overlay -->
+			<div
+				id="globalSearchResults"
+				class="hidden fixed top-20 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50">
+				<div
+					class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+					<!-- Header -->
+					<div
+						class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+						<div class="flex items-center gap-2">
+							<svg
+								class="w-4 h-4 text-gray-400"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+							</svg>
+							<span class="text-sm font-medium text-gray-700">
+								Search results
+							</span>
+						</div>
+
+						<button
+							id="closeSearchResults"
+							class="text-gray-400 hover:text-gray-600 text-xl leading-none"
+							aria-label="Close">
+							&times;
+						</button>
+					</div>
+
+					<!-- Results -->
+					<div
+						id="searchResultsContent"
+						class="px-4 py-3 max-h-[360px] overflow-y-auto text-sm divide-y divide-gray-100">
+						<!-- JS injects results here -->
+					</div>
+				</div>
+			</div>
 
 			<!-- Mobile Search Trigger -->
 			<button id="mobileSearchTrigger" type="button" class="md:hidden text-xl text-gray-700">
 				<i class="fas fa-search"></i>
 			</button>
 
-			<!-- NOTIFICATION (FIXED) -->
+			<!-- NOTIFICATION -->
 			<?php if ($userLogged): ?>
 				<div class="relative text-xl text-gray-700">
 					<button id="notificationTrigger" type="button"
@@ -103,12 +136,11 @@ require_once __DIR__ . '/../contract/navbar.php';
 						aria-expanded="false" aria-haspopup="true">
 						<i class="far fa-bell"></i>
 						<span id="notificationCount"
-							class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+							class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
 							0
 						</span>
 					</button>
 
-					<!-- Dropdown: max height + only list scrolls, responsive fixed panel on mobile -->
 					<div id="notificationDropdown"
 						class="hidden z-[60]
                       absolute right-0 mt-3 w-[22rem] max-w-[92vw]
@@ -212,18 +244,38 @@ require_once __DIR__ . '/../contract/navbar.php';
 		</div>
 	</div>
 
-	<!-- MOBILE SEARCH BAR (OUTSIDE FLEX ROW) -->
 	<div id="mobileSearchBar" class="hidden px-4 py-4 bg-gray-100 border-t md:hidden">
-		<div class="relative max-w-7xl mx-auto">
-			<input placeholder="Search products..."
-				class="w-full bg-white rounded-full py-3 pl-12 pr-12 shadow outline-none focus:ring-2 focus:ring-black/10">
-			<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-			<button id="closeMobileSearch" type="button"
-				class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-				<i class="fas fa-times"></i>
-			</button>
+		<div class="max-w-7xl mx-auto">
+			<!-- Make this wrapper relative so dropdown can be absolute -->
+			<div class="relative">
+
+				<input id="mobileSearchInput"
+					placeholder="Search products..."
+					class="w-full bg-white rounded-full py-3 pl-12 pr-12 shadow outline-none focus:ring-2 focus:ring-black/10" />
+
+				<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+				<button id="closeMobileSearch" type="button"
+					class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+					<i class="fas fa-times"></i>
+				</button>
+
+				<!-- MOBILE SEARCH RESULTS (absolute dropdown under input) -->
+				<div id="mobileSearchResults"
+					class="hidden absolute left-0 right-0 top-full mt-3 z-[60]">
+					<div class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+						<!-- IMPORTANT: remove px-4 on outer container, keep padding inside -->
+						<div id="mobileSearchResultsContent"
+							class="px-4 py-3 max-h-[50vh] overflow-y-auto text-sm divide-y divide-gray-100">
+							<!-- JS injects mobile results here -->
+						</div>
+					</div>
+				</div>
+
+			</div>
 		</div>
 	</div>
+
 </nav>
 
 <!-- MOBILE OVERLAY (OUTSIDE NAV) -->
@@ -306,3 +358,4 @@ require_once __DIR__ . '/../contract/navbar.php';
 </aside>
 <script src="../../view/assets/Js/script.js"></script>
 <script src="../../view/assets/Js/notification_users.js"></script>
+<script src="../../view/assets/Js/search.js"></script>

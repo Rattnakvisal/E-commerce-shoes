@@ -28,8 +28,8 @@ $error = '';
 /* ================= FILTERS ================= */
 $search      = trim((string)($_GET['search'] ?? ''));
 $category_id = (string)($_GET['category_id'] ?? '');
-$status      = strtolower(trim((string)($_GET['status'] ?? ''))); // active/inactive only
-$brand       = trim((string)($_GET['brand'] ?? ''));             // Nike / Adidas / New Balance / Other
+$status      = strtolower(trim((string)($_GET['status'] ?? '')));
+$brand       = trim((string)($_GET['brand'] ?? ''));
 $date_from   = (string)($_GET['date_from'] ?? '');
 $date_to     = (string)($_GET['date_to'] ?? '');
 $sort        = (string)($_GET['sort'] ?? 'newest');
@@ -61,9 +61,7 @@ try {
         ORDER BY category_name
     ")->fetchAll(PDO::FETCH_ASSOC);
 
-    /* ================= OPTIONAL: BACKWARD COMPAT =================
-       If your tabs still send ?status=Nike, map that to brand.
-    */
+    /* ================= OPTIONAL: BACKWARD COMPAT =================*/
     if ($brand === '' && $status !== '' && !in_array($status, ['active', 'inactive'], true)) {
         $brand = (string)($_GET['status'] ?? '');
         $status = '';
@@ -160,6 +158,7 @@ try {
             COUNT(*) AS total,
             SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) AS active,
             SUM(CASE WHEN p.status='inactive' THEN 1 ELSE 0 END) AS inactive,
+            SUM(CASE WHEN p.stock=0 THEN 1 ELSE 0 END) AS out_of_stock,
             SUM(CASE WHEN c.category_name='Nike' THEN 1 ELSE 0 END) AS Nike,
             SUM(CASE WHEN c.category_name='Adidas' THEN 1 ELSE 0 END) AS Adidas,
             SUM(CASE WHEN c.category_name='New Balance' THEN 1 ELSE 0 END) AS `New Balance`,
@@ -180,6 +179,7 @@ $statusCounts = [
     'all'         => (int)($stats['total'] ?? 0),
     'active'      => (int)($stats['active'] ?? 0),
     'inactive'    => (int)($stats['inactive'] ?? 0),
+    'out_of_stock' => (int)($stats['out_of_stock'] ?? 0),
     'Nike'        => (int)($stats['Nike'] ?? 0),
     'Adidas'      => (int)($stats['Adidas'] ?? 0),
     'New Balance' => (int)($stats['New Balance'] ?? 0),

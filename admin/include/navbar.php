@@ -1,7 +1,16 @@
 <?php
 require_once __DIR__ . '/data.php';
 ?>
+<style>
+    #messagesDropdown .msg-item {
+        border-radius: .5rem;
+        transition: background .15s ease, transform .1s ease;
+    }
 
+    #messagesDropdown .msg-item:active {
+        transform: scale(.995);
+    }
+</style>
 <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 <!-- Sidebar for Desktop -->
 <div class="hidden md:flex flex-col fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 sidebar-transition z-30">
@@ -275,42 +284,52 @@ require_once __DIR__ . '/data.php';
                             </div>
                         </div>
                     </div>
+
                     <!-- Messages -->
                     <div class="relative">
-                        <button id="messagesButton" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative">
-                            <i class="fas fa-envelope"></i>
-
+                        <button
+                            id="messagesButton"
+                            type="button"
+                            class="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                            <i class="fas fa-envelope text-base"></i>
+                            <!-- Badge -->
                             <?php if ($messagesCount > 0): ?>
-                                <span id="msgBadge"
-                                    class="absolute -top-1 -right-1 bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                <span
+                                    id="msgBadge"
+                                    class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full
+                                    bg-indigo-500 text-white text-[11px] font-semibold
+                                    flex items-center justify-center">
                                     <?= $messagesCount > 99 ? '99+' : $messagesCount; ?>
                                 </span>
                             <?php else: ?>
-                                <span id="msgBadge" class="absolute -top-1 -right-1 hidden"></span>
+                                <span
+                                    id="msgBadge"
+                                    class="absolute -top-1 -right-1 hidden"></span>
                             <?php endif; ?>
                         </button>
-
                         <!-- Messages Dropdown -->
                         <div id="messagesDropdown"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden dropdown-transition z-50">
-
+                            class="hidden absolute right-0 mt-3 w-[360px] max-w-[92vw] bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden z-50">
                             <!-- Header -->
-                            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                                <h3 class="font-semibold text-gray-800">Messages</h3>
+                            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-medium text-gray-700">Messages</span>
+                                </div>
 
-                                <!-- Optional actions like notifications -->
                                 <div class="flex items-center gap-3">
-                                    <button id="msgMarkAllReadBtn" class="text-xs text-indigo-600 hover:text-indigo-800">
-                                        Mark all as read
+                                    <button id="msgMarkAllReadBtn" type="button"
+                                        class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
+                                        Mark all read
                                     </button>
-                                    <button id="msgClearAllBtn" class="text-xs text-red-600 hover:text-red-800">
+                                    <button id="msgClearAllBtn" type="button"
+                                        class="text-xs font-medium text-red-600 hover:text-red-800">
                                         Clear all
                                     </button>
                                 </div>
                             </div>
 
                             <!-- List -->
-                            <div id="messagesList" class="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                            <div id="messagesList" class="max-h-[360px] overflow-y-auto divide-y divide-gray-100">
                                 <?php if (empty($contactMessages)): ?>
                                     <p class="text-center text-sm text-gray-500 py-6">No messages</p>
                                 <?php else: ?>
@@ -325,14 +344,14 @@ require_once __DIR__ . '/data.php';
                                         <div class="msg-row relative">
                                             <a href="#"
                                                 data-id="<?= (int)$m['message_id']; ?>"
-                                                class="msg-item flex items-start px-4 py-3 hover:bg-gray-50 <?= $isUnread ? 'bg-indigo-50' : '' ?>">
+                                                class="msg-item flex items-start gap-3 px-4 py-3 hover:bg-gray-50 <?= $isUnread ? 'bg-indigo-50' : '' ?>">
 
                                                 <img src="<?= $avatar; ?>"
                                                     alt="<?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>"
-                                                    class="w-8 h-8 rounded-full">
+                                                    class="w-8 h-8 rounded-full shrink-0">
 
-                                                <div class="ml-3 flex-1 min-w-0">
-                                                    <div class="flex items-center justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center justify-between gap-3">
                                                         <p class="text-sm font-medium text-gray-900 truncate">
                                                             <?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>
                                                         </p>
@@ -348,10 +367,9 @@ require_once __DIR__ . '/data.php';
                                             </a>
 
                                             <?php if ($isUnread): ?>
-                                                <span class="absolute top-4 left-3 w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>
+                                                <span class="msg-dot absolute top-4 left-3 w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>
                                             <?php endif; ?>
 
-                                            <!-- delete button (optional) -->
                                             <button type="button"
                                                 data-id="<?= (int)$m['message_id']; ?>"
                                                 class="msg-clear absolute top-3 right-3 text-gray-400 hover:text-red-500 text-sm"
@@ -362,16 +380,17 @@ require_once __DIR__ . '/data.php';
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
-                            <div class="p-3 border-t border-gray-200">
+
+                            <!-- Footer -->
+                            <div class="px-4 py-3 border-t border-gray-100 bg-gray-50">
                                 <a id="viewAllMessages"
-                                    href="/notifications.php"
+                                    href="/E-commerce-shoes/admin/pages/messages.php"
                                     class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all messages
                                 </a>
                             </div>
                         </div>
                     </div>
-
                     <!-- Separator -->
                     <div class="h-6 w-px bg-gray-300"></div>
 

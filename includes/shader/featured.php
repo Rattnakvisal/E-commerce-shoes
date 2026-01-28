@@ -147,11 +147,6 @@ require_once __DIR__ . '/../contract/Featured.php';
                                             -<?= $discount ?>% OFF
                                         </div>
                                     <?php endif; ?>
-
-                                    <!-- Favorite Button -->
-                                    <button class="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 shadow-lg">
-                                        <i class="far fa-heart text-gray-700 group-hover:text-red-500"></i>
-                                    </button>
                                 </div>
 
                                 <!-- Content Overlay -->

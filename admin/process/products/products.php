@@ -34,6 +34,14 @@ $tabs = [
         'activeText' => 'text-yellow-600',
     ],
     [
+        'label' => 'Out of Stock',
+        'status' => '',
+        'brand' => '',
+        'count' => 'out_of_stock',
+        'pill'  => 'bg-red-100 text-red-600',
+        'activeText' => 'text-red-600',
+    ],
+    [
         'label' => 'Nike',
         'status' => '',
         'brand' => 'Nike',

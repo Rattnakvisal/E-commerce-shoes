@@ -1,0 +1,24 @@
+#globalSearchResults a {
+  text-decoration: none;
+}
+
+#globalSearchResults .result-item {
+  border-radius: 0.5rem;
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
+}
+
+#globalSearchResults .result-item:hover {
+  background: #f8fafc;
+}
+
+#globalSearchResults .result-item:active {
+  transform: scale(0.995);
+}
+
+#globalSearchResults mark {
+  background: #fde68a;
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
