@@ -24,8 +24,8 @@ $tabs = [
         'label'      => 'Inactive',
         'status'     => 'inactive',
         'countKey'   => 'inactive',
-        'pill'       => 'bg-gray-100 text-gray-700',
-        'activeText' => 'text-gray-700',
+        'pill'       => 'bg-yellow-100 text-yellow-700',
+        'activeText' => 'text-yellow-700',
     ],
 ];
 ?>

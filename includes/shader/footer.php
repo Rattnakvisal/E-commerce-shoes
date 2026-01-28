@@ -84,32 +84,32 @@
                     <div class="flex flex-wrap items-center gap-6">
                         <!-- ABA -->
                         <div class="flex items-center gap-2">
-                            <img src="../../view/assets/Payments/aba-web-top-logo.png"
+                            <img src="../../view/assets/Payments/aba.png"
                                 alt="ABA Bank"
                                 class="w-10 h-7 object-contain">
                         </div>
                         <!-- Wing -->
                         <div class="flex items-center gap-2">
-                            <img src="../../view/assets/Payments/download.png"
+                            <img src="../../view/assets/Payments/wing.png"
                                 alt="Wing Bank"
                                 class="w-10 h-7 object-contain">
                         </div>
                         <!-- Chip Mong -->
                         <div class="flex items-center gap-2">
-                            <img src="../../view/assets/Payments/logo.png"
+                            <img src="../../view/assets/Payments/chipmong.png"
                                 alt="Chip Mong Bank"
                                 class="w-15 h-7 object-contain">
                         </div>
                         <!-- NBC -->
                         <div class="flex items-center gap-2">
-                            <img src="../../view/assets/Payments/download (1).png"
+                            <img src="../../view/assets/Payments/icon.png"
                                 alt="NBC"
                                 class="w-10 h-7 object-contain">
                         </div>
 
                         <!-- ACLEDA -->
                         <div class="flex items-center gap-2">
-                            <img src="../../view/assets/Payments/download.jpg"
+                            <img src="../../view/assets/Payments/acleda.png"
                                 alt="ACLEDA"
                                 class="w-10 h-7 object-contain">
                         </div>

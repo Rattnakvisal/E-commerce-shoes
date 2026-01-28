@@ -175,84 +175,100 @@ require_once __DIR__ . '/data.php';
                         <i class="fas fa-search"></i>
                     </button>
 
-                    <!-- Notifications -->
-                    <div class="relative">
-                        <button id="notificationsButton"
-                            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 relative">
-                            <i class="fas fa-bell"></i>
+                    <!-- NOTIFICATIONS (ADMIN) -->
+                    <div class="relative" id="notifWrap">
 
-                            <?php if ($unreadCount > 0): ?>
-                                <span
-                                    class="badge-count absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                    <?= $unreadCount > 99 ? '99+' : $unreadCount ?>
-                                </span>
-                            <?php else: ?>
-                                <span class="badge-count absolute -top-1 -right-1 hidden"></span>
-                            <?php endif; ?>
+                        <!-- Bell Button -->
+                        <button
+                            id="notificationsButton"
+                            type="button"
+                            class="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                            <i class="fas fa-bell text-lg"></i>
+
+                            <span
+                                id="notificationBadge"
+                                class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold
+             rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center
+             <?= ((int)$unreadCount > 0) ? '' : 'hidden' ?>">
+                                <?= ((int)$unreadCount > 99) ? '99+' : (int)$unreadCount ?>
+                            </span>
                         </button>
 
-                        <div id="notificationsDropdown"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden z-50">
-
+                        <!-- Dropdown -->
+                        <div
+                            id="notificationsDropdown"
+                            class="hidden absolute right-0 mt-3 w-96 max-w-[90vw]
+           bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50"
+                            role="menu">
                             <!-- Header -->
-                            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                                <h3 class="font-semibold text-gray-800">Notifications</h3>
+                            <div class="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+                                <h3 class="text-sm font-semibold text-gray-800">Notifications</h3>
 
                                 <div class="flex items-center gap-3">
-                                    <button id="markAllReadBtn"
-                                        class="text-xs text-indigo-600 hover:text-indigo-800">
-                                        Mark all as read
+                                    <button id="markAllReadBtn" type="button" class="text-xs text-indigo-600 hover:underline">
+                                        Mark all read
                                     </button>
-                                    <button id="clearAllNotifsBtn"
-                                        class="text-xs text-red-600 hover:text-red-800">
-                                        Clear all
+                                    <button id="clearAllNotifsBtn" type="button" class="text-xs text-red-600 hover:underline">
+                                        Clear
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Notifications List -->
-                            <div id="notificationsList"
-                                class="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                            <!-- List -->
+                            <div id="notificationsList" class="max-h-[360px] overflow-y-auto divide-y divide-gray-100">
                                 <?php if (empty($notifications)): ?>
-                                    <p class="text-center text-sm text-gray-500 py-6">
-                                        No notifications
-                                    </p>
+                                    <div class="py-10 text-center text-sm text-gray-500">No notifications</div>
                                 <?php else: ?>
                                     <?php foreach ($notifications as $n): ?>
-                                        <div class="notif-row relative">
-                                            <a href="#"
-                                                data-id="<?= (int)$n['notification_id'] ?>"
-                                                class="notif-item block px-4 py-3 hover:bg-gray-50
-                                                <?= $n['is_read'] == 0 ? 'bg-indigo-50' : '' ?>">
-                                                <div class="flex justify-between items-start">
-                                                    <p class="text-sm font-medium text-gray-800">
-                                                        <?= htmlspecialchars($n['title']) ?>
-                                                    </p>
-                                                    <span class="text-xs text-gray-400 whitespace-nowrap">
-                                                        <?= date('d M Y H:i', strtotime($n['created_at'])) ?>
-                                                    </span>
+                                        <?php
+                                        $id = (int)($n['notification_id'] ?? 0);
+                                        $title = htmlspecialchars((string)($n['title'] ?? ''), ENT_QUOTES, 'UTF-8');
+                                        $msg = htmlspecialchars((string)($n['message'] ?? ''), ENT_QUOTES, 'UTF-8');
+                                        $isRead = (int)($n['is_read'] ?? 0) === 1;
+                                        $date = !empty($n['created_at']) ? date('d M H:i', strtotime((string)$n['created_at'])) : '';
+                                        ?>
+                                        <div class="relative group notif-row">
+                                            <!-- Clickable row -->
+                                            <a
+                                                href="#"
+                                                data-id="<?= $id ?>"
+                                                class="notif-item block px-4 py-3 transition hover:bg-gray-50
+                     <?= $isRead ? '' : 'bg-indigo-50/60' ?>"
+                                                role="menuitem">
+                                                <div class="flex justify-between items-start gap-2">
+                                                    <p class="text-sm font-medium text-gray-900 line-clamp-1"><?= $title ?></p>
+                                                    <span class="text-xs text-gray-400 whitespace-nowrap"><?= htmlspecialchars($date, ENT_QUOTES, 'UTF-8') ?></span>
                                                 </div>
-
-                                                <p class="text-xs text-gray-600 mt-1 truncate">
-                                                    <?= htmlspecialchars($n['message']) ?>
-                                                </p>
+                                                <p class="mt-1 text-xs text-gray-600 line-clamp-2"><?= $msg ?></p>
                                             </a>
-                                            <?php if ($n['is_read'] == 0): ?>
-                                                <span class="absolute top-4 left-3 w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>
+
+                                            <!-- Unread dot -->
+                                            <?php if (!$isRead): ?>
+                                                <span class="absolute top-4 left-2 w-2 h-2 bg-indigo-500 rounded-full"></span>
                                             <?php endif; ?>
-                                            <button type="button"
-                                                data-id="<?= (int)$n['notification_id'] ?>"
-                                                class="notif-clear absolute top-3 right-3 text-gray-400 hover:text-red-500 text-sm"
-                                                aria-label="Delete notification">
+
+                                            <!-- Delete (hover reveal) -->
+                                            <button
+                                                type="button"
+                                                data-id="<?= $id ?>"
+                                                class="notif-clear absolute top-3 right-3 opacity-0 group-hover:opacity-100
+                     text-gray-400 hover:text-red-500 transition text-sm"
+                                                aria-label="Delete notification"
+                                                title="Delete">
                                                 &times;
                                             </button>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
-                            <div class="p-3 border-t border-gray-200">
-                                <a id="viewAllNotifications"
-                                    href="#"
+
+                            <!-- Footer -->
+                            <div class="border-t px-4 py-3 bg-gray-50">
+                                <a
+                                    id="viewAllNotifications"
+                                    href="/E-commerce-shoes/admin/notifications.php"
                                     class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all notifications
                                 </a>
@@ -447,7 +463,6 @@ require_once __DIR__ . '/data.php';
                 class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 active-menu-item touch-feedback">
                 <i class="fas fa-home mr-3 text-gray-500 w-5 text-center"></i>
                 Dashboard
-                <span class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">5</span>
             </a>
 
             <!-- Users -->
@@ -481,14 +496,13 @@ require_once __DIR__ . '/data.php';
                             <i class="fa-solid fa-folder-open mr-3 text-gray-500 w-5 text-center"></i>
                             Item
                             <span class="ml-auto flex items-center gap-2">
-                                <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">24</span>
                                 <i class="itemChevron fa-solid fa-chevron-down text-xs transition-transform"></i>
                             </span>
                         </button>
                         <!-- Dropdown Menu -->
                         <div class="itemDropdown hidden mt-1 ml-8 space-y-1">
 
-                            <a href="/E-commerce-shoes/admin/products.php"
+                            <a href="/E-commerce-shoes/admin/process/featured/featured.php"
                                 class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                                 <i class="fa-solid fa-star mr-3 text-gray-500 w-5 text-center"></i>
                                 Featured

@@ -25,7 +25,7 @@ if (session_status() === PHP_SESSION_NONE) {
             color: #fff;
             overflow: hidden;
             font-size: 14px;
-            z-index: 60;
+            z-index: -1000;
         }
 
         /* ===============================
