@@ -128,41 +128,24 @@ require_once __DIR__ . '/../contract/navbar.php';
 				<i class="fas fa-search"></i>
 			</button>
 
-			<!-- NOTIFICATION -->
+			<!-- notification -->
 			<?php if ($userLogged): ?>
-				<div class="relative text-xl text-gray-700">
-					<button id="notificationTrigger" type="button"
-						class="relative focus:outline-none"
-						aria-expanded="false" aria-haspopup="true">
+				<div class="relative hidden md:block text-xl text-gray-700">
+					<button id="notificationTrigger" class="relative focus:outline-none" aria-expanded="false" aria-haspopup="true">
 						<i class="far fa-bell"></i>
-						<span id="notificationCount"
-							class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-							0
-						</span>
+						<span id="notificationCount" class="wishlist-count absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
 					</button>
-
-					<div id="notificationDropdown"
-						class="hidden z-[60]
-                      absolute right-0 mt-3 w-[22rem] max-w-[92vw]
-                      bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden
-                      max-sm:fixed max-sm:left-3 max-sm:right-3 max-sm:top-[72px] max-sm:mt-0">
-
-						<div class="px-4 py-3 border-b flex items-center justify-between">
-							<h3 class="font-semibold text-gray-900">Notifications</h3>
-							<span class="text-xs text-gray-500" id="notificationMeta"></span>
-						</div>
-
-						<div id="notificationList" class="max-h-72 overflow-y-auto text-sm">
-							<!-- items injected by JS -->
-						</div>
-
-						<div class="border-t px-3 py-2 flex items-center justify-between gap-3 bg-gray-50">
-							<button id="markAllRead" type="button" class="text-sm text-blue-600 hover:underline">
-								Mark all read
-							</button>
-							<button id="clearAll" type="button" class="text-sm text-red-600 hover:underline">
-								Clear all
-							</button>
+					<!-- Dropdown -->
+					<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border z-50">
+						<div class="p-3 border-b font-semibold">Notifications</div>
+						<div id="notificationList" class="max-h-64 overflow-auto text-sm"></div>
+						<div class="border-t p-2 flex items-center justify-between gap-2">
+							<div class="text-left">
+								<button id="markAllRead" class="text-sm text-blue-600">Mark all read</button>
+							</div>
+							<div class="text-right">
+								<button id="clearAll" class="text-sm text-red-600">Clear all</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -357,5 +340,5 @@ require_once __DIR__ . '/../contract/navbar.php';
 	</div>
 </aside>
 <script src="../../view/assets/Js/script.js"></script>
-<script src="../../view/assets/Js/notification_users.js"></script>
+<script src="../../view/assets/Js/notification.js"></script>
 <script src="../../view/assets/Js/search.js"></script>

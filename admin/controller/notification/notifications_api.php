@@ -43,7 +43,6 @@ if (!$userId) {
 }
 
 // If you want ADMIN ONLY, uncomment this:
-// if ($role !== 'admin') respond(false, 'Unauthorized');
 
 $pdo = $pdo ?? ($conn ?? null);
 if (!$pdo instanceof PDO) {

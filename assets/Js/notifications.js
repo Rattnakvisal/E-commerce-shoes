@@ -199,8 +199,6 @@
   });
 
   // Delegation inside list:
-  // - click row => mark_read
-  // - click X => delete
   listEl.addEventListener("click", async (e) => {
     const delBtn = e.target.closest(".notif-clear");
     if (delBtn) {

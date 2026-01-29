@@ -1,7 +1,5 @@
 /* =========================================================
    GLOBAL SEARCH (Desktop + Mobile)
-   - Desktop => #globalSearchResults
-   - Mobile  => #mobileSearchResults
 ========================================================= */
 (() => {
   "use strict";

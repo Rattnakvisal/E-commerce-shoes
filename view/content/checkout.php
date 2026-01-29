@@ -8,6 +8,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Checkout - Complete Your Purchase</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -81,7 +82,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                 </div>
 
                 <div class="mt-8 pt-6 border-t border-gray-200">
-                    <button type="button" onclick="confirmPaidAndSubmit()"
+                    <button id="btnCompletePayment" type="button" onclick="confirmPaidAndSubmit(event)"
                         class="w-full py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-lg transition duration-300">
                         I've Completed Payment
                     </button>
@@ -91,6 +92,16 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Processing / Reload Overlay -->
+    <div id="reloadOverlay"
+        class="fixed inset-0 bg-white/90 backdrop-blur-sm hidden z-[60] flex flex-col items-center justify-center p-6">
+        <i class="fas fa-circle-notch text-gray-900 text-6xl mb-6 animate-spin"></i>
+        <p class="text-lg font-semibold text-gray-900">Processing your payment...</p>
+        <p class="text-sm text-gray-500 mt-2 text-center max-w-sm">
+            Please wait, do not close this page.
+        </p>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
@@ -181,9 +192,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 rounded-lg">
                             <?php if (empty($paymentMethods)): ?>
-                                <div class="text-sm text-red-600">
-                                    No payment methods found. Insert into payment_methods table.
-                                </div>
+                                <div class="text-sm text-red-600">No payment methods found. Insert into payment_methods table.</div>
                             <?php else: ?>
                                 <?php foreach ($paymentMethods as $m):
                                     $code = strtolower(trim($m['method_code']));
@@ -200,14 +209,12 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                                         class="payment-card text-left p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 transition"
                                         data-method="<?= e($code) ?>"
                                         onclick="selectPayment(event,'<?= e($code) ?>')">
-
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center border border-gray-200">
                                                 <img src="<?= e($logo) ?>" alt="<?= e($name) ?>"
                                                     class="max-h-8 max-w-10 object-contain"
                                                     onerror="this.style.display='none';">
                                             </div>
-
                                             <div>
                                                 <p class="font-semibold text-gray-900"><?= e($name) ?></p>
                                                 <p class="text-sm text-gray-600"><?= e(strtoupper($code)) ?> Payment</p>
@@ -236,12 +243,14 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
 
                     <div class="p-6 space-y-6 max-h-[400px] overflow-y-auto">
                         <?php foreach ($products as $p):
-                            $qty = $cart[$p['product_id']] ?? 0;
-                            $itemTotal = ((float)$p['price']) * (int)$qty;
+                            $pid = (int)$p['product_id'];
+                            $qty = (int)($cart[$pid] ?? 0);
+                            if ($qty < 1) continue;
+                            $itemTotal = ((float)$p['price']) * $qty;
                         ?>
                             <div class="flex items-center gap-4 pb-4 border-b border-gray-100">
                                 <div class="relative">
-                                    <img src="<?= e($p['image_url']) ?>" class="w-20 h-20 rounded-xl object-cover bg-gray-100">
+                                    <img src="<?= e($p['image_url']) ?>" class="w-20 h-20 rounded-xl object-cover bg-gray-100" alt="">
                                     <span class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
                                         <?= e($qty) ?>
                                     </span>
@@ -296,7 +305,6 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
     <script>
         let selectedPayment = null;
 
-        // QR image paths
         const qrMap = {
             aba: "../assets/qr/aba.jpg",
             wing: "../assets/qr/wing.jpg",
@@ -305,48 +313,54 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
             chipmong: "../assets/qr/chipmong.jpg"
         };
 
+        const $ = (id) => document.getElementById(id);
+
         function selectPayment(event, method) {
             selectedPayment = method;
-            document.getElementById('paymentMethod').value = method;
+            $("paymentMethod").value = method;
 
-            document.querySelectorAll('.payment-card').forEach(card => {
-                card.classList.remove('selected', 'border-blue-500');
-                card.classList.add('border-gray-200');
+            document.querySelectorAll(".payment-card").forEach((card) => {
+                card.classList.remove("selected", "border-blue-500");
+                card.classList.add("border-gray-200");
             });
 
             const card = event.currentTarget;
-            card.classList.add('selected', 'border-blue-500');
-            card.classList.remove('border-gray-200');
+            card.classList.add("selected", "border-blue-500");
+            card.classList.remove("border-gray-200");
         }
 
         function showQRModal(method) {
             const src = qrMap[method];
-            if (!src) {
-                alert("QR image not found for: " + method);
-                return;
-            }
-            document.getElementById('qrImage').src = src;
+            if (!src) return alert("QR image not found for: " + method);
 
-            const modal = document.getElementById('qrModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            $("qrImage").src = src;
+            const modal = $("qrModal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
         }
 
         function closeQRModal() {
-            const modal = document.getElementById('qrModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            const modal = $("qrModal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        function showReloadOverlay() {
+            const overlay = $("reloadOverlay");
+            if (!overlay) return;
+            overlay.classList.remove("hidden");
+            overlay.classList.add("flex");
         }
 
         function processOrder(event) {
-            const form = document.getElementById('checkoutForm');
+            const form = $("checkoutForm");
 
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return false;
             }
             if (!selectedPayment) {
-                alert('Please select payment method');
+                alert("Please select payment method");
                 return false;
             }
 
@@ -355,19 +369,35 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
             return false;
         }
 
-        function confirmPaidAndSubmit() {
-            const confirmInput = document.getElementById('confirmPaid');
-            if (confirmInput) confirmInput.value = '1';
+        function confirmPaidAndSubmit(ev) {
+            const confirmInput = $("confirmPaid");
+            if (confirmInput) confirmInput.value = "1";
+
+            const btn = $("btnCompletePayment");
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add("opacity-60", "cursor-not-allowed");
+                btn.innerHTML = `<i class="fas fa-circle-notch animate-spin mr-2"></i> Processing...`;
+            }
 
             closeQRModal();
-            document.getElementById('checkoutForm').submit();
+            showReloadOverlay();
+
+            setTimeout(() => {
+                $("checkoutForm").submit();
+            }, 250);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const first = document.querySelector('.payment-card[data-method]');
+        document.addEventListener("DOMContentLoaded", () => {
+            const first = document.querySelector(".payment-card[data-method]");
             if (first) first.click();
         });
+
+        window.addEventListener("beforeunload", () => {
+            showReloadOverlay();
+        });
     </script>
+
 </body>
 
 </html>
