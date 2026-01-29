@@ -108,13 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $conn->commit();
 
-                    // Send verification email (after commit)
+                    // Send verification email
                     require_once __DIR__ . '/../Helper/mail_helper.php';
 
                     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                     $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
-                    $verifyUrl = $scheme . '://' . $host . '/auth/Helper/verify-email.php?token=' . urlencode($token);
+                    $verifyUrl = $scheme . '://' . $host . '/auth/verify/verify-email.php?token=' . urlencode($token);
 
                     $subject = 'Verify your email';
                     $html = "

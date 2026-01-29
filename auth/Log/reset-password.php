@@ -39,11 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $stmt = $conn->prepare(
                     "SELECT id
-                                         FROM password_resets
-                                         WHERE user_id = ?
-                                             AND (used_at IS NOT NULL OR expires_at > NOW())
-                                         ORDER BY id DESC
-                                         LIMIT 1"
+                            FROM password_resets
+                            WHERE user_id = ?
+                            AND (used_at IS NOT NULL OR expires_at > NOW())
+                            ORDER BY id DESC
+                            LIMIT 1"
                 );
                 $stmt->execute([$userId]);
                 $resetRow = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -148,62 +148,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </label>
 
                             <div class="relative">
-                                <i class="fa-solid fa-lock absolute left-3 top-1/2
-                                      -translate-y-1/2 text-slate-400"></i>
-
+                                <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                                 <input id="pw1" name="password" type="password" required
                                     placeholder="New password (min 8 chars)"
-                                    class="w-full pl-10 pr-12 py-3 rounded-xl border
-                                          bg-slate-50 focus:ring-2 focus:ring-slate-900">
-
+                                    class="w-full pl-10 pr-12 py-3 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
                                 <button type="button"
                                     onclick="togglePw('pw1', this)"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2
-                                           text-slate-500 hover:text-slate-900">
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
                             </div>
-
                             <p class="text-xs text-slate-500 mt-2">
                                 Use at least 8 characters with letters & numbers.
                             </p>
                         </div>
-
                         <!-- Confirm password -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">
                                 Confirm password
                             </label>
-
                             <div class="relative">
-                                <i class="fa-solid fa-shield-halved absolute left-3 top-1/2
-                                      -translate-y-1/2 text-slate-400"></i>
+                                <i class="fa-solid fa-shield-halved absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
 
                                 <input id="pw2" name="confirm_password" type="password" required
                                     placeholder="Confirm password"
-                                    class="w-full pl-10 pr-12 py-3 rounded-xl border
-                                          bg-slate-50 focus:ring-2 focus:ring-slate-900">
-
+                                    class="w-full pl-10 pr-12 py-3 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
                                 <button type="button"
                                     onclick="togglePw('pw2', this)"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2
-                                           text-slate-500 hover:text-slate-900">
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
                             </div>
-
                             <p id="matchHint" class="text-xs mt-2"></p>
                         </div>
-
                         <!-- Submit -->
                         <button type="submit"
-                            class="w-full bg-slate-900 text-white py-3 rounded-xl
-                                   font-semibold hover:bg-slate-800 transition
-                                   flex items-center justify-center gap-2">
+                            class="w-full bg-slate-900 text-white py-3 rounded-xl font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-key"></i>
                             Set new password
                         </button>
-
                         <div class="text-sm text-slate-600 text-center">
                             Back to
                             <a href="login.php"

@@ -43,8 +43,7 @@ function login_set_session_and_cookie(PDO $conn, array $user): void
     } catch (Throwable $e) {
         error_log('[helpers] auth_token update failed: ' . $e->getMessage());
     }
-
-    // Optional avatar support: accept 'avatar' or 'picture' in $user
+    // Set avatar if available
     if (!empty($user['avatar'])) {
         $_SESSION['avatar'] = $user['avatar'];
     } elseif (!empty($user['picture'])) {
@@ -66,9 +65,9 @@ function restore_login_from_cookie(PDO $conn): void
     try {
         $stmt = $conn->prepare(
             "SELECT user_id, name, email, role, status
-             FROM users
-             WHERE auth_token = ?
-             LIMIT 1"
+            FROM users
+            WHERE auth_token = ?
+            LIMIT 1"
         );
         $stmt->execute([$token]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);

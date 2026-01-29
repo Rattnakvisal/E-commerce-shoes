@@ -51,7 +51,7 @@ require_once __DIR__ . '/data.php';
 
         <!-- Users (admin only) -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/process/users/users.php"
+            <a href="/E-commerce-shoes/admin/controller/users/users.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                 <i class="fas fa-users mr-3 text-gray-500 w-5 text-center"></i>
                 Users
@@ -59,7 +59,7 @@ require_once __DIR__ . '/data.php';
         <?php endif; ?>
 
         <!-- Navbar Manager -->
-        <a href="/E-commerce-shoes/admin/process/navbar/menu.php"
+        <a href="/E-commerce-shoes/admin/controller/navbar/menu.php"
             class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
             <i class="fas fa-bars mr-3 text-gray-600 w-5 text-center"></i>
             Navbar Manager
@@ -68,7 +68,7 @@ require_once __DIR__ . '/data.php';
         <div class="pt-2">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">E-commerce</p>
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/process/products/products.php"
+                <a href="/E-commerce-shoes/admin/controller/products/products.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-shopping-bag mr-3 text-gray-500 w-5 text-center"></i>
                     Products
@@ -88,26 +88,26 @@ require_once __DIR__ . '/data.php';
                     <!-- Dropdown Menu -->
                     <div class="itemDropdown hidden mt-1 ml-8 space-y-1">
 
-                        <a href="/E-commerce-shoes/admin/process/featured/featured.php"
+                        <a href="/E-commerce-shoes/admin/controller/featured/featured.php"
                             class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                             <i class="fa-solid fa-star mr-3 text-gray-500 w-5 text-center"></i>
                             Featured
                         </a>
 
-                        <a href="/E-commerce-shoes/admin/process/category/category.php"
+                        <a href="/E-commerce-shoes/admin/controller/category/category.php"
                             class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                             <i class="fa-solid fa-layer-group mr-3 text-gray-500 w-5 text-center"></i>
                             Categories
                         </a>
 
-                        <a href="/E-commerce-shoes/admin/process/slides/slides.php"
+                        <a href="/E-commerce-shoes/admin/controller/slides/slides.php"
                             class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                             <i class="fa-solid fa-sliders mr-3 text-gray-500 w-5 text-center"></i>
                             Slides
                         </a>
                     </div>
                 </div>
-                <a href="/E-commerce-shoes/admin/process/orders/order.php"
+                <a href="/E-commerce-shoes/admin/controller/orders/order.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-shopping-cart mr-3 text-gray-500 w-5 text-center"></i>
                     Orders
@@ -120,14 +120,14 @@ require_once __DIR__ . '/data.php';
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
                 <div class="mt-2 space-y-1">
 
-                    <a href="/E-commerce-shoes/admin/process/analytics/analytics.php"
+                    <a href="/E-commerce-shoes/admin/controller/analytics/analytics.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
                         Analytics
                     </a>
 
 
-                    <a href="/E-commerce-shoes/admin/process/report/report.php"
+                    <a href="/E-commerce-shoes/admin/controller/report/report.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-pie mr-3 text-gray-500 w-5 text-center"></i>
                         Reports
@@ -485,14 +485,14 @@ require_once __DIR__ . '/data.php';
             </a>
 
             <!-- Users -->
-            <a href="/E-commerce-shoes/admin/process/users/users.php"
+            <a href="/E-commerce-shoes/admin/controller/users/users.php"
                 class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                 <i class="fas fa-users mr-3 text-gray-500 w-5 text-center"></i>
                 Users
             </a>
 
             <!-- Navbar Manager -->
-            <a href="/E-commerce-shoes/admin/process/navbar/menu.php"
+            <a href="/E-commerce-shoes/admin/controller/navbar/menu.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                 <i class="fas fa-bars mr-3 text-gray-600 w-5 text-center"></i>
                 Navbar Manager
@@ -502,7 +502,7 @@ require_once __DIR__ . '/data.php';
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">E-commerce</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/E-commerce-shoes/admin/process/products/products.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                    <a href="/E-commerce-shoes/admin/controller/products/products.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-shopping-bag mr-3 text-gray-500 w-5 text-center"></i>
                         Products
                     </a>
@@ -521,26 +521,26 @@ require_once __DIR__ . '/data.php';
                         <!-- Dropdown Menu -->
                         <div class="itemDropdown hidden mt-1 ml-8 space-y-1">
 
-                            <a href="/E-commerce-shoes/admin/process/featured/featured.php"
+                            <a href="/E-commerce-shoes/admin/controller/featured/featured.php"
                                 class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                                 <i class="fa-solid fa-star mr-3 text-gray-500 w-5 text-center"></i>
                                 Featured
                             </a>
 
-                            <a href="/E-commerce-shoes/admin/process/category/category.php"
+                            <a href="/E-commerce-shoes/admin/controller/category/category.php"
                                 class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                                 <i class="fa-solid fa-layer-group mr-3 text-gray-500 w-5 text-center"></i>
                                 Categories
                             </a>
 
-                            <a href="/E-commerce-shoes/admin/process/slides/slides.php"
+                            <a href="/E-commerce-shoes/admin/controller/slides/slides.php"
                                 class="flex items-center px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-100">
                                 <i class="fa-solid fa-sliders mr-3 text-gray-500 w-5 text-center"></i>
                                 Slides
                             </a>
                         </div>
                     </div>
-                    <a href="/E-commerce-shoes/admin/process/orders/order.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
+                    <a href="/E-commerce-shoes/admin/controller/orders/order.php" class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-shopping-cart mr-3 text-gray-500 w-5 text-center"></i>
                         Orders
                     </a>
@@ -551,7 +551,7 @@ require_once __DIR__ . '/data.php';
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/E-commerce-shoes/admin/process/analytics/analytics.php"
+                    <a href="/E-commerce-shoes/admin/controller/analytics/analytics.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-chart-bar mr-3 text-gray-500 w-5 text-center"></i>
                         Analytics
@@ -598,9 +598,9 @@ require_once __DIR__ . '/data.php';
     }
 </script>
 <script src="/E-commerce-shoes/assets/Js/nav.js"></script>
-<?php if (strpos($_SERVER['REQUEST_URI'], '/admin/process/slides/slides.php') !== false): ?>
-    <script src="/E-commerce-shoes/admin/process/slides/media_choice.js"></script>
-    <script src="/E-commerce-shoes/admin/process/slides/media_preview.js"></script>
+<?php if (strpos($_SERVER['REQUEST_URI'], '/admin/controller/slides/slides.php') !== false): ?>
+    <script src="/E-commerce-shoes/admin/controller/slides/media_choice.js"></script>
+    <script src="/E-commerce-shoes/admin/controller/slides/media_preview.js"></script>
 <?php endif; ?>
 <script src="/E-commerce-shoes/assets/Js/notifications.js"></script>
 <script src="/E-commerce-shoes/assets/Js/message.js"></script>

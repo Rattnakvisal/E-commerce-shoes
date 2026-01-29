@@ -22,9 +22,9 @@ if (empty($_SESSION['user_id']) && !empty($_COOKIE['auth_token'])) {
     if (isset($conn) && $conn instanceof PDO) {
         $stmt = $conn->prepare(
             "SELECT user_id, name, email, role
-             FROM users
-             WHERE auth_token = ?
-             LIMIT 1"
+            FROM users
+            WHERE auth_token = ?
+            LIMIT 1"
         );
         $stmt->execute([(string)$_COOKIE['auth_token']]);
         $u = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -58,9 +58,9 @@ if (!empty($_SESSION['user_id'])) {
 
             $stmt = $conn->prepare(
                 "SELECT name, full_name
-                 FROM users
-                 WHERE user_id = ?
-                 LIMIT 1"
+                FROM users
+                WHERE user_id = ?
+                LIMIT 1"
             );
             $stmt->execute([$_SESSION['user_id']]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];

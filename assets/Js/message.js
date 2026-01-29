@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const markAll = document.getElementById("msgMarkAllReadBtn");
   const clearAllBtn = document.getElementById("msgClearAllBtn");
 
-  const API = "/E-commerce-shoes/admin/process/message/messages_api.php";
+  const API = "/E-commerce-shoes/admin/controller/message/messages_api.php";
 
   if (!dropdown || !msgBtn || !list) return;
 

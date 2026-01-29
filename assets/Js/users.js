@@ -2,7 +2,7 @@
    CONFIG
 ===================================================== */
 const BASE_URL = "/E-commerce-shoes";
-const USERS_API_URL = `${BASE_URL}/admin/process/users/users_api.php`;
+const USERS_API_URL = `${BASE_URL}/admin/controller/users/users_api.php`;
 const RELOAD_DELAY = 700;
 
 /* =====================================================

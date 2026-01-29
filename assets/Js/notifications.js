@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const apiBase = "/E-commerce-shoes/admin/process/notifications_api.php";
+  const apiBase = "/E-commerce-shoes/admin/controller/notifications_api.php";
 
   // DOM
   const wrap = document.getElementById("notifWrap");
