@@ -1,349 +1,129 @@
-document.addEventListener("DOMContentLoaded", () => {
-  "use strict";
+(function () {
+  const qs = (s, p = document) => p.querySelector(s);
 
-  /* =========================
-     HELPERS
-  ========================= */
-  const one = (s, ctx = document) => ctx.querySelector(s);
-  const all = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
-  const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
+  // USER DROPDOWN
+  const userBtn = qs("#userMenuTrigger");
+  const userDrop = qs("#userDropdown");
 
-  const stop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+  // NOTIFICATION DROPDOWN
+  const notiBtn = qs("#notificationTrigger");
+  const notiDrop = qs("#notificationDropdown");
 
-  const isHidden = (el) => !el || el.classList.contains("hidden");
-
-  /* =========================
-     BODY LOCK (no scroll)
-  ========================= */
-  const setBodyLock = (locked) => {
-    document.body.classList.toggle("overflow-hidden", locked);
-  };
-
-  /* =========================
-     SMOOTH HEIGHT TOGGLE
-  ========================= */
-  function smoothToggle(el, shouldOpen, duration = 280) {
-    if (!el) return;
-
-    // reset old transition safely
-    el.style.transition = "none";
-    el.style.overflow = "hidden";
-
-    if (shouldOpen) {
-      el.classList.remove("hidden");
-      el.style.height = "0px";
-
-      requestAnimationFrame(() => {
-        const h = el.scrollHeight;
-        el.style.transition = `height ${duration}ms ease`;
-        el.style.height = h + "px";
-      });
-    } else {
-      el.style.height = el.scrollHeight + "px";
-      requestAnimationFrame(() => {
-        el.style.transition = `height ${duration}ms ease`;
-        el.style.height = "0px";
-      });
-    }
-
-    const done = () => {
-      el.style.height = "";
-      el.style.overflow = "";
-      el.style.transition = "";
-      if (!shouldOpen) el.classList.add("hidden");
-    };
-
-    el.addEventListener("transitionend", done, { once: true });
-  }
-
-  /* =========================
-     GENERIC DROPDOWN MANAGER
-     (close on outside click + ESC + only one open)
-  ========================= */
-  const dropdowns = new Set();
-
-  function registerDropdown({
-    trigger,
-    panel,
-    openClass = "is-open",
-    useHidden = true,
-  }) {
-    if (!trigger || !panel) return;
-
-    const open = () => {
-      // close other dropdowns
-      dropdowns.forEach((d) => {
-        if (d.panel !== panel) d.close();
-      });
-
-      if (useHidden) panel.classList.remove("hidden");
-      panel.classList.add(openClass);
-      trigger.setAttribute("aria-expanded", "true");
-    };
-
-    const close = () => {
-      panel.classList.remove(openClass);
-      if (useHidden) panel.classList.add("hidden");
-      trigger.setAttribute("aria-expanded", "false");
-    };
-
-    const toggle = () => {
-      const opened =
-        panel.classList.contains(openClass) ||
-        !panel.classList.contains("hidden");
-      opened ? close() : open();
-    };
-
-    trigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggle();
+  function closeAllDropdowns(except) {
+    [userDrop, notiDrop].forEach((d) => {
+      if (!d || d === except) return;
+      d.classList.remove("dropdown-open");
     });
-
-    dropdowns.add({ trigger, panel, open, close, toggle });
-
-    return { open, close, toggle };
   }
 
-  function closeAllDropdowns() {
-    dropdowns.forEach((d) => d.close());
+  if (userBtn && userDrop) {
+    userBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = userDrop.classList.toggle("dropdown-open");
+      closeAllDropdowns(open ? userDrop : null);
+    });
   }
 
-  document.addEventListener("click", (e) => {
-    // outside click closes all dropdowns
-    closeAllDropdowns();
-  });
+  if (notiBtn && notiDrop) {
+    notiBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = notiDrop.classList.toggle("dropdown-open");
+      closeAllDropdowns(open ? notiDrop : null);
+    });
+  }
 
+  // Close dropdowns on outside click
+  document.addEventListener("click", () => closeAllDropdowns(null));
+
+  // Close on ESC
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeAllDropdowns();
-      closeDrawer();
-      closeSearchOverlay();
-      closeMobileSearch();
-    }
+    if (e.key === "Escape") closeAllDropdowns(null);
   });
 
-  /* =========================
-     MOBILE DRAWER
-  ========================= */
-  const mobileTrigger = one("#mobileMenuTrigger");
-  const mobileMenu = one("#mobileMenu");
-  const mobileOverlay = one("#mobileOverlay");
-  const closeMobileBtn = one("#closeMobileMenuBtn");
+  // MOBILE MENU
+  const mobileBtn = qs("#mobileMenuTrigger");
+  const closeBtn = qs("#closeMobileMenuBtn");
+  const overlay = qs("#mobileOverlay");
+  const mobileMenu = qs("#mobileMenu");
 
-  function openDrawer() {
-    if (!mobileMenu || !mobileOverlay) return;
-    mobileOverlay.classList.remove("hidden");
-    mobileMenu.classList.remove("-translate-x-full");
-    mobileMenu.classList.add("translate-x-0");
+  function openMobile() {
+    if (!overlay || !mobileMenu) return;
+    overlay.classList.remove("hidden");
+    overlay.classList.add("mobile-overlay-show");
+    mobileMenu.classList.add("mobile-open");
     mobileMenu.setAttribute("aria-hidden", "false");
-    setBodyLock(true);
-
-    // close dropdowns if any open
-    closeAllDropdowns();
   }
 
-  function closeDrawer() {
-    if (!mobileMenu || !mobileOverlay) return;
-    mobileOverlay.classList.add("hidden");
-    mobileMenu.classList.add("-translate-x-full");
-    mobileMenu.classList.remove("translate-x-0");
+  function closeMobile() {
+    if (!overlay || !mobileMenu) return;
+    overlay.classList.add("hidden");
+    overlay.classList.remove("mobile-overlay-show");
+    mobileMenu.classList.remove("mobile-open");
     mobileMenu.setAttribute("aria-hidden", "true");
-    setBodyLock(false);
   }
 
-  mobileTrigger?.addEventListener("click", (e) => {
-    stop(e);
-    openDrawer();
-  });
+  if (mobileBtn) mobileBtn.addEventListener("click", openMobile);
+  if (closeBtn) closeBtn.addEventListener("click", closeMobile);
+  if (overlay) overlay.addEventListener("click", closeMobile);
 
-  closeMobileBtn?.addEventListener("click", (e) => {
-    stop(e);
-    closeDrawer();
-  });
+  // MOBILE ACCORDION
+  document.querySelectorAll(".mobile-parent").forEach((parent) => {
+    const toggle = parent.querySelector(".parent-toggle");
+    const submenu = parent.querySelector(".mobile-submenu");
+    const icon = toggle ? toggle.querySelector("i.fas") : null;
 
-  mobileOverlay?.addEventListener("click", closeDrawer);
+    if (!toggle || !submenu) return;
 
-  window.addEventListener("resize", () => {
-    if (isDesktop()) closeDrawer();
-  });
+    toggle.addEventListener("click", () => {
+      const isOpen = !submenu.classList.contains("hidden");
 
-  /* =========================
-     MOBILE SUBMENUS
-  ========================= */
-  all(".mobile-parent").forEach((parent) => {
-    const btn = one(".parent-toggle", parent);
-    const submenu = one(".mobile-submenu", parent);
-    const arrow = one(".fa-chevron-right", parent);
-    if (!btn || !submenu) return;
-
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const willOpen = isHidden(submenu);
-
-      // close other parent submenus
-      all(".mobile-parent .mobile-submenu").forEach((s) => {
-        if (s !== submenu && !isHidden(s)) smoothToggle(s, false);
+      // close others for cleaner UX
+      document.querySelectorAll(".mobile-submenu").forEach((sm) => {
+        if (sm !== submenu) sm.classList.add("hidden");
       });
-      all(".mobile-parent .fa-chevron-right").forEach((a) => {
-        if (a !== arrow) a.classList.remove("rotate-90");
+      document
+        .querySelectorAll(".mobile-parent .parent-toggle i.fas")
+        .forEach((i) => {
+          if (i !== icon) i.classList.remove("parent-rotate");
+        });
+
+      submenu.classList.toggle("hidden", isOpen);
+      if (icon) icon.classList.toggle("parent-rotate", !isOpen);
+      toggle.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    parent.querySelectorAll(".mobile-group").forEach((group) => {
+      const gBtn = group.querySelector(".group-toggle");
+      const items = group.querySelector(".mobile-items");
+      const gIcon = gBtn ? gBtn.querySelector("i") : null;
+
+      if (!gBtn || !items) return;
+
+      gBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = !items.classList.contains("hidden");
+        items.classList.toggle("hidden", open);
+        if (gIcon) gIcon.classList.toggle("mobile-rotate", !open);
+        gBtn.setAttribute("aria-expanded", String(!open));
       });
-
-      smoothToggle(submenu, willOpen);
-      arrow?.classList.toggle("rotate-90", willOpen);
-      btn.setAttribute("aria-expanded", String(willOpen));
     });
   });
 
-  all(".mobile-group").forEach((group) => {
-    const btn = one(".group-toggle", group);
-    const list = one(".mobile-items", group);
-    const arrow = one(".fa-chevron-down", group);
-    if (!btn || !list) return;
-
+  // OPTIONAL: allow mega menu click-open (desktop) as well
+  document.querySelectorAll(".mega-parent > .mega-trigger").forEach((btn) => {
     btn.addEventListener("click", (e) => {
+      // click toggles; hover still works
       e.stopPropagation();
-      const willOpen = isHidden(list);
-      smoothToggle(list, willOpen);
-      arrow?.classList.toggle("rotate-180", willOpen);
-      btn.setAttribute("aria-expanded", String(willOpen));
+      const parent = btn.closest(".mega-parent");
+      document.querySelectorAll(".mega-parent").forEach((p) => {
+        if (p !== parent) p.classList.remove("mega-open");
+      });
+      parent.classList.toggle("mega-open");
     });
   });
-
-  /* =========================
-     DESKTOP MEGA MENU (hover)
-     - delay to prevent flicker
-     - safe zone: keeps open when mouse moves into menu
-  ========================= */
-  const megaParents = all(".mega-parent");
-
-  megaParents.forEach((mp) => {
-    const menu = one(".mega-menu-container", mp);
-    const btn = one("button", mp);
-    if (!menu || !btn) return;
-
-    let openT = null;
-    let closeT = null;
-
-    const open = () => {
-      clearTimeout(closeT);
-      openT = setTimeout(() => {
-        mp.classList.add("mega-open");
-      }, 80);
-    };
-
-    const close = () => {
-      clearTimeout(openT);
-      closeT = setTimeout(() => {
-        mp.classList.remove("mega-open");
-      }, 120);
-    };
-
-    // mouse hover
-    mp.addEventListener("mouseenter", open);
-    mp.addEventListener("mouseleave", close);
-
-    // keyboard (Tab focus)
-    btn.addEventListener("focus", open);
-    mp.addEventListener("focusout", (e) => {
-      // if focus moved outside the mega parent, close it
-      if (!mp.contains(e.relatedTarget)) close();
-    });
-  });
-
-  /* IMPORTANT:
-     Add this in your CSS:
-     .mega-parent .mega-menu-container { opacity:0; visibility:hidden; pointer-events:none; }
-     .mega-parent.mega-open .mega-menu-container { opacity:1; visibility:visible; pointer-events:auto; }
-  */
-
-  /* =========================
-     USER + NOTIFICATION DROPDOWNS
-  ========================= */
-  const userDD = registerDropdown({
-    trigger: one("#userMenuTrigger"),
-    panel: one("#userDropdown"),
-    openClass: "is-open",
-    useHidden: true, // you currently use "hidden"
-  });
-
-  const notiDD = registerDropdown({
-    trigger: one("#notificationTrigger"),
-    panel: one("#notificationDropdown"),
-    openClass: "is-open",
-    useHidden: true,
-  });
-
-  /* =========================
-     SEARCH OVERLAY (desktop results panel)
-  ========================= */
-  const searchOverlay = one("#globalSearchResults");
-  const closeSearchBtn = one("#closeSearchResults");
-
-  function openSearchOverlay() {
-    if (!searchOverlay) return;
-    searchOverlay.classList.remove("hidden");
-  }
-
-  function closeSearchOverlay() {
-    if (!searchOverlay) return;
-    searchOverlay.classList.add("hidden");
-  }
-
-  closeSearchBtn?.addEventListener("click", (e) => {
-    stop(e);
-    closeSearchOverlay();
-  });
-
-  // click outside overlay content closes it
-  searchOverlay?.addEventListener("click", (e) => {
-    if (e.target === searchOverlay) closeSearchOverlay();
-  });
-
-  // optional: open overlay when user types (if results exist)
-  // You can call openSearchOverlay() inside your search.js after injecting results.
-
-  /* =========================
-     MOBILE SEARCH BAR
-  ========================= */
-  const mobileSearchTrigger = one("#mobileSearchTrigger");
-  const mobileSearchBar = one("#mobileSearchBar");
-  const closeMobileSearchBtn = one("#closeMobileSearch");
-  const mobileSearchInput = one("#mobileSearchInput");
-  const mobileSearchResults = one("#mobileSearchResults");
-
-  function openMobileSearch() {
-    if (!mobileSearchBar) return;
-    mobileSearchBar.classList.remove("hidden");
-    setTimeout(() => mobileSearchInput?.focus(), 50);
-  }
-
-  function closeMobileSearch() {
-    if (!mobileSearchBar) return;
-    mobileSearchBar.classList.add("hidden");
-    mobileSearchResults?.classList.add("hidden");
-  }
-
-  mobileSearchTrigger?.addEventListener("click", (e) => {
-    stop(e);
-    openMobileSearch();
-  });
-
-  closeMobileSearchBtn?.addEventListener("click", (e) => {
-    stop(e);
-    closeMobileSearch();
-  });
-
-  /* =========================
-     STOP CLICK INSIDE DROPDOWNS from closing
-  ========================= */
-  one("#userDropdown")?.addEventListener("click", (e) => e.stopPropagation());
-  one("#notificationDropdown")?.addEventListener("click", (e) =>
-    e.stopPropagation(),
+  document.addEventListener("click", () =>
+    document
+      .querySelectorAll(".mega-parent")
+      .forEach((p) => p.classList.remove("mega-open")),
   );
-  searchOverlay
-    ?.querySelector(".bg-white")
-    ?.addEventListener("click", (e) => e.stopPropagation());
-});
+})();

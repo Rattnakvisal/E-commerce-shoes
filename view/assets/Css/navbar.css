@@ -1,92 +1,356 @@
-/* ===============================
-   DESKTOP MEGA MENU
-================================ */
+/* =========================================================
+  NAVBAR UI SYSTEM (CLEAN + PREMIUM)
+========================================================= */
+
+/* ---------- Tokens ---------- */
+:root {
+  --nav-border: rgba(229, 231, 235, 0.75);
+  --panel-bg: rgba(255, 255, 255, 0.96);
+  --text: #111827;
+  --muted: #6b7280;
+
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 12px;
+
+  --shadow-lg: 0 28px 70px -30px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 18px 50px -28px rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 10px 28px -18px rgba(0, 0, 0, 0.22);
+
+  --ring: 0 0 0 4px rgba(17, 24, 39, 0.1);
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-fast: 140ms var(--ease);
+  --t-med: 200ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
+/* =========================================================
+  NAVBAR BASE
+========================================================= */
+.nav-blur {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.82),
+    rgba(255, 255, 255, 0.64)
+  );
+  border-bottom: 1px solid var(--nav-border);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* Optional container */
+.nav-shell {
+  border: 1px solid rgba(229, 231, 235, 0.85);
+  border-radius: calc(var(--radius-xl) + 8px);
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 36px -24px rgba(0, 0, 0, 0.35);
+}
+
+/* Focus helper */
+.focus-ring:focus,
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: 999px;
+}
+
+/* Icon button (bell/user/cart/close) */
+.nav-icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #374151;
+  transition:
+    transform var(--t-fast),
+    background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+.nav-icon-btn:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+.nav-icon-btn:active {
+  transform: scale(0.96);
+}
+
+/* Badge */
+.icon-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 8px 16px -12px rgba(0, 0, 0, 0.55);
+}
+
+/* =========================================================
+  TOP LINKS (Underline Animation)
+========================================================= */
+.nav-link,
+.mega-trigger {
+  position: relative;
+  color: var(--text);
+  transition: color var(--t-fast);
+}
+
+.nav-link:hover,
+.mega-trigger:hover {
+  color: #0f172a;
+}
+
+.nav-link::after,
+.mega-trigger::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #111827, rgba(17, 24, 39, 0.35));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--t-med);
+  opacity: 0.95;
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after,
+.mega-parent:hover .mega-trigger::after,
+.mega-parent:focus-within .mega-trigger::after,
+.mega-parent.mega-open .mega-trigger::after {
+  transform: scaleX(1);
+}
+
+/* =========================================================
+  DESKTOP MEGA MENU
+========================================================= */
 .mega-parent {
   position: relative;
 }
 
+/* Panel */
 .mega-menu-container {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  top: calc(100% + 10px);
-  transform: translateX(-50%) translateY(10px);
-  width: min(1100px, calc(100vw - 48px));
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.25);
+  top: calc(5rem + 16px);
+  transform: translateX(-50%) translateY(14px) scale(0.985);
+  width: min(1140px, calc(100vw - 44px));
+
+  background: var(--panel-bg);
+  border: 1px solid rgba(229, 231, 235, 0.85);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: all 0.18s ease;
+
+  transition:
+    opacity var(--t-fast),
+    transform var(--t-med),
+    visibility var(--t-fast);
   z-index: 80;
+  overflow: hidden;
 }
 
-/* Hover show */
+/* Show */
 .mega-parent:hover .mega-menu-container,
-.mega-parent:focus-within .mega-menu-container {
+.mega-parent:focus-within .mega-menu-container,
+.mega-parent.mega-open .mega-menu-container {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
-.mega-parent .chev {
-  transition: transform 0.18s ease;
+/* Arrow */
+.mega-menu-container::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  transform: translateX(-50%) rotate(45deg);
+  width: 18px;
+  height: 18px;
+  background: var(--panel-bg);
+  border-left: 1px solid rgba(229, 231, 235, 0.85);
+  border-top: 1px solid rgba(229, 231, 235, 0.85);
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.1));
 }
 
-.mega-parent:hover .chev {
-  transform: rotate(180deg);
-}
-
-/* ===============================
-   DROPDOWN ANIMATION (USER / NOTI)
-================================ */
-.dropdown-anim {
-  opacity: 0;
-  transform: translateY(-6px) scale(0.97);
+/* Top highlight line */
+.mega-menu-container::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.85),
+    transparent
+  );
   pointer-events: none;
-  transition: all 0.15s ease;
 }
 
-.dropdown-anim.show {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
+/* Mega title */
+.mega-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--text);
+}
+.mega-title .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #111827, rgba(17, 24, 39, 0.55));
+  opacity: 0.95;
 }
 
-/* ===============================
-   SCROLLBAR
-================================ */
-.dropdown-scroll::-webkit-scrollbar {
+/* Mega item */
+.mega-item {
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  color: #111827;
+  transition:
+    background var(--t-fast),
+    transform var(--t-fast),
+    color var(--t-fast);
+}
+.mega-item:hover {
+  background: rgba(17, 24, 39, 0.06);
+  transform: translateX(3px);
+}
+
+/* Mega scrollbars */
+.mega-scroll::-webkit-scrollbar {
+  height: 8px;
   width: 8px;
 }
-.dropdown-scroll::-webkit-scrollbar-thumb {
+.mega-scroll::-webkit-scrollbar-thumb {
   background: #e5e7eb;
   border-radius: 999px;
 }
-
-#globalSearchResults a {
-  text-decoration: none;
+.mega-scroll::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }
 
-#globalSearchResults .result-item {
-  border-radius: 0.5rem;
+/* =========================================================
+  DROPDOWNS (User / Notifications)
+========================================================= */
+.dropdown-panel {
+  background: var(--panel-bg);
+  border: 1px solid rgba(229, 231, 235, 0.85);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+
+  transform: translateY(12px) scale(0.985);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
   transition:
-    background 0.15s ease,
-    transform 0.1s ease;
+    opacity var(--t-fast),
+    transform var(--t-med),
+    visibility var(--t-fast);
+  transform-origin: top right;
+  overflow: hidden;
 }
 
-#globalSearchResults .result-item:hover {
-  background: #f8fafc;
+/* Open state */
+.dropdown-open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
-#globalSearchResults .result-item:active {
+/* Arrow */
+.dropdown-panel::before {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: -6px;
+  width: 18px;
+  height: 18px;
+  background: var(--panel-bg);
+  transform: rotate(45deg);
+  border-left: 1px solid rgba(229, 231, 235, 0.85);
+  border-top: 1px solid rgba(229, 231, 235, 0.85);
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.1));
+}
+
+/* Dropdown row hover helper */
+.dropdown-row {
+  border-radius: 14px;
+  transition:
+    background var(--t-fast),
+    transform var(--t-fast);
+}
+.dropdown-row:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+.dropdown-row:active {
   transform: scale(0.995);
 }
 
-#globalSearchResults mark {
-  background: #fde68a;
-  padding: 0 0.25rem;
-  border-radius: 0.25rem;
+/* Dropdown scrollbars */
+.dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+.dropdown-list::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+.dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* =========================================================
+  MOBILE MENU HELPERS
+========================================================= */
+.mobile-overlay-show {
+  display: block !important;
+}
+
+.mobile-open {
+  transform: translateX(0) !important;
+  transition: transform var(--t-med);
+}
+
+.mobile-rotate,
+.parent-rotate {
+  transform: rotate(90deg);
+  transition: transform var(--t-fast);
+}
+
+/* Optional: nicer scroll for mobile panel */
+#mobileMenu .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+#mobileMenu .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+#mobileMenu .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }

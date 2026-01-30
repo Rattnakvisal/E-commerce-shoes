@@ -13,7 +13,7 @@ $email = trim((string)($_SESSION['verify_email'] ?? ''));
 $debugCode = (string)($_SESSION['debug_code'] ?? '');
 
 if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header("Location: forgot-password.php");
+    header("Location: /../../Log/forgot-password.php");
     exit;
 }
 
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <div class="mt-5 text-sm text-slate-600">
-            <a class="text-indigo-600 hover:underline" href="forgot-password.php">Resend code</a>
+            <a class="text-indigo-600 hover:underline" href="../Log/forgot-password.php">Resend code</a>
         </div>
     </div>
 </body>

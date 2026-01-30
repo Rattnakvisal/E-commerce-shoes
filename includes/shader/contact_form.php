@@ -104,7 +104,7 @@ require_once __DIR__ . '/../contract/contact.php';
                         <?php endif; ?>
                     <?php endif; ?>
 
-                    <form action="/E-commerce-shoes/admin/process/message/messages_api.php" method="post" class="space-y-4">
+                    <form action="/E-commerce-shoes/admin/controller/message/messages_api.php" method="post" class="space-y-4">
                         <!-- Name -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Name</label>
