@@ -55,8 +55,32 @@ if (($action === '' || $action === 'submit')
     }
 
     try {
+        // Insert contact message
         $stmt = $pdo->prepare("INSERT INTO contact_messages (NAME, email, message) VALUES (:name, :email, :message)");
         $stmt->execute([':name' => $name, ':email' => $email, ':message' => $message]);
+        $messageId = (int)$pdo->lastInsertId();
+
+        // Create notification for all admin users
+        $adminStmt = $pdo->prepare("SELECT user_id FROM users WHERE ROLE = 'admin' AND STATUS = 'active'");
+        $adminStmt->execute();
+        $admins = $adminStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!empty($admins)) {
+            $notifStmt = $pdo->prepare(
+                "INSERT INTO notifications (user_id, title, message, TYPE, reference_id) 
+                 VALUES (:user_id, :title, :message, :type, :ref_id)"
+            );
+
+            foreach ($admins as $adminId) {
+                $notifStmt->execute([
+                    ':user_id' => $adminId,
+                    ':title' => "New Contact Message from $name",
+                    ':message' => "New message from $name ({$email}): " . substr($message, 0, 100),
+                    ':type' => 'system',
+                    ':ref_id' => $messageId
+                ]);
+            }
+        }
 
         $_SESSION['flash']['success'] = 1;
         unset($_SESSION['flash']['old']);
@@ -93,56 +117,24 @@ function colExists(PDO $pdo, string $table, string $col): bool
     return $cache[$key] = ((int)$stmt->fetchColumn() > 0);
 }
 
-$table = 'contact_messages';
-$hasIsRead = colExists($pdo, $table, 'is_read');
-$hasReadAt = colExists($pdo, $table, 'read_at');
-
 try {
     switch ($action) {
 
-        // Optional: for badge refresh
+        // Optional: for badge refresh (contact messages don't have is_read column)
         case 'unread_count': {
-                if (!$hasIsRead) {
-                    // no is_read column => can't calculate unread
-                    respond(true, 'OK', ['count' => 0]);
-                }
-
-                $stmt = $pdo->query("SELECT COUNT(*) FROM contact_messages WHERE is_read = 0");
-                $count = (int)$stmt->fetchColumn();
-                respond(true, 'OK', ['count' => $count]);
+                respond(true, 'OK', ['count' => 0]);
             }
 
         case 'mark_all_read': {
-                if (!$hasIsRead) {
-                    // no is_read column => treat as OK (dropdown can just clear UI)
-                    respond(true, 'No is_read column; skipped', ['affected' => 0]);
-                }
-
-                $sql = "UPDATE contact_messages SET is_read = 1";
-                if ($hasReadAt) $sql .= ", read_at = NOW()";
-                $sql .= " WHERE is_read = 0";
-
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute();
-
-                respond(true, 'All marked read', ['affected' => $stmt->rowCount()]);
+                // No-op: contact messages table doesn't support read status
+                respond(true, 'OK', ['affected' => 0]);
             }
 
         case 'mark_read': {
                 if ($id <= 0) respond(false, 'Invalid id');
 
-                if (!$hasIsRead) {
-                    respond(true, 'No is_read column; skipped', ['affected' => 0]);
-                }
-
-                $sql = "UPDATE contact_messages SET is_read = 1";
-                if ($hasReadAt) $sql .= ", read_at = NOW()";
-                $sql .= " WHERE message_id = :id LIMIT 1";
-
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([':id' => $id]);
-
-                respond(true, 'Marked read', ['affected' => $stmt->rowCount()]);
+                // No-op: contact messages table doesn't support read status
+                respond(true, 'OK', ['affected' => 0]);
             }
 
         case 'delete': {

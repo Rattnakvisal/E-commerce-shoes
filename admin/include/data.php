@@ -135,12 +135,13 @@ $messagesCount = 0;
 $contactMessages = [];
 
 try {
+    // Count all recent contact messages
     $messagesCount = (int)$pdo->query(
-        "SELECT COUNT(*) FROM contact_messages WHERE is_read = 0"
+        "SELECT COUNT(*) FROM contact_messages WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
     )->fetchColumn();
 
     $contactMessages = $pdo->query(
-        "SELECT message_id, NAME, email, message, is_read, created_at
+        "SELECT message_id, NAME, email, message, created_at
          FROM contact_messages
          ORDER BY created_at DESC
          LIMIT 10"
