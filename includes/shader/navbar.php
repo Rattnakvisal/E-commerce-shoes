@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/connection.php';
+require_once __DIR__ . '/../../config/conn.php';
 require_once __DIR__ . '/../contract/navbar.php';
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />

@@ -1,63 +1,34 @@
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
+  /* =========================
+     HELPERS
+  ========================= */
   const one = (s, ctx = document) => ctx.querySelector(s);
   const all = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
   const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
 
-  /* =========================================================
-     MOBILE DRAWER
-  ========================================================= */
-  const mobileTrigger = one("#mobileMenuTrigger");
-  const mobileMenu = one("#mobileMenu");
-  const mobileOverlay = one("#mobileOverlay");
-  const closeMobileBtn = one("#closeMobileMenuBtn");
+  const stop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
+  const isHidden = (el) => !el || el.classList.contains("hidden");
+
+  /* =========================
+     BODY LOCK (no scroll)
+  ========================= */
   const setBodyLock = (locked) => {
     document.body.classList.toggle("overflow-hidden", locked);
   };
 
-  const openDrawer = () => {
-    if (!mobileMenu || !mobileOverlay) return;
-    mobileOverlay.classList.remove("hidden");
-    mobileMenu.classList.remove("-translate-x-full");
-    mobileMenu.classList.add("translate-x-0");
-    mobileMenu.setAttribute("aria-hidden", "false");
-    setBodyLock(true);
-  };
-
-  const closeDrawer = () => {
-    if (!mobileMenu || !mobileOverlay) return;
-    mobileOverlay.classList.add("hidden");
-    mobileMenu.classList.add("-translate-x-full");
-    mobileMenu.classList.remove("translate-x-0");
-    mobileMenu.setAttribute("aria-hidden", "true");
-    setBodyLock(false);
-  };
-
-  mobileTrigger?.addEventListener("click", (e) => {
-    e.preventDefault();
-    openDrawer();
-  });
-
-  closeMobileBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    closeDrawer();
-  });
-
-  mobileOverlay?.addEventListener("click", closeDrawer);
-
-  window.addEventListener("resize", () => {
-    if (isDesktop()) closeDrawer();
-  });
-
-  /* =========================================================
-     SMOOTH TOGGLE (height animation)
-  ========================================================= */
-  function smoothToggle(el, shouldOpen) {
+  /* =========================
+     SMOOTH HEIGHT TOGGLE
+  ========================= */
+  function smoothToggle(el, shouldOpen, duration = 280) {
     if (!el) return;
 
-    // cancel old transitions safely
+    // reset old transition safely
     el.style.transition = "none";
     el.style.overflow = "hidden";
 
@@ -67,14 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       requestAnimationFrame(() => {
         const h = el.scrollHeight;
-        el.style.transition = "height 0.28s ease";
+        el.style.transition = `height ${duration}ms ease`;
         el.style.height = h + "px";
       });
     } else {
       el.style.height = el.scrollHeight + "px";
-
       requestAnimationFrame(() => {
-        el.style.transition = "height 0.28s ease";
+        el.style.transition = `height ${duration}ms ease`;
         el.style.height = "0px";
       });
     }
@@ -89,21 +59,131 @@ document.addEventListener("DOMContentLoaded", () => {
     el.addEventListener("transitionend", done, { once: true });
   }
 
-  const isHidden = (el) => !el || el.classList.contains("hidden");
+  /* =========================
+     GENERIC DROPDOWN MANAGER
+     (close on outside click + ESC + only one open)
+  ========================= */
+  const dropdowns = new Set();
 
-  /* =========================================================
+  function registerDropdown({
+    trigger,
+    panel,
+    openClass = "is-open",
+    useHidden = true,
+  }) {
+    if (!trigger || !panel) return;
+
+    const open = () => {
+      // close other dropdowns
+      dropdowns.forEach((d) => {
+        if (d.panel !== panel) d.close();
+      });
+
+      if (useHidden) panel.classList.remove("hidden");
+      panel.classList.add(openClass);
+      trigger.setAttribute("aria-expanded", "true");
+    };
+
+    const close = () => {
+      panel.classList.remove(openClass);
+      if (useHidden) panel.classList.add("hidden");
+      trigger.setAttribute("aria-expanded", "false");
+    };
+
+    const toggle = () => {
+      const opened =
+        panel.classList.contains(openClass) ||
+        !panel.classList.contains("hidden");
+      opened ? close() : open();
+    };
+
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+
+    dropdowns.add({ trigger, panel, open, close, toggle });
+
+    return { open, close, toggle };
+  }
+
+  function closeAllDropdowns() {
+    dropdowns.forEach((d) => d.close());
+  }
+
+  document.addEventListener("click", (e) => {
+    // outside click closes all dropdowns
+    closeAllDropdowns();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeAllDropdowns();
+      closeDrawer();
+      closeSearchOverlay();
+      closeMobileSearch();
+    }
+  });
+
+  /* =========================
+     MOBILE DRAWER
+  ========================= */
+  const mobileTrigger = one("#mobileMenuTrigger");
+  const mobileMenu = one("#mobileMenu");
+  const mobileOverlay = one("#mobileOverlay");
+  const closeMobileBtn = one("#closeMobileMenuBtn");
+
+  function openDrawer() {
+    if (!mobileMenu || !mobileOverlay) return;
+    mobileOverlay.classList.remove("hidden");
+    mobileMenu.classList.remove("-translate-x-full");
+    mobileMenu.classList.add("translate-x-0");
+    mobileMenu.setAttribute("aria-hidden", "false");
+    setBodyLock(true);
+
+    // close dropdowns if any open
+    closeAllDropdowns();
+  }
+
+  function closeDrawer() {
+    if (!mobileMenu || !mobileOverlay) return;
+    mobileOverlay.classList.add("hidden");
+    mobileMenu.classList.add("-translate-x-full");
+    mobileMenu.classList.remove("translate-x-0");
+    mobileMenu.setAttribute("aria-hidden", "true");
+    setBodyLock(false);
+  }
+
+  mobileTrigger?.addEventListener("click", (e) => {
+    stop(e);
+    openDrawer();
+  });
+
+  closeMobileBtn?.addEventListener("click", (e) => {
+    stop(e);
+    closeDrawer();
+  });
+
+  mobileOverlay?.addEventListener("click", closeDrawer);
+
+  window.addEventListener("resize", () => {
+    if (isDesktop()) closeDrawer();
+  });
+
+  /* =========================
      MOBILE SUBMENUS
-  ========================================================= */
+  ========================= */
   all(".mobile-parent").forEach((parent) => {
-    const toggle = one(".parent-toggle", parent);
+    const btn = one(".parent-toggle", parent);
     const submenu = one(".mobile-submenu", parent);
     const arrow = one(".fa-chevron-right", parent);
-    if (!toggle || !submenu) return;
+    if (!btn || !submenu) return;
 
-    toggle.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
       const willOpen = isHidden(submenu);
 
-      // close other parents
+      // close other parent submenus
       all(".mobile-parent .mobile-submenu").forEach((s) => {
         if (s !== submenu && !isHidden(s)) smoothToggle(s, false);
       });
@@ -113,53 +193,157 @@ document.addEventListener("DOMContentLoaded", () => {
 
       smoothToggle(submenu, willOpen);
       arrow?.classList.toggle("rotate-90", willOpen);
-      toggle.setAttribute("aria-expanded", String(willOpen));
+      btn.setAttribute("aria-expanded", String(willOpen));
     });
   });
 
   all(".mobile-group").forEach((group) => {
-    const toggle = one(".group-toggle", group);
+    const btn = one(".group-toggle", group);
     const list = one(".mobile-items", group);
     const arrow = one(".fa-chevron-down", group);
-    if (!toggle || !list) return;
+    if (!btn || !list) return;
 
-    toggle.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
       const willOpen = isHidden(list);
       smoothToggle(list, willOpen);
       arrow?.classList.toggle("rotate-180", willOpen);
-      toggle.setAttribute("aria-expanded", String(willOpen));
+      btn.setAttribute("aria-expanded", String(willOpen));
     });
   });
 
-  /* =========================================================
-     USER DROPDOWN (close on outside click + ESC)
-  ========================================================= */
-  const userBtn = one("#userMenuTrigger");
-  const userDropdown = one("#userDropdown");
+  /* =========================
+     DESKTOP MEGA MENU (hover)
+     - delay to prevent flicker
+     - safe zone: keeps open when mouse moves into menu
+  ========================= */
+  const megaParents = all(".mega-parent");
 
-  const closeUserDropdown = () => userDropdown?.classList.add("hidden");
+  megaParents.forEach((mp) => {
+    const menu = one(".mega-menu-container", mp);
+    const btn = one("button", mp);
+    if (!menu || !btn) return;
 
-  userBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    userDropdown?.classList.toggle("hidden");
+    let openT = null;
+    let closeT = null;
+
+    const open = () => {
+      clearTimeout(closeT);
+      openT = setTimeout(() => {
+        mp.classList.add("mega-open");
+      }, 80);
+    };
+
+    const close = () => {
+      clearTimeout(openT);
+      closeT = setTimeout(() => {
+        mp.classList.remove("mega-open");
+      }, 120);
+    };
+
+    // mouse hover
+    mp.addEventListener("mouseenter", open);
+    mp.addEventListener("mouseleave", close);
+
+    // keyboard (Tab focus)
+    btn.addEventListener("focus", open);
+    mp.addEventListener("focusout", (e) => {
+      // if focus moved outside the mega parent, close it
+      if (!mp.contains(e.relatedTarget)) close();
+    });
   });
 
-  document.addEventListener("click", (e) => {
-    const t = e.target;
-    if (
-      userDropdown &&
-      !userDropdown.classList.contains("hidden") &&
-      !userDropdown.contains(t) &&
-      !t.closest("#userMenuTrigger")
-    ) {
-      closeUserDropdown();
-    }
+  /* IMPORTANT:
+     Add this in your CSS:
+     .mega-parent .mega-menu-container { opacity:0; visibility:hidden; pointer-events:none; }
+     .mega-parent.mega-open .mega-menu-container { opacity:1; visibility:visible; pointer-events:auto; }
+  */
+
+  /* =========================
+     USER + NOTIFICATION DROPDOWNS
+  ========================= */
+  const userDD = registerDropdown({
+    trigger: one("#userMenuTrigger"),
+    panel: one("#userDropdown"),
+    openClass: "is-open",
+    useHidden: true, // you currently use "hidden"
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeUserDropdown();
-      closeDrawer();
-    }
+  const notiDD = registerDropdown({
+    trigger: one("#notificationTrigger"),
+    panel: one("#notificationDropdown"),
+    openClass: "is-open",
+    useHidden: true,
   });
+
+  /* =========================
+     SEARCH OVERLAY (desktop results panel)
+  ========================= */
+  const searchOverlay = one("#globalSearchResults");
+  const closeSearchBtn = one("#closeSearchResults");
+
+  function openSearchOverlay() {
+    if (!searchOverlay) return;
+    searchOverlay.classList.remove("hidden");
+  }
+
+  function closeSearchOverlay() {
+    if (!searchOverlay) return;
+    searchOverlay.classList.add("hidden");
+  }
+
+  closeSearchBtn?.addEventListener("click", (e) => {
+    stop(e);
+    closeSearchOverlay();
+  });
+
+  // click outside overlay content closes it
+  searchOverlay?.addEventListener("click", (e) => {
+    if (e.target === searchOverlay) closeSearchOverlay();
+  });
+
+  // optional: open overlay when user types (if results exist)
+  // You can call openSearchOverlay() inside your search.js after injecting results.
+
+  /* =========================
+     MOBILE SEARCH BAR
+  ========================= */
+  const mobileSearchTrigger = one("#mobileSearchTrigger");
+  const mobileSearchBar = one("#mobileSearchBar");
+  const closeMobileSearchBtn = one("#closeMobileSearch");
+  const mobileSearchInput = one("#mobileSearchInput");
+  const mobileSearchResults = one("#mobileSearchResults");
+
+  function openMobileSearch() {
+    if (!mobileSearchBar) return;
+    mobileSearchBar.classList.remove("hidden");
+    setTimeout(() => mobileSearchInput?.focus(), 50);
+  }
+
+  function closeMobileSearch() {
+    if (!mobileSearchBar) return;
+    mobileSearchBar.classList.add("hidden");
+    mobileSearchResults?.classList.add("hidden");
+  }
+
+  mobileSearchTrigger?.addEventListener("click", (e) => {
+    stop(e);
+    openMobileSearch();
+  });
+
+  closeMobileSearchBtn?.addEventListener("click", (e) => {
+    stop(e);
+    closeMobileSearch();
+  });
+
+  /* =========================
+     STOP CLICK INSIDE DROPDOWNS from closing
+  ========================= */
+  one("#userDropdown")?.addEventListener("click", (e) => e.stopPropagation());
+  one("#notificationDropdown")?.addEventListener("click", (e) =>
+    e.stopPropagation(),
+  );
+  searchOverlay
+    ?.querySelector(".bg-white")
+    ?.addEventListener("click", (e) => e.stopPropagation());
 });

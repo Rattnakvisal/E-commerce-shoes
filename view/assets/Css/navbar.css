@@ -1,56 +1,71 @@
+/* ===============================
+   DESKTOP MEGA MENU
+================================ */
+.mega-parent {
+  position: relative;
+}
+
 .mega-menu-container {
-  position: fixed !important;
-  top: 0;
+  position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  width: min(1280px, 90vw);
+  top: calc(100% + 10px);
+  transform: translateX(-50%) translateY(10px);
+  width: min(1100px, calc(100vw - 48px));
   background: #fff;
-  border-top: 3px solid #111;
-  border-radius: 0 0 16px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.25);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition:
-    opacity 0.2s,
-    transform 0.2s;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  z-index: 50;
+  transition: all 0.18s ease;
+  z-index: 80;
 }
 
-.mega-menu-container.active {
+/* Hover show */
+.mega-parent:hover .mega-menu-container,
+.mega-parent:focus-within .mega-menu-container {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: translateX(-50%) translateY(0);
+}
+
+.mega-parent .chev {
+  transition: transform 0.18s ease;
+}
+
+.mega-parent:hover .chev {
+  transform: rotate(180deg);
+}
+
+/* ===============================
+   DROPDOWN ANIMATION (USER / NOTI)
+================================ */
+.dropdown-anim {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  pointer-events: none;
+  transition: all 0.15s ease;
+}
+
+.dropdown-anim.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
-.mobile-menu-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 360px;
-  height: 100vh;
-  background: #fff;
-  transform: translateX(100%);
-  transition: transform 0.35s ease;
-  z-index: 60;
+/* ===============================
+   SCROLLBAR
+================================ */
+.dropdown-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.dropdown-scroll::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 999px;
 }
 
-.mobile-menu-panel.active {
-  transform: translateX(0);
-}
-
-.mobile-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: none;
-  z-index: 50;
-}
-
-.mobile-overlay.active {
-  display: block;
-}
 #globalSearchResults a {
   text-decoration: none;
 }

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../../../config/connection.php';
+require_once __DIR__ . '/../../../config/conn.php';
 
 /* ============================================================
    BOOTSTRAP
