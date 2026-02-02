@@ -35,7 +35,7 @@ $tabs = [
     ],
     [
         'label' => 'Out of Stock',
-        'status' => '',
+        'status' => 'out_of_stock',
         'brand' => '',
         'count' => 'out_of_stock',
         'pill'  => 'bg-red-100 text-red-600',

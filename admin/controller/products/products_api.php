@@ -62,7 +62,7 @@ try {
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     /* ================= OPTIONAL: BACKWARD COMPAT =================*/
-    if ($brand === '' && $status !== '' && !in_array($status, ['active', 'inactive'], true)) {
+    if ($brand === '' && $status !== '' && !in_array($status, ['active', 'inactive', 'out_of_stock'], true)) {
         $brand = (string)($_GET['status'] ?? '');
         $status = '';
     }
@@ -84,6 +84,8 @@ try {
     if (in_array($status, ['active', 'inactive'], true)) {
         $where[] = "p.status = :st";
         $params[':st'] = $status;
+    } elseif ($status === 'out_of_stock') {
+        $where[] = "COALESCE(p.stock,0) <= 0";
     }
 
     if ($brand !== '') {
@@ -158,7 +160,7 @@ try {
             COUNT(*) AS total,
             SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) AS active,
             SUM(CASE WHEN p.status='inactive' THEN 1 ELSE 0 END) AS inactive,
-            SUM(CASE WHEN p.stock=0 THEN 1 ELSE 0 END) AS out_of_stock,
+            SUM(CASE WHEN COALESCE(p.stock,0) <= 0 THEN 1 ELSE 0 END) AS out_of_stock,
             SUM(CASE WHEN c.category_name='Nike' THEN 1 ELSE 0 END) AS Nike,
             SUM(CASE WHEN c.category_name='Adidas' THEN 1 ELSE 0 END) AS Adidas,
             SUM(CASE WHEN c.category_name='New Balance' THEN 1 ELSE 0 END) AS `New Balance`,

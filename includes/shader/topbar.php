@@ -7,17 +7,17 @@ if (session_status() === PHP_SESSION_NONE) {
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Top Bar Slideshow</title>
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
         /* ===============================
-           Top Bar Container
-        =============================== */
+       Top Bar Container
+    =============================== */
         .topbar {
             position: relative;
             height: 38px;
@@ -25,12 +25,13 @@ if (session_status() === PHP_SESSION_NONE) {
             color: #fff;
             overflow: hidden;
             font-size: 14px;
-            z-index: -1000;
+            z-index: -9999;
+            /* FIX: was -1000 (hidden behind) */
         }
 
         /* ===============================
-           Slide Base
-        =============================== */
+       Slide Base
+    =============================== */
         .topbar-slide {
             position: absolute;
             inset: 0;
@@ -41,12 +42,12 @@ if (session_status() === PHP_SESSION_NONE) {
 
             opacity: 0;
             transform: translateY(-12px);
-            transition:
-                opacity 0.45s ease,
-                transform 0.45s ease;
+            transition: opacity 0.45s ease, transform 0.45s ease;
 
             white-space: nowrap;
             pointer-events: none;
+            padding: 0 12px;
+            /* small padding for mobile */
         }
 
         /* Active slide */
@@ -56,7 +57,7 @@ if (session_status() === PHP_SESSION_NONE) {
             pointer-events: auto;
         }
 
-        /* Leaving slide (smooth exit) */
+        /* Leaving slide */
         .topbar-slide.is-leaving {
             opacity: 0;
             transform: translateY(12px);
@@ -68,15 +69,23 @@ if (session_status() === PHP_SESSION_NONE) {
             opacity: 0.9;
         }
 
-        /* Pause on hover */
-        .topbar:hover {
-            cursor: default;
+        /* Better mobile behavior */
+        .topbar-slide span {
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Mobile fix */
         @media (max-width: 480px) {
             .topbar {
                 font-size: 13px;
+            }
+        }
+
+        /* Accessibility: reduce motion */
+        @media (prefers-reduced-motion: reduce) {
+            .topbar-slide {
+                transition: none;
+                transform: none;
             }
         }
     </style>
@@ -84,9 +93,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <body>
 
-    <!-- ===============================
-     Top Bar Slideshow
-=============================== -->
     <div id="topBar" class="topbar">
         <div class="topbar-slide is-active">
             <i class="fas fa-truck"></i>
@@ -102,53 +108,65 @@ if (session_status() === PHP_SESSION_NONE) {
             <i class="fas fa-qrcode"></i>
             <span>Pay with QR & Get 10% Cashback</span>
         </div>
-
     </div>
 
-    <!-- ===============================
-     JavaScript
-=============================== -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('.topbar-slide');
-            if (slides.length <= 1) return;
+        document.addEventListener("DOMContentLoaded", () => {
+            const bar = document.getElementById("topBar");
+            const slides = Array.from(document.querySelectorAll(".topbar-slide"));
+            if (!bar || slides.length <= 1) return;
 
             let current = 0;
-            let interval = null;
+            let intervalId = null;
+
             const delay = 4000;
+            const animMs = 450;
 
-            const showSlide = (next) => {
+            function showSlide(nextIndex) {
+                if (nextIndex === current) return;
+
                 const currentSlide = slides[current];
-                const nextSlide = slides[next];
+                const nextSlide = slides[nextIndex];
 
-                currentSlide.classList.remove('is-active');
-                currentSlide.classList.add('is-leaving');
+                // Mark current leaving
+                currentSlide.classList.add("is-leaving");
 
-                nextSlide.classList.add('is-active');
+                // Prepare next
+                nextSlide.classList.add("is-active");
 
+                // After animation, fully deactivate old one
                 setTimeout(() => {
-                    currentSlide.classList.remove('is-leaving');
-                }, 450);
+                    currentSlide.classList.remove("is-active", "is-leaving");
+                    current = nextIndex;
+                }, animMs);
+            }
 
-                current = next;
-            };
-
-            const start = () => {
-                interval = setInterval(() => {
+            function start() {
+                if (intervalId) return; // FIX: prevent multiple intervals
+                intervalId = setInterval(() => {
                     const next = (current + 1) % slides.length;
                     showSlide(next);
                 }, delay);
-            };
+            }
 
-            const stop = () => clearInterval(interval);
+            function stop() {
+                if (!intervalId) return;
+                clearInterval(intervalId);
+                intervalId = null;
+            }
 
             // Auto start
             start();
 
-            // Pause on hover
-            const bar = document.getElementById('topBar');
-            bar.addEventListener('mouseenter', stop);
-            bar.addEventListener('mouseleave', start);
+            // Pause on hover (desktop)
+            bar.addEventListener("mouseenter", stop);
+            bar.addEventListener("mouseleave", start);
+
+            // Optional: pause when tab not visible (saves CPU)
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden) stop();
+                else start();
+            });
         });
     </script>
 

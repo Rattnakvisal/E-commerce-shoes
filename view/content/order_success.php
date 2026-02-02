@@ -1,5 +1,15 @@
 <?php
 require_once __DIR__ . '/../../config/conn.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Prevent headers-sent when there's no last order — redirect early
+if (empty($_SESSION['last_order'])) {
+    header('Location: /E-commerce-shoes/view/content/products.php');
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en">

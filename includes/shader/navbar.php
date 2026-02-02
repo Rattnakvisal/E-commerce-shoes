@@ -196,48 +196,97 @@ require_once __DIR__ . '/../contract/navbar.php';
 			<!-- USER PROFILE -->
 			<div class="relative">
 				<?php if ($userLogged): ?>
-					<button id="userMenuTrigger" type="button" class="flex items-center gap-3">
+					<button id="userMenuTrigger" type="button"
+						class="nav-icon-btn focus-ring flex items-center gap-3"
+						aria-haspopup="menu" aria-expanded="false">
 						<?php if (!empty($userAvatar)): ?>
-							<img src="<?= htmlspecialchars((string)$userAvatar) ?>" alt="User" class="w-9 h-9 rounded-full object-cover">
+							<img src="<?= htmlspecialchars((string)$userAvatar) ?>" alt="User"
+								class="w-9 h-9 rounded-full object-cover border border-gray-200">
 						<?php else: ?>
-							<div class="w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center justify-center font-bold">
+							<div class="w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-purple-600
+                    text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
 								<?= htmlspecialchars($initials) ?>
 							</div>
 						<?php endif; ?>
 					</button>
 
-					<div id="userDropdown" class="dropdown-panel absolute right-0 mt-3 bg-white rounded-xl shadow-xl border w-56 py-2 z-[60]">
+					<!-- Dropdown (NO hidden) -->
+					<div id="userDropdown"
+						class="dropdown-panel absolute right-0 mt-3 w-64 py-2 z-[60]"
+						role="menu" aria-hidden="true">
+
+						<!-- Header -->
 						<div class="px-4 py-3 border-b">
-							<div class="flex items-center gap-3">
-								<?php if (!empty($userAvatar)): ?>
-									<img src="<?= htmlspecialchars((string)$userAvatar) ?>" alt="User" class="w-10 h-10 rounded-full object-cover">
-								<?php else: ?>
-									<div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold">
-										<?= htmlspecialchars($initials) ?>
+							<div class="flex items-center gap-3 min-w-0">
+								<div class="relative">
+									<?php if (!empty($userAvatar)): ?>
+										<img src="<?= htmlspecialchars((string)$userAvatar) ?>"
+											alt="User avatar"
+											class="w-10 h-10 rounded-full object-cover border border-gray-200">
+									<?php else: ?>
+										<div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-200
+                          flex items-center justify-center text-gray-800 font-extrabold text-sm">
+											<?= htmlspecialchars($initials) ?>
+										</div>
+									<?php endif; ?>
+
+									<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
+								</div>
+
+								<div class="min-w-0">
+									<div class="font-extrabold text-gray-900 truncate">
+										<?= htmlspecialchars((string)$userName) ?>
 									</div>
-								<?php endif; ?>
-								<div>
-									<div class="font-medium text-gray-900"><?= htmlspecialchars((string)$userName) ?></div>
-									<div class="text-xs text-gray-500">Member</div>
+									<div class="text-xs text-gray-500 truncate">Member</div>
 								</div>
 							</div>
 						</div>
 
-						<a href="profile.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">My Profile</a>
-						<a href="myorder.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">My Orders</a>
-						<a href="wishlist.php" class="block px-4 py-3 text-gray-900 hover:bg-gray-100">Wishlist</a>
+						<!-- Menu Items -->
+						<a href="/E-commerce-shoes/view/content/profile.php"
+							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-gray-900"
+							role="menuitem">
+							<i class="fas fa-user text-gray-400 w-4"></i>
+							<span class="text-sm font-semibold">My Profile</span>
+						</a>
+
+						<a href="/E-commerce-shoes/view/content/myorder.php"
+							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-gray-900"
+							role="menuitem">
+							<i class="fas fa-receipt text-gray-400 w-4"></i>
+							<span class="text-sm font-semibold">My Orders</span>
+						</a>
+
+						<a href="/E-commerce-shoes/view/content/wishlist.php"
+							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-gray-900"
+							role="menuitem">
+							<i class="fas fa-heart text-gray-400 w-4"></i>
+							<span class="text-sm font-semibold">Wishlist</span>
+						</a>
+
 						<div class="border-t my-2"></div>
-						<a href="/E-commerce-shoes/auth/Log/logout.php" class="block px-4 py-3 text-red-600 hover:bg-gray-100">Logout</a>
+
+						<a href="/E-commerce-shoes/auth/Log/logout.php"
+							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-red-600 hover:bg-red-50"
+							role="menuitem">
+							<i class="fas fa-right-from-bracket text-red-400 w-4"></i>
+							<span class="text-sm font-extrabold">Logout</span>
+						</a>
 					</div>
+
 				<?php else: ?>
-					<a href="/E-commerce-shoes/auth/Log/login.php" class="flex items-center gap-2 text-gray-700 hover:text-black">
+
+					<a href="/E-commerce-shoes/auth/Log/login.php"
+						class="flex items-center gap-2 text-gray-700 hover:text-black">
 						<div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
 							<i class="far fa-user text-gray-600"></i>
 						</div>
-						<span class="hidden lg:inline text-sm">Sign In</span>
+						<span class="hidden lg:inline text-sm font-semibold">Sign In</span>
 					</a>
+
 				<?php endif; ?>
 			</div>
+
 
 			<!-- MOBILE MENU BUTTON -->
 			<button id="mobileMenuTrigger" type="button" class="lg:hidden text-2xl text-gray-700">
