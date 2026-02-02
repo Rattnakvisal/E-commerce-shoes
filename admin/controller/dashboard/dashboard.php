@@ -1,157 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/conn.php';
-
-/* =====================================================
-   SESSION & AUTH
-===================================================== */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (
-    !isset($_SESSION['user_id'], $_SESSION['role']) ||
-    $_SESSION['role'] !== 'admin'
-) {
-    header('Location: ../auth/Log/login.php');
-    exit;
-}
-
-/* =====================================================
-   ADMIN INFO (SAFE DEFAULTS)
-===================================================== */
-$admin_name   = $_SESSION['name'] ?? $_SESSION['email'] ?? 'Admin';
-$admin_role   = $_SESSION['role'] ?? 'Administrator';
-$admin_avatar = $_SESSION['avatar']
-    ?? 'https://ui-avatars.com/api/?name=' . urlencode($admin_name) . '&background=6366f1&color=fff';
-
-/* =====================================================
-   DEFAULT VALUES (AVOID WARNINGS)
-===================================================== */
-$total_users       = 0;
-$total_orders      = 0;
-$revenue           = 0.0;
-$conversion_rate   = 0.0;
-
-$recent_orders     = [];
-$topProducts       = [];
-$lowStockProducts  = [];
-$ordersByStatus    = [
-    'pending' => 0,
-    'processing' => 0,
-    'completed' => 0,
-    'cancelled' => 0,
-];
-$revenueLast7      = []; // array of ['date' => 'YYYY-MM-DD','total' => float]
-$recent_users      = [];
-
-/* =====================================================
-   FETCH DASHBOARD DATA
-===================================================== */
-try {
-
-    /* ---------- USERS COUNT ---------- */
-    $total_users = (int)$pdo
-        ->query("SELECT COUNT(*) FROM users")
-        ->fetchColumn();
-
-    /* ---------- ORDERS COUNT ---------- */
-    $total_orders = (int)$pdo
-        ->query("SELECT COUNT(*) FROM orders")
-        ->fetchColumn();
-
-    /* ---------- TOTAL REVENUE ---------- */
-    $revenue = (float)$pdo
-        ->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status = 'paid'")
-        ->fetchColumn();
-
-    /* ---------- CONVERSION RATE ---------- */
-    $conversion_rate = $total_users > 0
-        ? round(($total_orders / $total_users) * 100, 2)
-        : 0;
-
-    /* ---------- TOP PRODUCTS ---------- */
-    $stmt = $pdo->query("
-        SELECT 
-            p.product_id,
-            p.name,
-            p.price,
-            p.stock,
-            COALESCE(SUM(oi.quantity), 0) AS total_quantity
-        FROM products p
-        LEFT JOIN order_items oi ON oi.product_id = p.product_id
-        GROUP BY p.product_id
-        ORDER BY total_quantity DESC
-        LIMIT 5
-    ");
-    $topProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    /* ---------- LOW STOCK PRODUCTS ---------- */
-    $stmt = $pdo->query("
-        SELECT 
-            product_id,
-            name,
-            stock
-        FROM products
-                WHERE stock IS NOT NULL
-                    AND stock <= 10
-        ORDER BY stock ASC
-        LIMIT 5
-    ");
-    $lowStockProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    /* ---------- RECENT ORDERS ---------- */
-    $stmt = $pdo->query("
-        SELECT 
-            o.order_id AS id,
-            o.total,
-            o.order_status AS status,
-            o.payment_status,
-            o.created_at,
-            COALESCE(u.name, u.email, 'Guest') AS customer
-        FROM orders o
-        LEFT JOIN users u ON u.user_id = o.user_id
-        ORDER BY o.created_at DESC
-        LIMIT 5
-    ");
-    $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    /* ---------- ORDERS BY STATUS ---------- */
-    $stmt = $pdo->query(
-        "SELECT order_status, COUNT(*) as cnt FROM orders GROUP BY order_status"
-    );
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($rows as $r) {
-        $key = strtolower($r['order_status']);
-        if (isset($ordersByStatus[$key])) {
-            $ordersByStatus[$key] = (int)$r['cnt'];
-        }
-    }
-
-    /* ---------- REVENUE LAST 7 DAYS ---------- */
-    $stmt = $pdo->query(
-        "SELECT DATE(created_at) as day, COALESCE(SUM(total),0) as total FROM orders WHERE payment_status = 'paid' GROUP BY DATE(created_at) ORDER BY DATE(created_at) DESC LIMIT 7"
-    );
-    $rows = array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
-    foreach ($rows as $r) {
-        $revenueLast7[] = [
-            'date' => $r['day'],
-            'total' => (float)$r['total']
-        ];
-    }
-
-    /* ---------- RECENT USERS ---------- */
-    $stmt = $pdo->query("SELECT user_id, name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5");
-    $recent_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    error_log('[Admin Dashboard] ' . $e->getMessage());
-}
-
-$userRate        = $total_users > 0 ? 100 : 0;
-$completedRate   = $total_orders > 0 ? (($ordersByStatus['completed'] ?? 0) / $total_orders) * 100 : 0;
-$revenueTarget   = $revenue * 1.2;
-$revenueProgress = $revenueTarget > 0 ? min(($revenue / $revenueTarget) * 100, 100) : 0;
-$conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 100) : 0;
-
+require_once __DIR__ . '/process_dashboard.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -162,34 +10,88 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
     <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../assets/Css/dasboard.css">
-    <link rel="stylesheet" href="../assets/Css/reports.css">
+    <link rel="stylesheet" href="../../../assets/Css/dasboard.css">
+    <link rel="stylesheet" href="../../../assets/Css/reports.css">
 </head>
 
 <body class="bg-gray-50">
-    <?php require_once __DIR__ . '/include/navbar.php'; ?>
-    <div class="md:ml-64 min-h-screen">
+    <?php require_once __DIR__ . '/../../include/navbar.php'; ?>
+    <div class="md:ml-64 min-h-screen animate-fade-in">
         <main class="pt-6 md:pt-16 p-4 sm:p-6 lg:p-8 page-transition bg-gray-50 min-h-screen animate-fade-in">
-            <!-- Page Header -->
-            <div class="mb-6 animate-fade-in">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- ===============================
+                Page Header / Admin Hero
+            ================================ -->
+            <div class="mb-8">
+                <div
+                    class="relative overflow-hidden rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
 
-                    <!-- Welcome Text -->
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">
-                                Welcome back, <span class="gradient-text font-extrabold"><?= htmlspecialchars(explode(' ', $admin_name)[0]) ?>!</span>
-                            </h1>
+                    <!-- Soft Background Accent -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+
+                    <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+                        <!-- Left: Welcome -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span
+                                    class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </span>
+
+                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+                                    Welcome back,
+                                    <span class="gradient-text">
+                                        <?= htmlspecialchars(explode(' ', $admin_name)[0]) ?>
+                                    </span>
+                                </h1>
+                            </div>
+
+                            <p class="text-gray-600 text-sm sm:text-base max-w-xl">
+                                Here's a quick overview of your store performance and activity today.
+                            </p>
+
+                            <!-- Meta Info -->
+                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <?= date('l, F j, Y') ?>
+                                </span>
+
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-clock "></i>
+                                    <span id="liveTime"></span>
+                                </span>
+
+                                <span
+                                    class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Store Live
+                                </span>
+                            </div>
                         </div>
-                        <p class="text-gray-600 mt-1">
-                            Here's what's happening with your store today.
-                        </p>
+
+                        <!-- Right: Actions -->
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a href="/E-commerce-shoes/admin/controller/orders/order.php"
+                                class="inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold hover:bg-gray-50 transition">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                                View Orders
+                            </a>
+
+                            <button
+                                class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
@@ -441,7 +343,7 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
 
         </main>
     </div>
-    <script src="../assets/Js/reports.js"></script>
+    <script src="../../../assets/Js/reports.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             /* ================= TOP PRODUCTS ================= */
@@ -651,6 +553,19 @@ $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 10
             });
         });
     </script>
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('liveTime').textContent =
+                now.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+    </script>
+
 </body>
 
 </html>

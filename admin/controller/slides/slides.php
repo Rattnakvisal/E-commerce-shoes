@@ -39,7 +39,7 @@ $tabs = [
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Styles -->
@@ -65,31 +65,74 @@ $tabs = [
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen animate-fade-in">
     <!-- Include Admin Navbar -->
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
-    <main class="md:ml-64 min-h-screen animate-fade-in">
+    <main class="md:ml-64 min-h-screen">
         <div class="p-4 sm:p-6 lg:p-8">
-            <div class="mb-6 ">
-                <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Slides <span class="gradient-text font-extrabold">Management</span></h1>
+            <div class="mb-6">
+                <!-- ===============================
+                    Slides Management Header
+                ================================ -->
+                <div class="mb-8 animate-fade-in">
+                    <div class="relative overflow-hidden rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
+
+                        <!-- Soft background accent -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+
+                        <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                            <!-- Left: Title -->
+                            <div>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                        <i class="fas fa-images"></i>
+                                    </span>
+
+                                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                        Slides <span class="gradient-text ml-2">Management</span>
+                                    </h1>
+                                </div>
+
+                                <p class="text-gray-600 text-sm sm:text-base max-w-xl">
+                                    Manage, schedule, and track all homepage slides across your store.
+                                </p>
+
+                                <!-- Meta / status -->
+                                <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-regular fa-eye"></i>
+                                        Homepage Visibility
+                                    </span>
+
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold">
+                                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                        Carousel Active
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Right: Actions -->
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button
+                                    onclick="openAddModal()"
+                                    class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
+                                    <i class="fas fa-plus"></i>
+                                    Add Slide
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onclick="window.location.reload()"
+                                    class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                    title="Refresh">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+
                         </div>
-                        <p class="text-gray-600 ml-1">Manage and track all slides in your store.</p>
-                    </div>
-                    <!-- Actions -->
-                    <div class="flex items-center gap-3">
-                        <button
-                            onclick="openAddModal()"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg
-                       hover:bg-indigo-700 transition">
-                            <i class="fas fa-plus mr-2"></i>
-                            Add Slide
-                        </button>
                     </div>
                 </div>
-
                 <!-- Summary Stats -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 fade-in-up">
 
@@ -255,8 +298,8 @@ $tabs = [
 
                         <!-- Actions -->
                         <div class="flex gap-2 justify-end lg:col-span-2">
-                            <a href="slides.php" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Clear</a>
-                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Apply</button>
+                            <a href="slides.php" class="inline-flex items-center gap-2 rounded-2xl text-black px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">Clear</a>
+                            <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">Apply</button>
                         </div>
                     </div>
                 </form>

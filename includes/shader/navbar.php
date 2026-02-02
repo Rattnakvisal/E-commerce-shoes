@@ -94,57 +94,111 @@ require_once __DIR__ . '/../contract/navbar.php';
 		<!-- RIGHT ACTIONS -->
 		<div class="flex items-center gap-5">
 
-			<!-- Desktop Search -->
+			<!-- Desktop Search (Premium) -->
 			<div class="hidden md:block relative">
-				<input id="desktopSearchInput"
-					class="w-44 bg-gray-100 rounded-full py-2 pl-12 pr-4 text-sm
-                      focus:w-64 focus:ring-2 focus:ring-black transition-all"
-					placeholder="Search products...">
-				<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+				<div class="relative group">
+					<!-- Icon bubble -->
+					<div
+						class="absolute left-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full
+				bg-white/70 border border-gray-200 text-gray-500
+				flex items-center justify-center
+				group-focus-within:bg-black group-focus-within:text-white group-focus-within:border-black/20
+				transition">
+						<i class="fas fa-search text-[13px]"></i>
+					</div>
+
+					<input
+						id="desktopSearchInput"
+						type="search"
+						autocomplete="off"
+						placeholder="Search products…"
+						class="w-52 bg-gray-100/80 border border-gray-200/70 rounded-2xl
+				py-2.5 pl-14 pr-10 text-sm
+				shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]
+				outline-none transition-all duration-200
+				focus:w-[360px] focus:bg-white focus:ring-4 focus:ring-black/5 focus:border-black/20
+				placeholder:text-gray-400" />
+
+					<!-- ESC hint -->
+					<div class="absolute right-2.5 top-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1">
+						<span class="text-[10px] px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-500">
+							ESC
+						</span>
+					</div>
+				</div>
 			</div>
-			<!-- Search results overlay -->
+
+			<!-- Backdrop (click to close) -->
+			<div
+				id="globalSearchBackdrop"
+				class="hidden fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px]"></div>
+			<!-- Search results overlay (centered dropdown) -->
 			<div
 				id="globalSearchResults"
-				class="hidden fixed top-20 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50">
-				<div
-					class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+				class="hidden fixed top-20 left-1/2 -translate-x-1/2 w-[94%] max-w-4xl z-50">
+				<div class="bg-white rounded-3xl shadow-[0_25px_80px_-30px_rgba(0,0,0,0.6)] border border-gray-200 overflow-hidden">
 					<!-- Header -->
-					<div
-						class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-						<div class="flex items-center gap-2">
-							<svg
-								class="w-4 h-4 text-gray-400"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-							</svg>
-							<span class="text-sm font-medium text-gray-700">
-								Search results
-							</span>
+					<div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+						<div class="flex items-center gap-3">
+							<div class="h-9 w-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round"
+										d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+								</svg>
+							</div>
+
+							<div class="leading-tight">
+								<p class="text-sm font-extrabold text-gray-900">Search results</p>
+								<p id="desktopSearchMeta" class="text-xs text-gray-500">Type to find products fast</p>
+							</div>
 						</div>
 
 						<button
 							id="closeSearchResults"
-							class="text-gray-400 hover:text-gray-600 text-xl leading-none"
-							aria-label="Close">
-							&times;
+							class="h-9 w-9 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 active:scale-95 transition flex items-center justify-center"
+							aria-label="Close"
+							type="button">
+							<i class="fas fa-times text-[14px]"></i>
 						</button>
 					</div>
 
 					<!-- Results -->
 					<div
 						id="searchResultsContent"
-						class="px-4 py-3 max-h-[360px] overflow-y-auto text-sm divide-y divide-gray-100">
-						<!-- JS injects results here -->
+						class="max-h-[420px] overflow-y-auto text-sm divide-y divide-gray-100 mt-5">
+						<!-- Optional default empty state -->
+						<div class="px-6 py-6 text-gray-500">
+							<div class="flex items-start gap-3">
+								<div class="h-10 w-10 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-500">
+									<i class="fas fa-bolt text-[13px]"></i>
+								</div>
+								<div>
+									<p class="font-semibold text-gray-900">Search your favorite shoes</p>
+									<p class="text-xs text-gray-500 mt-1">Try “Air Max”, “Jordan”, “Adidas”…</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Footer -->
+					<div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white">
+						<button
+							id="desktopSearchClear"
+							type="button"
+							class="text-xs font-bold text-gray-600 hover:text-black transition">
+							Clear
+						</button>
+
+						<div class="text-[11px] text-gray-400 flex items-center gap-2">
+							<span class="hidden lg:inline">Shortcut:</span>
+							<span class="px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-500">Ctrl</span>
+							<span class="text-gray-400">+</span>
+							<span class="px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-500">K</span>
+						</div>
 					</div>
 				</div>
 			</div>
-
+			<!-- End Desktop Search -->
 			<!-- Mobile Search Trigger -->
 			<button id="mobileSearchTrigger" type="button" class="md:hidden text-xl text-gray-700">
 				<i class="fas fa-search"></i>
@@ -152,24 +206,73 @@ require_once __DIR__ . '/../contract/navbar.php';
 
 			<!-- notification -->
 			<?php if ($userLogged): ?>
-				<div class="relative hidden md:block text-xl text-gray-700">
+				<div class="relative md:block text-xl text-gray-700">
 					<button id="notificationTrigger" class="relative focus:outline-none" aria-expanded="false" aria-haspopup="true">
 						<i class="far fa-bell"></i>
 						<span id="notificationCount" class="wishlist-count absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
 					</button>
-					<!-- Dropdown -->
-					<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border z-50">
-						<div class="p-3 border-b font-semibold">Notifications</div>
-						<div id="notificationList" class="max-h-64 overflow-auto text-sm"></div>
-						<div class="border-t p-2 flex items-center justify-between gap-2">
-							<div class="text-left">
-								<button id="markAllRead" class="text-sm text-blue-600">Mark all read</button>
+					<!-- Dropdown (Premium) -->
+					<div
+						id="notificationDropdown"
+						class="hidden absolute left-1/2 -translate-x-1/2 mt-3 w-[340px]
+						bg-white rounded-2xl shadow-[0_25px_80px_-30px_rgba(0,0,0,0.55)]
+						border border-gray-200 z-50 overflow-hidden">
+						<!-- Header -->
+						<div class="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="h-9 w-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600">
+									<i class="far fa-bell text-[14px]"></i>
+								</div>
+								<div class="leading-tight">
+									<p class="text-sm font-extrabold text-gray-900">Notifications</p>
+									<p id="notificationMeta" class="text-xs text-gray-500">Latest updates</p>
+								</div>
 							</div>
-							<div class="text-right">
-								<button id="clearAll" class="text-sm text-red-600">Clear all</button>
+
+							<button
+								id="closeNotification"
+								type="button"
+								class="h-9 w-9 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 active:scale-95 transition flex items-center justify-center"
+								aria-label="Close">
+								<i class="fas fa-times text-[14px]"></i>
+							</button>
+						</div>
+
+						<!-- List -->
+						<div
+							id="notificationList"
+							class="max-h-72 overflow-auto text-sm divide-y divide-gray-100">
+							<div class="px-4 py-5 text-gray-500">
+								<div class="flex items-start gap-3">
+									<div class="h-10 w-10 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-500">
+										<i class="fas fa-bell-slash text-[13px]"></i>
+									</div>
+									<div>
+										<p class="font-extrabold text-gray-900">No notifications</p>
+										<p class="text-xs text-gray-500 mt-1">You’re all caught up.</p>
+									</div>
+								</div>
 							</div>
 						</div>
+
+						<!-- Footer -->
+						<div class="border-t border-gray-100 bg-white px-4 py-3 flex items-center justify-between gap-3">
+							<button
+								id="markAllRead"
+								type="button"
+								class="text-sm font-bold text-blue-600 hover:underline">
+								Mark all read
+							</button>
+
+							<button
+								id="clearAll"
+								type="button"
+								class="text-sm font-bold text-red-600 hover:underline">
+								Clear all
+							</button>
+						</div>
 					</div>
+
 				</div>
 			<?php endif; ?>
 
@@ -224,8 +327,7 @@ require_once __DIR__ . '/../contract/navbar.php';
 											alt="User avatar"
 											class="w-10 h-10 rounded-full object-cover border border-gray-200">
 									<?php else: ?>
-										<div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-200
-                          flex items-center justify-center text-gray-800 font-extrabold text-sm">
+										<div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-800 font-extrabold text-sm">
 											<?= htmlspecialchars($initials) ?>
 										</div>
 									<?php endif; ?>
@@ -296,37 +398,88 @@ require_once __DIR__ . '/../contract/navbar.php';
 		</div>
 	</div>
 
-	<div id="mobileSearchBar" class="hidden px-4 py-4 bg-gray-100 border-t md:hidden">
-		<div class="max-w-7xl mx-auto">
-			<!-- Make this wrapper relative so dropdown can be absolute -->
+	<!-- Mobile Search Bar (Premium) -->
+	<div id="mobileSearchBar" class="hidden md:hidden border-t border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+		<div class="max-w-7xl mx-auto px-4 py-4">
 			<div class="relative">
 
-				<input id="mobileSearchInput"
-					placeholder="Search products..."
-					class="w-full bg-white rounded-full py-3 pl-12 pr-12 shadow outline-none focus:ring-2 focus:ring-black/10" />
+				<!-- Search Input -->
+				<div class="relative group">
+					<!-- left icon bubble -->
+					<div class="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-focus-within:bg-black group-focus-within:text-white transition">
+						<i class="fas fa-search text-[13px]"></i>
+					</div>
 
-				<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+					<input
+						id="mobileSearchInput"
+						type="search"
+						inputmode="search"
+						autocomplete="off"
+						placeholder="Search products…"
+						class="w-full rounded-2xl bg-white pl-14 pr-12 py-3.5 text-[15px] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.35)]
+                border border-gray-200/80 outline-none
+                focus:border-black/20 focus:ring-4 focus:ring-black/5
+                placeholder:text-gray-400" />
 
-				<button id="closeMobileSearch" type="button"
-					class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-					<i class="fas fa-times"></i>
-				</button>
+					<!-- Close Button -->
+					<button
+						id="closeMobileSearch"
+						type="button"
+						aria-label="Close search"
+						class="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full
+                bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition
+                flex items-center justify-center">
+						<i class="fas fa-times text-[14px]"></i>
+					</button>
+				</div>
 
-				<!-- MOBILE SEARCH RESULTS (absolute dropdown under input) -->
-				<div id="mobileSearchResults"
-					class="hidden absolute left-0 right-0 top-full mt-3 z-[60]">
-					<div class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-						<!-- IMPORTANT: remove px-4 on outer container, keep padding inside -->
-						<div id="mobileSearchResultsContent"
-							class="px-4 py-3 max-h-[50vh] overflow-y-auto text-sm divide-y divide-gray-100">
-							<!-- JS injects mobile results here -->
+				<!-- Dropdown -->
+				<div id="mobileSearchResults" class="hidden absolute left-0 right-0 top-full mt-3 z-[80]">
+					<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_18px_50px_-20px_rgba(0,0,0,0.55)]">
+						<!-- top small header -->
+						<div class="px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+							<span>Results</span>
+							<span id="mobileSearchMeta" class="text-[11px] font-medium text-gray-400"></span>
+						</div>
+
+						<!-- Content -->
+						<div
+							id="mobileSearchResultsContent"
+							class="max-h-[55vh] overflow-y-auto text-sm divide-y divide-gray-100">
+							<!-- Default empty hint (JS can overwrite) -->
+							<div class="px-4 py-5 text-gray-500">
+								<div class="flex items-start gap-3">
+									<div class="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500">
+										<i class="fas fa-bolt text-[13px]"></i>
+									</div>
+									<div>
+										<p class="font-semibold text-gray-800">Search your favorite shoes</p>
+										<p class="text-xs text-gray-500 mt-1">Type to see products instantly.</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Footer actions (optional) -->
+						<div class="px-4 py-3 bg-white border-t border-gray-100 flex items-center justify-between">
+							<button
+								type="button"
+								id="mobileSearchClear"
+								class="text-xs font-semibold text-gray-600 hover:text-black transition">
+								Clear
+							</button>
+							<span class="text-[11px] text-gray-400">Tip: press ESC to close</span>
 						</div>
 					</div>
 				</div>
 
+				<!-- Tap-outside overlay (optional, JS toggles) -->
+				<div id="mobileSearchOverlay" class="hidden fixed inset-0 z-[70] bg-black/20 backdrop-blur-[1px]"></div>
+
 			</div>
 		</div>
 	</div>
+
 
 </nav>
 
@@ -338,16 +491,16 @@ require_once __DIR__ . '/../contract/navbar.php';
 <!-- MOBILE MENU PANEL (OUTSIDE NAV) -->
 <aside id="mobileMenu"
 	class="fixed top-0 left-0 h-screen w-[86%] max-w-sm z-50
-         -translate-x-full transition-transform duration-300
-         bg-white/90 backdrop-blur-xl border-r border-gray-200/70
-         shadow-2xl flex flex-col rounded-r-3xl overflow-hidden"
+        -translate-x-full transition-transform duration-300
+        bg-white/90 backdrop-blur-xl border-r border-gray-200/70
+        shadow-2xl flex flex-col rounded-r-3xl overflow-hidden"
 	aria-hidden="true">
 
 	<!-- HEADER -->
 	<div class="flex items-center justify-between px-4 py-4 border-b border-gray-200/70 bg-white/70">
 		<div class="flex items-center gap-3">
 			<div class="w-10 h-10 rounded-full grid place-items-center font-extrabold
-                  text-white bg-gray-900 shadow-sm">
+                text-white bg-gray-900 shadow-sm">
 				✓
 			</div>
 			<span class="text-xl font-bold tracking-tight text-gray-900">MyBrand</span>
@@ -369,8 +522,8 @@ require_once __DIR__ . '/../contract/navbar.php';
 				<!-- PARENT -->
 				<button type="button"
 					class="parent-toggle w-full flex items-center justify-between px-3 py-3
-                 rounded-2xl text-left
-                 transition focus-ring"
+						rounded-2xl text-left
+						transition focus-ring"
 					aria-expanded="false">
 
 					<span class="text-gray-900 font-semibold tracking-tight">
@@ -424,8 +577,8 @@ require_once __DIR__ . '/../contract/navbar.php';
 											<?php foreach (array_slice($items, 0, 6) as $it): ?>
 												<a href="<?= htmlspecialchars($it['link_url'] ?? '#') ?>"
 													class="block text-gray-700 text-sm px-3 py-2 rounded-xl
-                                 hover:text-gray-900 hover:bg-gray-50/90
-                                 active:bg-gray-100/90 transition">
+													hover:text-gray-900 hover:bg-gray-50/90
+													active:bg-gray-100/90 transition">
 													<?= htmlspecialchars($it['item_title'] ?? '') ?>
 												</a>
 											<?php endforeach; ?>

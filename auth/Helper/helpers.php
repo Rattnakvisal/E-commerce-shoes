@@ -101,7 +101,7 @@ function redirect_by_role(string $role): void
 
     switch ($role) {
         case 'admin':
-            header('Location: ' . $base . '/E-commerce-shoes/admin/dashboard.php');
+            header('Location: ' . $base . '/E-commerce-shoes/admin/controller/dashboard/dashboard.php');
             break;
 
         case 'staff':

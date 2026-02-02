@@ -71,7 +71,7 @@ $tabs = [
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../../../assets/Css/users.css">
     <!-- SweetAlert -->
@@ -85,25 +85,72 @@ $tabs = [
 
     <div class="md:ml-64">
         <main class="p-4 sm:p-6 lg:p-8 min-h-screen animate-fade-in">
-            <!-- Header -->
+            <!-- ===============================
+                Users Management Header
+            ================================ -->
             <div class="mb-8">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <!-- Title -->
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Users<span class="gradient-text font-extrabold ml-2">Management</span></h1>
-                        </div>
-                        <p class="text-gray-600 ml-1">Manage user accounts, roles, and permissions</p>
-                    </div>
+                <div
+                    class="relative overflow-hidden rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
 
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="showAddUserModal()"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                            <i class="fas fa-user-plus mr-2"></i> Add User
-                        </button>
+                    <!-- Subtle Background Accent -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+
+                    <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+                        <!-- Left: Title -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span
+                                    class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                    <i class="fas fa-users"></i>
+                                </span>
+
+                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                    Users
+                                    <span class="gradient-text ml-2">Management</span>
+                                </h1>
+                            </div>
+
+                            <p class="text-gray-600 text-sm sm:text-base max-w-xl">
+                                Manage user accounts, roles, permissions, and access levels across your platform.
+                            </p>
+
+                            <!-- Meta -->
+                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-elevator"></i>
+                                    Role-based Access
+                                </span>
+
+                                <span
+                                    class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    System Secure
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Actions -->
+                        <div class="flex flex-wrap items-center gap-3">
+
+                            <button
+                                onclick="showAddUserModal()"
+                                class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
+                                <i class="fas fa-user-plus"></i>
+                                Add User
+                            </button>
+
+                            <button
+                                class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- Quick Stats (reports-style) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
@@ -309,11 +356,11 @@ $tabs = [
                     <!-- Actions -->
                     <div class="flex gap-2 justify-end lg:col-span-6">
                         <a href="users.php"
-                            class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+                            class="inline-flex items-center gap-2 rounded-2xl text-black px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
                             Clear
                         </a>
                         <button type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                            class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
                             Apply
                         </button>
                     </div>

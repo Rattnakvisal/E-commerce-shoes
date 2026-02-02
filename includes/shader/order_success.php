@@ -204,7 +204,7 @@ $orderDate = $last['created_at'] ?? date('Y-m-d H:i:s');
                         <i class="fa-solid fa-bag-shopping mr-2"></i>Continue shopping
                     </a>
 
-                    <a href="/E-commerce-shoes/view/content/orders.php"
+                    <a href="/E-commerce-shoes/view/content/myorder.php"
                         class="px-5 py-3 rounded-2xl border font-semibold hover:bg-gray-50">
                         <i class="fa-regular fa-rectangle-list mr-2"></i>View my orders
                     </a>

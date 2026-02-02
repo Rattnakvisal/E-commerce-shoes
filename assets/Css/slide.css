@@ -216,3 +216,8 @@
   display: block;
   animation: fadeIn 0.3s ease-out;
 }
+.gradient-text {
+  background: linear-gradient(90deg, #000, #444, #000);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

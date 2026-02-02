@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../../config/conn.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Navbar Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Styles -->
@@ -35,19 +35,66 @@ require_once __DIR__ . '/../../../config/conn.php';
     <!-- Header -->
     <main class="p-4 sm:p-6 lg:p-8 min-h-screen animate-fade-in">
         <div class="md:ml-64">
-            <!-- Header -->
+            <!-- ===============================
+                Menu Management Header
+            ================================ -->
             <div class="mb-8">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <!-- Title -->
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Menu<span class="gradient-text font-extrabold ml-2">Management</span></h1>
+                <div class="relative rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
+
+                    <!-- Soft background accent -->
+                    <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+
+                    <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                        <!-- Left -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                    <i class="fas fa-bars"></i>
+                                </span>
+
+                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                    Menu <span class="gradient-text ml-2">Management</span>
+                                </h1>
+                            </div>
+
+                            <p class="text-gray-600 text-sm sm:text-base max-w-2xl">
+                                Manage, organize, and control all menu items and navigation structure in your store.
+                            </p>
+
+                            <!-- Meta badges -->
+                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-compass"></i>
+                                    Navigation Structure
+                                </span>
+
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-route"></i>
+                                    Links & Routes
+                                </span>
+
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Menu Active
+                                </span>
+                            </div>
                         </div>
-                        <p class="text-gray-600 ml-1">Manage and track all menu items in your store.</p>
+
+                        <!-- Right (future actions ready) -->
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button
+                                type="button"
+                                onclick="window.location.reload()"
+                                class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 fade-in-up">
 
                 <!-- Parent Items -->

@@ -42,7 +42,7 @@ $tabs = [
 <head>
     <meta charset="utf-8">
     <title>Orders Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../../assets/Css/reports.css">
@@ -54,13 +54,63 @@ $tabs = [
     <!-- Main Content -->
     <main class="md:ml-64 min-h-screen animate-fade-in">
         <div class="p-4 sm:p-6 lg:p-8">
-            <div class="mb-8 fade-in-up">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">Orders <span class="gradient-text font-extrabold">Management</span></h1>
+            <!-- ===============================
+                Orders Management Header
+            ================================ -->
+            <div class="mb-8">
+                <div class="relative rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
+
+                    <!-- Soft background accent -->
+                    <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+
+                    <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                        <!-- Left -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                    <i class="fas fa-bag-shopping"></i>
+                                </span>
+
+                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                    Orders <span class="gradient-text ml-2">Management</span>
+                                </h1>
+                            </div>
+
+                            <p class="text-gray-600 text-sm sm:text-base max-w-2xl">
+                                Manage, monitor, and track all orders in your store with real-time status control.
+                            </p>
+
+                            <!-- Meta badges (optional but premium) -->
+                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-truck"></i>
+                                    Shipping & Delivery
+                                </span>
+
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-credit-card"></i>
+                                    Payments Tracking
+                                </span>
+
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Orders Live
+                                </span>
+                            </div>
                         </div>
-                        <p class="text-gray-600 ml-1">Manage and track all orders in your store.</p>
+
+                        <!-- Right: Actions (optional) -->
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button
+                                type="button"
+                                onclick="window.location.reload()"
+                                class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -285,11 +335,11 @@ $tabs = [
                         <div class="md:col-span-3 lg:col-span-6 flex justify-end gap-2">
                             <button type="reset"
                                 onclick="window.location.href='order.php'"
-                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                class="inline-flex items-center gap-2 rounded-2xl text-black px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
                                 Clear
                             </button>
                             <button type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
                                 Apply
                             </button>
                         </div>

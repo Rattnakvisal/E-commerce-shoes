@@ -122,13 +122,80 @@
     } catch (e) {}
   }
 
+  // Utility to position dropdown centered under the trigger and clamp to viewport
+  function positionDropdown() {
+    if (!trigger || !dropdown) return;
+    // ensure dropdown is visible to measure
+    dropdown.style.visibility = "hidden";
+    dropdown.classList.remove("hidden");
+    dropdown.style.position = "fixed";
+
+    const rect = trigger.getBoundingClientRect();
+    const ddW = dropdown.offsetWidth || 300;
+    const ddH = dropdown.offsetHeight || 200;
+
+    let left = rect.left + rect.width / 2 - ddW / 2;
+    const padding = 8;
+    if (left < padding) left = padding;
+    if (left + ddW > window.innerWidth - padding)
+      left = window.innerWidth - ddW - padding;
+
+    let top = rect.bottom + 8; // 8px gap
+    // if not enough space below, show above
+    if (top + ddH > window.innerHeight - padding) {
+      top = rect.top - ddH - 8;
+      if (top < padding) top = padding;
+    }
+
+    dropdown.style.left = left + "px";
+    dropdown.style.top = top + "px";
+    dropdown.style.right = "auto";
+    dropdown.style.transform = "none";
+    dropdown.style.visibility = "visible";
+  }
+
+  function hideDropdown() {
+    if (!dropdown) return;
+    dropdown.classList.add("hidden");
+    dropdown.style.left = "";
+    dropdown.style.top = "";
+    dropdown.style.position = "";
+    const back = document.getElementById("notificationBackdrop");
+    if (back) back.classList.add("hidden");
+  }
+
   trigger?.addEventListener("click", async function (e) {
     e.preventDefault();
     if (!dropdown) return;
-    dropdown.classList.toggle("hidden");
-    if (!dropdown.classList.contains("hidden")) {
+
+    const wasHidden = dropdown.classList.contains("hidden");
+    if (wasHidden) {
       await fetchLatest();
+      positionDropdown();
+      const back = document.getElementById("notificationBackdrop");
+      if (back) back.classList.remove("hidden");
+    } else {
+      hideDropdown();
     }
+  });
+
+  // Close button (inside dropdown)
+  document
+    .getElementById("closeNotification")
+    ?.addEventListener("click", function () {
+      hideDropdown();
+    });
+
+  // Clicking backdrop closes dropdown
+  document
+    .getElementById("notificationBackdrop")
+    ?.addEventListener("click", function () {
+      hideDropdown();
+    });
+
+  // Close on ESC
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") hideDropdown();
   });
 
   markAllBtn?.addEventListener("click", async function () {

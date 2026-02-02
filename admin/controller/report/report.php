@@ -1,5 +1,59 @@
 <?php
 require_once __DIR__ . '/report_api.php';
+
+// Export categories (defaults used by the Export dropdown)
+if (!isset($exportTypes) || !is_array($exportTypes)) {
+    $exportTypes = [
+        'orders' => [
+            'icon' => 'fa-shopping-cart',
+            'color' => 'from-blue-500 to-blue-600',
+            'formats' => ['csv', 'pdf', 'excel', 'json']
+        ],
+        'products' => [
+            'icon' => 'fa-box',
+            'color' => 'from-green-500 to-green-600',
+            'formats' => ['csv', 'pdf', 'excel']
+        ],
+        'order_items' => [
+            'icon' => 'fa-list',
+            'color' => 'from-purple-500 to-purple-600',
+            'formats' => ['csv', 'pdf']
+        ],
+        'customers' => [
+            'icon' => 'fa-users',
+            'color' => 'from-amber-500 to-amber-600',
+            'formats' => ['csv', 'excel']
+        ],
+        'revenue' => [
+            'icon' => 'fa-chart-line',
+            'color' => 'from-emerald-500 to-emerald-600',
+            'formats' => ['csv', 'pdf', 'excel']
+        ],
+        'analytics' => [
+            'icon' => 'fa-chart-pie',
+            'color' => 'from-pink-500 to-pink-600',
+            'formats' => ['pdf', 'excel']
+        ],
+    ];
+}
+
+// Ensure format styling/icon defaults include keys used in export formats
+if (!isset($formatColors) || !is_array($formatColors)) {
+    $formatColors = [
+        'csv' => 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+        'excel' => 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
+        'pdf' => 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100',
+        'json' => 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100',
+    ];
+}
+if (!isset($formatIcons) || !is_array($formatIcons)) {
+    $formatIcons = [
+        'csv' => 'fa-file-csv',
+        'excel' => 'fa-file-excel',
+        'pdf' => 'fa-file-pdf',
+        'json' => 'fa-file-code',
+    ];
+}
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -17,7 +71,7 @@ error_reporting(E_ALL);
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../../../assets/Css/reports.css">
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <!-- Chart.js for simple charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -26,148 +80,147 @@ error_reporting(E_ALL);
 
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
 
-    <div class="md:ml-64 min-h-screen">
+    <div class="md:ml-64 min-h-screen animate-fade-in">
         <main class="pt-6 md:pt-16 p-4 sm:p-6 lg:p-8 page-transition bg-transparent min-h-screen">
-            <!-- Header with Breadcrumb -->
-            <div class="mb-8 fade-in-up">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">
-                                Dashboard <span class="gradient-text font-extrabold">Reports</span>
-                            </h1>
-                        </div>
-                        <p class="text-gray-600 ml-1">Welcome back, <span class="font-semibold text-gray-900">Admin</span>! Here's what's happening with your store today.</p>
-                    </div>
+            <!-- ===============================
+                Reports Header
+            ================================ -->
+            <div class="mb-8">
+                <div class="relative rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
+                    <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+                    <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 
-                    <!-- Export Section with Dropdown -->
-                    <div class="relative fade-in-down">
-                        <div class="flex items-center gap-3">
-                            <button id="exportDropdownBtn" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-md hover:shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 group">
-                                <i class="fas fa-file-export text-sm"></i>
-                                <span class="font-semibold">Export Reports</span>
-                                <i class="fas fa-chevron-down text-xs transition-transform duration-300 group-hover:rotate-180"></i>
-                            </button>
-                        </div>
+                        <!-- Left -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                    <i class="fas fa-chart-line"></i>
+                                </span>
 
-                        <!-- Export Dropdown Menu -->
-                        <div id="exportDropdown" class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden glass-effect">
-                            <div class="p-4 border-b border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
-                                        <i class="fas fa-download text-indigo-600"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-gray-900">Export Reports</h3>
-                                        <p class="text-xs text-gray-500">Select data and format</p>
-                                    </div>
-                                </div>
+                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                    Dashboard <span class="gradient-text">Reports</span>
+                                </h1>
                             </div>
 
-                            <div class="p-3 max-h-96 overflow-y-auto">
-                                <!-- Export Categories -->
-                                <?php
-                                $exportTypes = [
-                                    'orders' => [
-                                        'icon' => 'fa-shopping-cart',
-                                        'color' => 'from-blue-500 to-blue-600',
-                                        'formats' => ['csv', 'pdf', 'excel', 'json']
-                                    ],
-                                    'products' => [
-                                        'icon' => 'fa-box',
-                                        'color' => 'from-green-500 to-green-600',
-                                        'formats' => ['csv', 'pdf', 'excel']
-                                    ],
-                                    'order_items' => [
-                                        'icon' => 'fa-list',
-                                        'color' => 'from-purple-500 to-purple-600',
-                                        'formats' => ['csv', 'pdf']
-                                    ],
-                                    'customers' => [
-                                        'icon' => 'fa-users',
-                                        'color' => 'from-amber-500 to-amber-600',
-                                        'formats' => ['csv', 'excel']
-                                    ],
-                                    'revenue' => [
-                                        'icon' => 'fa-chart-line',
-                                        'color' => 'from-emerald-500 to-emerald-600',
-                                        'formats' => ['csv', 'pdf', 'excel']
-                                    ],
-                                    'analytics' => [
-                                        'icon' => 'fa-chart-pie',
-                                        'color' => 'from-pink-500 to-pink-600',
-                                        'formats' => ['pdf', 'excel']
-                                    ]
-                                ];
-                                ?>
+                            <p class="text-gray-600 text-sm sm:text-base max-w-2xl">
+                                Welcome back, <span class="font-semibold text-gray-900">Admin</span>! Here's what's happening with your store today.
+                            </p>
 
-                                <?php foreach ($exportTypes as $type => $data): ?>
-                                    <div class="mb-4 last:mb-0">
-                                        <div class="flex items-center gap-2 mb-2 px-2">
-                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br <?php echo $data['color']; ?> flex items-center justify-center">
-                                                <i class="fas <?php echo $data['icon']; ?> text-white text-xs"></i>
+                            <!-- Meta -->
+                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <?= date('l, F j, Y') ?>
+                                </span>
+
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span id="liveTime"></span>
+                                </span>
+
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Reports Ready
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Actions -->
+                        <div class="flex flex-wrap items-center gap-3">
+
+                            <!-- Dropdown Wrapper (relative) -->
+                            <div class="relative" id="exportWrap">
+
+                                <button
+                                    id="exportDropdownBtn"
+                                    type="button"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                    class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition group">
+                                    <i class="fas fa-file-export"></i>
+                                    Export Reports
+                                    <i id="exportChevron" class="fas fa-chevron-down text-xs opacity-80 transition-transform duration-200"></i>
+                                </button>
+
+                                <!-- Dropdown (NOT clipped anymore) -->
+                                <div
+                                    id="exportDropdown"
+                                    class="absolute right-0 mt-3 w-[min(22rem,calc(100vw-2rem))] bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-[999] overflow-hidden">
+
+                                    <!-- Header -->
+                                    <div class="p-4 border-b border-gray-100">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center shadow">
+                                                <i class="fas fa-download"></i>
                                             </div>
-                                            <span class="font-semibold text-gray-800 capitalize"><?php echo str_replace('_', ' ', $type); ?></span>
-                                            <span class="ml-auto text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                                <?php echo count($data['formats']); ?> formats
-                                            </span>
-                                        </div>
-
-                                        <div class="grid grid-cols-2 gap-2 px-2">
-                                            <?php foreach ($data['formats'] as $format): ?>
-                                                <?php
-                                                $formatColors = [
-                                                    'csv' => 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
-                                                    'pdf' => 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100',
-                                                    'excel' => 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
-                                                    'json' => 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                                                ];
-                                                $formatIcons = [
-                                                    'csv' => 'fa-file-csv',
-                                                    'pdf' => 'fa-file-pdf',
-                                                    'excel' => 'fa-file-excel',
-                                                    'json' => 'fa-file-code'
-                                                ];
-                                                $colorClass = $formatColors[$format] ?? 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100';
-                                                $iconClass = $formatIcons[$format] ?? 'fa-file';
-                                                ?>
-                                                <a href="./export_api.php?type=<?php echo $type; ?>&format=<?php echo $format; ?>"
-                                                    target="_blank"
-                                                    class="export-item flex items-center justify-between p-3 rounded-lg border <?php echo $colorClass; ?> transition-all duration-300 group relative overflow-hidden"
-                                                    data-type="<?php echo $type; ?>"
-                                                    data-format="<?php echo $format; ?>">
-                                                    <div class="flex items-center gap-2">
-                                                        <i class="fas <?php echo $iconClass; ?> text-lg"></i>
-                                                        <span class="font-medium text-sm"><?php echo strtoupper($format); ?></span>
-                                                    </div>
-                                                    <i class="fas fa-download text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
-
-                                                    <!-- Progress bar -->
-                                                    <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-current opacity-20 download-progress"></div>
-
-                                                    <!-- Format badge -->
-                                                    <span class="absolute -top-2 -right-2 text-xs font-bold px-2 py-1 rounded-full bg-white border shadow-sm capitalize">
-                                                        <?php echo $format; ?>
-                                                    </span>
-                                                </a>
-                                            <?php endforeach; ?>
+                                            <div>
+                                                <h3 class="font-extrabold text-gray-900">Export Reports</h3>
+                                                <p class="text-xs text-gray-500">Select dataset and format</p>
+                                            </div>
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
 
-                            <div class="p-4 border-t border-gray-100 bg-gray-50/50">
-                                <div class="flex items-center justify-between text-sm">
-                                    <span class="text-gray-600">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Files download instantly
-                                    </span>
-                                    <button class="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
-                                        <i class="fas fa-history"></i>
-                                        Export History
-                                    </button>
+                                    <!-- Body -->
+                                    <div class="p-4 max-h-[420px] overflow-y-auto space-y-4">
+                                        <?php foreach ($exportTypes as $type => $data): ?>
+                                            <div>
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br <?= $data['color'] ?> flex items-center justify-center">
+                                                        <i class="fas <?= $data['icon'] ?> text-white text-xs"></i>
+                                                    </div>
+                                                    <span class="font-semibold text-gray-800 capitalize">
+                                                        <?= str_replace('_', ' ', $type) ?>
+                                                    </span>
+                                                    <span class="ml-auto text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                                        <?= count($data['formats']) ?> formats
+                                                    </span>
+                                                </div>
+
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <?php foreach ($data['formats'] as $format): ?>
+                                                        <?php
+                                                        $colorClass = $formatColors[$format] ?? 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100';
+                                                        $iconClass  = $formatIcons[$format] ?? 'fa-file';
+                                                        ?>
+                                                        <a
+                                                            href="./export_api.php?type=<?= $type ?>&format=<?= $format ?>"
+                                                            target="_blank"
+                                                            class="flex items-center justify-between p-3 rounded-xl border <?= $colorClass ?> transition group hover:shadow-sm">
+                                                            <div class="flex items-center gap-2">
+                                                                <i class="fas <?= $iconClass ?> text-base"></i>
+                                                                <span class="font-semibold text-sm"><?= strtoupper($format) ?></span>
+                                                            </div>
+                                                            <i class="fas fa-arrow-down text-xs opacity-0 group-hover:opacity-100 transition"></i>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="px-4 py-3 bg-gray-50 flex items-center justify-between text-sm">
+                                        <span class="text-gray-600 flex items-center gap-2">
+                                            <i class="fas fa-info-circle"></i>
+                                            Files download instantly
+                                        </span>
+                                        <button type="button" class="text-gray-900 hover:opacity-80 font-semibold flex items-center gap-2">
+                                            <i class="fas fa-history"></i>
+                                            Export History
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Refresh -->
+                            <button
+                                type="button"
+                                onclick="window.location.reload()"
+                                class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+
                         </div>
                     </div>
                 </div>

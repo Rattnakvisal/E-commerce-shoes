@@ -228,3 +228,8 @@
 .modal-overlay {
   background: rgba(0, 0, 0, 0.5);
 }
+.gradient-text {
+  background: linear-gradient(90deg, #000, #444, #000);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

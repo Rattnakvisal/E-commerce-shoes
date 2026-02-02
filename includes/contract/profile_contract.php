@@ -82,11 +82,16 @@ $_SESSION['address'] = $user['address'];
 
 // Append cache-busting query param to avatar URL so browsers show updated image
 if ($user['avatar_url'] !== '') {
-    $rel = ltrim($user['avatar_url'], '/');
-    $local = __DIR__ . '/../../' . $rel;
-    if (is_file($local)) {
-        $sep = strpos($user['avatar_url'], '?') === false ? '?' : '&';
-        $user['avatar_url'] .= $sep . 'v=' . @filemtime($local);
+    $projectRoot = realpath(__DIR__ . '/../../');
+    $path = parse_url($user['avatar_url'], PHP_URL_PATH) ?: '';
+    $filename = basename($path);
+
+    if ($projectRoot && $filename) {
+        $local = $projectRoot . '/assets/Images/avatars/' . $filename;
+        if (is_file($local)) {
+            $sep = strpos($user['avatar_url'], '?') === false ? '?' : '&';
+            $user['avatar_url'] .= $sep . 'v=' . @filemtime($local);
+        }
     }
 
     $_SESSION['avatar_url'] = $user['avatar_url'];

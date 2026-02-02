@@ -36,7 +36,7 @@ require_once __DIR__ . '/data.php';
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto hide-scrollbar">
         <!-- Dashboard -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/dashboard.php"
+            <a href="/E-commerce-shoes/admin/controller/dashboard/dashboard.php"
                 class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift active-menu-item">
                 <i class="fas fa-home mr-3 text-gray-500 w-5 text-center"></i>
                 Dashboard
@@ -139,7 +139,7 @@ require_once __DIR__ . '/data.php';
         <div class="pt-2">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/settings.php"
+                <a href="/E-commerce-shoes/admin/controller/setting/setting.php"
                     class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 hover-lift">
                     <i class="fas fa-cog mr-3 text-gray-500 w-5 text-center"></i>
                     Settings
@@ -478,7 +478,7 @@ require_once __DIR__ . '/data.php';
     <div class="px-3 py-4 overflow-y-auto h-[calc(100%-8rem)] hide-scrollbar">
         <nav class="space-y-1">
             <!-- Dashboard -->
-            <a href="/E-commerce-shoes/admin/dashboard.php"
+            <a href="/E-commerce-shoes/admin/controller/dashboard/dashboard.php"
                 class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 active-menu-item touch-feedback">
                 <i class="fas fa-home mr-3 text-gray-500 w-5 text-center"></i>
                 Dashboard
@@ -569,7 +569,7 @@ require_once __DIR__ . '/data.php';
             <div class="pt-4">
                 <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/E-commerce-shoes/admin/settings.php"
+                    <a href="/E-commerce-shoes/admin/controller/setting/setting.php"
                         class="mobile-nav-item flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 touch-feedback">
                         <i class="fas fa-cog mr-3 text-gray-500 w-5 text-center"></i>
                         Settings

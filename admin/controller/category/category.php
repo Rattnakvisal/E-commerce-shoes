@@ -14,7 +14,7 @@ require_once __DIR__ . '/api_category.php';
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -37,22 +37,69 @@ require_once __DIR__ . '/api_category.php';
 <body class="bg-gray-50">
     <?php require_once __DIR__ . '/../../../admin/include/navbar.php'; ?>
 
-    <main class="md:ml-64 min-h-screen">
+    <main class="md:ml-64 min-h-screen animate-fade-in">
         <div class="p-4 sm:p-6 lg:p-8">
+            <!-- ===============================
+                Category Management Header
+            ================================ -->
+            <div class="mb-8">
+                <div class="relative rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
 
-            <!-- Page Header -->
-            <div class="mb-6 animate-fade-in">
-                <div class="flex flex-col lg:flex-row mb-6 lg:items-center lg:justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <h1 class="text-3xl font-bold text-gray-900">
-                                Category <span class="gradient-text font-extrabold">Management</span>
-                            </h1>
+                    <!-- Soft background accent -->
+                    <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-black/[0.04] via-transparent to-black/[0.06] pointer-events-none"></div>
+
+                    <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+                        <!-- Left -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-black text-white shadow">
+                                    <i class="fas fa-layer-group"></i>
+                                </span>
+
+                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                                    Category <span class="gradient-text ml-2">Management</span>
+                                </h1>
+                            </div>
+
+                            <p class="text-gray-600 text-sm sm:text-base max-w-2xl">
+                                Organize, manage, and control all product categories across your store.
+                            </p>
+
+                            <!-- Meta badges -->
+                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-brands fa-product-hunt"></i>
+                                    Product Grouping
+                                </span>
+
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-sitemap"></i>
+                                    Hierarchy Support
+                                </span>
+
+                                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                    Categories Active
+                                </span>
+                            </div>
                         </div>
-                        <p class="text-gray-600 ml-1">Manage and track all categories in your store.</p>
+
+                        <!-- Right (future actions ready) -->
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button
+                                type="button"
+                                onclick="window.location.reload()"
+                                class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
+
 
             <!-- Summary Stats -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 fade-in-up">
@@ -131,7 +178,7 @@ require_once __DIR__ . '/api_category.php';
 
                             <button type="button"
                                 id="toggleAddCategory"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                                class="inline-flex items-center gap-2 rounded-2xl bg-black text-white px-5 py-3 text-sm font-semibold shadow hover:opacity-90 transition">
                                 <i class="fas fa-plus mr-2"></i> New
                             </button>
                         </div>

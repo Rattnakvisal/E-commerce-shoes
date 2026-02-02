@@ -264,6 +264,17 @@ function bindExportButtons() {
     });
   });
 }
+function updateTime() {
+  const now = new Date();
+  const el = document.getElementById("liveTime");
+  if (el)
+    el.textContent = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+}
+updateTime();
+setInterval(updateTime, 60000);
 
 /* =========================================================
    BOOT

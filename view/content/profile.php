@@ -19,7 +19,8 @@ if ($flash) {
         || str_contains($low, 'required')
         || str_contains($low, 'match')
         || str_contains($low, 'choose')
-        || str_contains($low, 'missing');
+        || str_contains($low, 'missing')
+        || str_contains($low, 'large');
 }
 ?>
 <!doctype html>

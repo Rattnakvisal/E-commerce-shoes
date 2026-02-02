@@ -179,9 +179,10 @@ try {
         };
         if ($ext === '') throw new RuntimeException('Only JPG, PNG, WEBP allowed.');
 
-        $dir = __DIR__ . '/../../public/uploads/avatars';
+        // store avatars only under assets/Images/avatars
+        $dir = __DIR__ . '/../../assets/Images/avatars';
         if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
-            throw new RuntimeException('Cannot create upload folder.');
+            throw new RuntimeException('Cannot create assets avatar folder.');
         }
 
         $file = 'u' . $userId . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
@@ -191,13 +192,20 @@ try {
             throw new RuntimeException('Upload failed.');
         }
 
-        $url = '/E-commerce-shoes/public/uploads/avatars/' . $file;
+        $storeUrl = '/E-commerce-shoes/assets/Images/avatars/' . $file;
 
         $stmt = $pdo->prepare("UPDATE users SET avatar_url = :u WHERE user_id = :id");
-        $stmt->execute([':u' => $url, ':id' => $userId]);
+        $stmt->execute([':u' => $storeUrl, ':id' => $userId]);
 
-        // update session for navbar
-        $_SESSION['avatar_url'] = $url;
+        // cache-bust using local mtime
+        $finalUrl = $storeUrl;
+        $local = realpath(__DIR__ . '/../../') . '/assets/Images/avatars/' . $file;
+        if (is_file($local)) {
+            $sep = strpos($finalUrl, '?') === false ? '?' : '&';
+            $finalUrl .= $sep . 'v=' . @filemtime($local);
+        }
+
+        $_SESSION['avatar_url'] = $finalUrl;
 
         redirectWith('Avatar updated successfully.');
     }
