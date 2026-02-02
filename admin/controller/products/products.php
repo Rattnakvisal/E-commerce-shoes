@@ -481,125 +481,124 @@ $tabs = [
                     </div>
                 </div>
             </form>
-        </div>
-        <!-- Products Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            ID
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Name
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Category
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Sku
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Price
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Cost
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Stock
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Image
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200" id="productsTableBody">
-                    <?php if (empty($products)): ?>
+
+            <!-- Products Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
-                                    <p class="text-lg font-medium text-gray-900">No products found</p>
-                                    <p class="text-gray-500 mt-1">Try adjusting your filters or add a new product</p>
-                                </div>
-                            </td>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Category
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sku
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Price
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Cost
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Stock
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Image
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($products as $product): ?>
-                            <?php
-                            $stock = (int)$product['stock'];
-                            $stockClass = $stock <= 0 ? 'stock-out' : ($stock < 10 ? 'stock-low' : '');
-                            $statusClass = $product['status'] === 'active' ? 'status-active' : 'status-inactive';
-                            ?>
-                            <tr class="hover:bg-gray-50 transition-colors" data-id="<?php echo $product['product_id']; ?>">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <?php echo $product['product_id']; ?>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        <?php echo htmlspecialchars($product['name']); ?>
-                                    </div>
-                                    <div class="text-sm text-gray-500 truncate max-w-xs">
-                                        <?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 50)); ?>
-                                        <?php if (strlen($product['description'] ?? '') > 50): ?>...<?php endif; ?>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?php echo htmlspecialchars($product['sku'] ?? ''); ?>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div class="font-semibold">$<?php echo number_format($product['price'], 2); ?></div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?php echo $product['cost'] ? '$' . number_format($product['cost'], 2) : 'N/A'; ?>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $stockClass; ?>">
-                                        <?php echo number_format($stock); ?>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
-                                        <?php echo ucfirst($product['status']); ?>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <?php if (!empty($product['image_url'])): ?>
-                                        <div class="flex-shrink-0 h-10 w-10">
-                                            <img class="h-10 w-10 rounded object-cover"
-                                                src="<?php echo htmlspecialchars($product['image_url']); ?>"
-                                                alt="<?php echo htmlspecialchars($product['name']); ?>">
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="action-cell px-6 py-4 whitespace-nowrap text-sm">
-                                    <div class="flex items-center space-x-2">
-                                        <button type="button" onclick="editProduct(<?php echo $product['product_id']; ?>)"
-                                            class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
-                                            <i class="fas fa-edit mr-2"></i> Edit
-                                        </button>
-                                        <button type="button" onclick="deleteProduct(<?php echo $product['product_id']; ?>)"
-                                            class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
-                                            <i class="fas fa-trash mr-2"></i> Delete
-                                        </button>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="productsTableBody">
+                        <?php if (empty($products)): ?>
+                            <tr>
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
+                                        <p class="text-lg font-medium text-gray-900">No products found</p>
+                                        <p class="text-gray-500 mt-1">Try adjusting your filters or add a new product</p>
                                     </div>
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-        </div>
+                        <?php else: ?>
+                            <?php foreach ($products as $product): ?>
+                                <?php
+                                $stock = (int)$product['stock'];
+                                $stockClass = $stock <= 0 ? 'stock-out' : ($stock < 10 ? 'stock-low' : '');
+                                $statusClass = $product['status'] === 'active' ? 'status-active' : 'status-inactive';
+                                ?>
+                                <tr class="hover:bg-gray-50 transition-colors" data-id="<?php echo $product['product_id']; ?>">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <?php echo $product['product_id']; ?>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <?php echo htmlspecialchars($product['name']); ?>
+                                        </div>
+                                        <div class="text-sm text-gray-500 truncate max-w-xs">
+                                            <?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 50)); ?>
+                                            <?php if (strlen($product['description'] ?? '') > 50): ?>...<?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo htmlspecialchars($product['sku'] ?? ''); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <div class="font-semibold">$<?php echo number_format($product['price'], 2); ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo $product['cost'] ? '$' . number_format($product['cost'], 2) : 'N/A'; ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $stockClass; ?>">
+                                            <?php echo number_format($stock); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
+                                            <?php echo ucfirst($product['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php if (!empty($product['image_url'])): ?>
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded object-cover"
+                                                    src="<?php echo htmlspecialchars($product['image_url']); ?>"
+                                                    alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="action-cell px-6 py-4 whitespace-nowrap text-sm">
+                                        <div class="flex items-center space-x-2">
+                                            <button type="button" onclick="editProduct(<?php echo $product['product_id']; ?>)"
+                                                class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm hover-lift">
+                                                <i class="fas fa-edit mr-2"></i> Edit
+                                            </button>
+                                            <button type="button" onclick="deleteProduct(<?php echo $product['product_id']; ?>)"
+                                                class="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm hover-lift">
+                                                <i class="fas fa-trash mr-2"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <!-- Pagination -->
         <?php if ($totalPages > 1): ?>

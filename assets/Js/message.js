@@ -1,139 +1,178 @@
-// messages_dropdown.js (CONTACT / MESSAGES)
-document.addEventListener("DOMContentLoaded", () => {
-  const dropdown = document.getElementById("messagesDropdown");
-  const msgBtn = document.getElementById("messagesButton");
-  const badge = document.querySelector("#msgBadge");
-  const list = document.getElementById("messagesList");
-  const viewAll = document.getElementById("viewAllMessages");
-  const markAll = document.getElementById("msgMarkAllReadBtn");
-  const clearAllBtn = document.getElementById("msgClearAllBtn");
+(function () {
+  "use strict";
 
   const API = "/E-commerce-shoes/admin/controller/message/messages_api.php";
 
-  if (!dropdown || !msgBtn || !list) return;
+  // DOM (match your HTML)
+  const listEl = document.getElementById("messagesList");
+  const markAllBtn = document.getElementById("msgMarkAllReadBtn");
+  const clearAllBtn = document.getElementById("msgClearAllBtn");
 
-  /* ----------------------------------------
-      Helpers
-  ------------------------------------- */
+  if (!listEl) {
+    console.warn("[Msg] #messagesList not found");
+    return;
+  }
 
-  const hideBadge = () => {
-    if (badge) badge.style.display = "none";
-  };
+  // Find dropdown + button safely
+  const dropdown = listEl.closest(".js-dropdown-menu");
+  const wrap = dropdown ? dropdown.closest(".js-dropdown") : null;
+  const btn = wrap ? wrap.querySelector(".js-dropdown-btn") : null;
 
-  const updateBadge = (delta = 0) => {
+  const badge = btn
+    ? btn.querySelector(
+        "span.absolute.rounded-full, span.absolute.min-w-\\[18px\\], span.absolute.min-w-\\[20px\\]",
+      )
+    : null;
+
+  if (!dropdown || !btn) {
+    console.warn("[Msg] dropdown or button not found", { dropdown, btn });
+    return;
+  }
+
+  /* =========================================
+     Helpers
+  ========================================= */
+  function setBadgeCount(n) {
     if (!badge) return;
+    const num = Number(n || 0);
 
+    if (num <= 0) {
+      badge.remove(); // remove badge entirely (clean)
+      return;
+    }
+
+    badge.style.display = "flex";
+    badge.textContent = num > 99 ? "99+" : String(num);
+  }
+
+  function decreaseBadgeByOne() {
+    if (!badge) return;
     const t = (badge.textContent || "").trim();
-    if (!t) return;
-
-    // handle 99+
     let count = t === "99+" ? 100 : parseInt(t, 10) || 0;
-    count = Math.max(0, count + delta);
+    count = Math.max(0, count - 1);
+    if (count <= 0) badge.remove();
+    else badge.textContent = count > 99 ? "99+" : String(count);
+  }
 
-    if (count === 0) {
-      hideBadge();
-    } else {
-      badge.style.display = "flex";
-      badge.textContent = count > 99 ? "99+" : String(count);
+  function renderEmpty() {
+    listEl.innerHTML = `<div class="py-10 text-center">
+         <p class="text-sm font-semibold text-gray-700">No messages</p>
+         <p class="text-xs text-gray-500 mt-1">Inbox is empty.</p>
+       </div>`;
+  }
+
+  async function post(action, data = {}) {
+    const url = `${API}?action=${encodeURIComponent(action)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(data),
+    });
+
+    // allow 204 no content
+    if (res.status === 204) return { ok: true };
+
+    const j = await res.json().catch(() => null);
+    if (!res.ok || !j || j.ok !== true) {
+      throw new Error(j?.msg || `Request failed (${res.status})`);
     }
-  };
+    return j;
+  }
 
-  const clearUI = () => {
-    hideBadge();
-    list.innerHTML =
-      '<p class="py-6 text-center text-sm text-gray-500">No messages</p>';
-  };
+  /* =========================================
+     Actions
+  ========================================= */
 
-  const post = async (url) => {
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        credentials: "same-origin",
-      });
-      return res;
-    } catch (err) {
-      console.error(url, err);
-      return null;
-    }
-  };
-
-  /* ----------------------------------------
-     Dropdown Toggle
-  ------------------------------------- */
-
-  msgBtn.addEventListener("click", async (e) => {
-    e.stopPropagation();
-    setTimeout(async () => {
-      if (!dropdown.classList.contains("hidden")) {
-        await post(`${API}?action=mark_all_read`);
-        hideBadge();
-
-        list
-          .querySelectorAll(".msg-item")
-          .forEach((el) => el.classList.remove("bg-indigo-50"));
-      }
-    }, 0);
-  });
-
-  /* ----------------------------------------
-      Mark All / View All / Clear All
-  ------------------------------------- */
-
-  markAll?.addEventListener("click", async (e) => {
-    e?.preventDefault?.();
-    await post(`${API}?action=mark_all_read`);
-    clearUI();
-  });
-
-  viewAll?.addEventListener("click", async (e) => {
+  // Mark all read (DO NOT clear list)
+  markAllBtn?.addEventListener("click", async (e) => {
     e.preventDefault();
-    const res = await post(`${API}?action=mark_all_read`);
-    if (res && (res.ok || res.status === 204)) {
-      window.location.href = viewAll.href;
-    } else {
-      console.warn("Failed to mark messages read before navigation", res);
-      window.location.href = viewAll.href;
+    e.stopPropagation();
+
+    try {
+      const r = await post("mark_all_read");
+      // remove unread UI
+      listEl.querySelectorAll(".msg-item").forEach((el) => {
+        el.classList.remove("bg-indigo-50", "bg-indigo-50/50");
+      });
+      // remove "Unread" tag if you render it
+      listEl
+        .querySelectorAll(".msg-item .inline-flex")
+        .forEach((tag) => tag.remove());
+      // remove left unread bar if exists
+      listEl
+        .querySelectorAll(".msg-row > span.bg-indigo-500")
+        .forEach((bar) => bar.remove());
+
+      // badge to unread (if API returns)
+      if (r.unread !== undefined) setBadgeCount(r.unread);
+      else if (badge) badge.remove();
+    } catch (err) {
+      console.error("[Msg] mark_all_read failed:", err);
     }
   });
 
+  // Clear all (delete all)
   clearAllBtn?.addEventListener("click", async (e) => {
     e.preventDefault();
-    await post(`${API}?action=delete_all`);
-    clearUI();
+    e.stopPropagation();
+    if (!confirm("Clear all messages?")) return;
+
+    try {
+      await post("delete_all");
+      if (badge) badge.remove();
+      renderEmpty();
+    } catch (err) {
+      console.error("[Msg] delete_all failed:", err);
+    }
   });
 
-  /* ----------------------------------------
-     Messages List (Event Delegation)
-  ------------------------------------- */
+  // Delegation: delete one / mark one read
+  listEl.addEventListener("click", async (e) => {
+    const delBtn = e.target.closest(".msg-clear");
+    if (delBtn) {
+      e.preventDefault();
+      e.stopPropagation();
 
-  list.addEventListener("click", async (e) => {
-    const clearBtn = e.target.closest(".msg-clear");
+      const id = delBtn.getAttribute("data-id") || delBtn.dataset.id;
+      if (!id) return;
+
+      if (!confirm("Delete this message?")) return;
+
+      try {
+        const r = await post("delete", { id });
+        delBtn.closest(".group")?.remove(); // your row wrapper uses .group
+
+        if (r.unread !== undefined) setBadgeCount(r.unread);
+        else decreaseBadgeByOne();
+
+        if (!listEl.querySelector(".msg-item")) renderEmpty();
+      } catch (err) {
+        console.error("[Msg] delete failed:", err);
+      }
+      return;
+    }
+
     const item = e.target.closest(".msg-item");
+    if (!item) return;
 
-    // Delete message
-    if (clearBtn) {
-      e.preventDefault();
-      const id = clearBtn.dataset.id;
-      if (!id) return;
+    e.preventDefault();
+    e.stopPropagation();
 
-      await post(`${API}?action=delete&id=${encodeURIComponent(id)}`);
-      clearBtn.closest(".msg-row")?.remove();
-      updateBadge(-1);
-    }
+    const id = item.getAttribute("data-id") || item.dataset.id;
+    if (!id) return;
 
-    // Mark single message as read
-    if (item && !clearBtn) {
-      e.preventDefault();
-      const id = item.dataset.id;
-      if (!id) return;
+    try {
+      const r = await post("mark_read", { id });
 
-      await post(`${API}?action=mark_read&id=${encodeURIComponent(id)}`);
-      item.closest(".msg-row")?.remove();
-      updateBadge(-1);
-    }
+      item.closest(".group")?.remove();
 
-    if (list.querySelectorAll(".msg-item").length === 0) {
-      clearUI();
+      if (r.unread !== undefined) setBadgeCount(r.unread);
+      else decreaseBadgeByOne();
+
+      if (!listEl.querySelector(".msg-item")) renderEmpty();
+    } catch (err) {
+      console.error("[Msg] mark_read failed:", err);
     }
   });
-});
+})();

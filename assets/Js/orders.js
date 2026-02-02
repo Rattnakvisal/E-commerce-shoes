@@ -284,6 +284,29 @@ async function viewOrder(orderId) {
 }
 
 /* =====================================================
+   BADGE HELPER
+===================================================== */
+function badgeHTML(type, status) {
+  status = String(status || "").toLowerCase();
+  const base =
+    "inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold";
+  let variant = "bg-gray-100 text-gray-800";
+
+  if (status === "completed" || status === "paid")
+    variant = "bg-emerald-100 text-emerald-800";
+  else if (status === "processing") variant = "bg-blue-100 text-blue-800";
+  else if (status === "pending") variant = "bg-yellow-100 text-amber-800";
+  else if (status === "cancelled" || status === "failed")
+    variant = "bg-red-100 text-red-800";
+  else if (status === "refunded") variant = "bg-purple-100 text-purple-800";
+
+  const label = String(status || "").replace(/(^|\s)\S/g, (c) =>
+    c.toUpperCase(),
+  );
+  return `<span class="${base} ${variant}">${escapeHtml(type)}: ${escapeHtml(label)}</span>`;
+}
+
+/* =====================================================
    RENDER ORDER MODAL
 ===================================================== */
 function renderOrderModal(order, items = []) {
@@ -307,34 +330,108 @@ function renderOrderModal(order, items = []) {
     .join("");
 
   Swal.fire({
-    title: `Order #${order.order_id}`,
-    width: 720,
+    title: `Order #${escapeHtml(order.order_id)}`,
+    width: 860,
+    showCloseButton: true,
+    focusConfirm: false,
+    confirmButtonText: "Close",
+    confirmButtonColor: "#111827",
+    background: "#ffffff",
+    customClass: {
+      popup: "rounded-3xl shadow-2xl",
+      title: "text-left text-xl font-extrabold text-gray-900",
+      htmlContainer: "p-0",
+      confirmButton:
+        "rounded-xl px-6 py-2.5 font-bold bg-gray-900 hover:bg-black",
+      closeButton: "text-gray-400 hover:text-gray-700",
+    },
+
     html: `
-      <div class="text-left text-sm space-y-2">
-        <p><b>Customer:</b> ${escapeHtml(order.customer_name)}</p>
-        <p><b>Status:</b> ${escapeHtml(order.order_status)}</p>
-        <p><b>Payment:</b> ${escapeHtml(order.payment_status)}</p>
-        <p><b>Date:</b> ${new Date(order.created_at).toLocaleString()}</p>
+  <div class="text-left">
 
-        <table class="w-full border mt-3 text-sm">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
+    <!-- CUSTOMER + STATUS -->
+    <div class="mt-4 p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-        <div class="text-right mt-3">
-          <b>Total:</b> $${total.toFixed(2)}
+      <!-- Customer -->
+      <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Customer</p>
+        <p class="mt-1 text-base font-extrabold text-gray-900 truncate">
+          ${escapeHtml(order.customer_name)}
+        </p>
+        <p class="mt-3 text-xs text-gray-500">
+          <span class="font-semibold">Date:</span>
+          ${escapeHtml(new Date(order.created_at).toLocaleString())}
+        </p>
+      </div>
+
+      <!-- Status -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5">
+        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Status</p>
+
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          ${badgeHTML("Order", order.order_status)}
+          ${badgeHTML("Payment", order.payment_status)}
+        </div>
+
+        <!-- mini timeline -->
+        <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+          <span class="font-semibold text-gray-600">Order</span>
+          <span>→</span>
+          <span class="font-semibold text-gray-600">Payment</span>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+          <span class="font-semibold">Order ID</span>
+          <span class="font-mono text-gray-700">${escapeHtml(order.order_id)}</span>
         </div>
       </div>
-    `,
-    confirmButtonText: "Close",
-    confirmButtonColor: "#4f46e5",
+    </div>
+
+    <!-- ITEMS -->
+    <div class="px-4">
+      <div class="mt-5 rounded-2xl border border-gray-200 overflow-hidden">
+        <!-- Header -->
+        <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+          <p class="text-sm font-extrabold text-gray-900">Order Items</p>
+          <p class="text-xs text-gray-500">Scroll to view</p>
+        </div>
+        <!-- Table -->
+        <div class="max-h-[340px] overflow-auto">
+          <table class="w-full text-sm">
+            <thead class="sticky top-0 bg-white z-10">
+              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <th class="text-left px-5 py-3 font-bold">Item</th>
+                <th class="text-center px-5 py-3 font-bold w-20">Qty</th>
+                <th class="text-right px-5 py-3 font-bold w-24">Price</th>
+                <th class="text-right px-5 py-3 font-bold w-28">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sticky Total -->
+        <div class="px-5 py-4 bg-white border-t border-gray-100 flex items-center justify-between">
+          <span class="text-sm font-bold text-gray-600">Grand Total</span>
+          <span class="text-xl font-extrabold text-gray-900">
+            $${Number(total).toFixed(2)}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer tip -->
+    <div class="mt-4 p-4 flex items-center justify-between text-xs text-gray-400">
+      <span>
+        Press <span class="px-2 py-1 rounded-lg border bg-gray-50 font-semibold">ESC</span> to close
+      </span>
+      <span class="font-semibold">Admin View</span>
+    </div>
+
+  </div>
+  `,
   });
 }
 
