@@ -129,12 +129,34 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                         <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Required *</span>
                     </div>
 
+                    <!-- ✅ Real-time Location Box -->
+                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="font-bold text-gray-900">Use my current location</p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Auto-fill address from GPS (you can edit later).
+                                </p>
+                                <p id="locStatus" class="text-xs text-gray-500 mt-2"></p>
+                            </div>
+
+                            <button type="button" id="btnUseLocation"
+                                class="shrink-0 px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black transition">
+                                <i class="fas fa-location-crosshairs mr-2"></i> Use Location
+                            </button>
+                        </div>
+
+                        <!-- hidden gps values (send to backend) -->
+                        <input type="hidden" name="lat" id="lat" value="<?= e($_POST['lat'] ?? '') ?>">
+                        <input type="hidden" name="lng" id="lng" value="<?= e($_POST['lng'] ?? '') ?>">
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                             <div class="relative">
                                 <i class="fas fa-user absolute left-3 top-3.5 text-gray-400"></i>
-                                <input name="name" value="<?= e($_POST['name'] ?? '') ?>" required
+                                <input id="fullName" name="name" value="<?= e($_POST['name'] ?? '') ?>" required
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -143,7 +165,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                             <div class="relative">
                                 <i class="fas fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
-                                <input type="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" required
+                                <input id="email" type="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" required
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -153,9 +175,12 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                         <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
                         <div class="relative">
                             <i class="fas fa-map-marker-alt absolute left-3 top-3.5 text-gray-400"></i>
-                            <input name="address" value="<?= e($_POST['address'] ?? '') ?>" required
+                            <input id="address" name="address" value="<?= e($_POST['address'] ?? '') ?>" required
                                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                         </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Tip: Click <b>Use Location</b> to auto-fill your address.
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -163,7 +188,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
                             <div class="relative">
                                 <i class="fas fa-city absolute left-3 top-3.5 text-gray-400"></i>
-                                <input name="city" value="<?= e($_POST['city'] ?? '') ?>"
+                                <input id="city" name="city" value="<?= e($_POST['city'] ?? '') ?>"
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -172,7 +197,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
                             <div class="relative">
                                 <i class="fas fa-globe absolute left-3 top-3.5 text-gray-400"></i>
-                                <input name="country" value="<?= e($_POST['country'] ?? 'Cambodia') ?>"
+                                <input id="country" name="country" value="<?= e($_POST['country'] ?? 'Cambodia') ?>"
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -181,7 +206,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
                             <div class="relative">
                                 <i class="fas fa-phone absolute left-3 top-3.5 text-gray-400"></i>
-                                <input name="phone" value="<?= e($_POST['phone'] ?? '') ?>" required
+                                <input id="phone" name="phone" value="<?= e($_POST['phone'] ?? '') ?>" required
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -302,101 +327,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
 
     <?php require_once __DIR__ . '/../../includes/shader/footer.php'; ?>
 
-    <script>
-        let selectedPayment = null;
-
-        const qrMap = {
-            aba: "../assets/qr/aba.jpg",
-            wing: "../assets/qr/wing.jpg",
-            bakong: "../assets/qr/bakong.jpg",
-            acleda: "../assets/qr/acleda.jpg",
-            chipmong: "../assets/qr/chipmong.jpg"
-        };
-
-        const $ = (id) => document.getElementById(id);
-
-        function selectPayment(event, method) {
-            selectedPayment = method;
-            $("paymentMethod").value = method;
-
-            document.querySelectorAll(".payment-card").forEach((card) => {
-                card.classList.remove("selected", "border-blue-500");
-                card.classList.add("border-gray-200");
-            });
-
-            const card = event.currentTarget;
-            card.classList.add("selected", "border-blue-500");
-            card.classList.remove("border-gray-200");
-        }
-
-        function showQRModal(method) {
-            const src = qrMap[method];
-            if (!src) return alert("QR image not found for: " + method);
-
-            $("qrImage").src = src;
-            const modal = $("qrModal");
-            modal.classList.remove("hidden");
-            modal.classList.add("flex");
-        }
-
-        function closeQRModal() {
-            const modal = $("qrModal");
-            modal.classList.add("hidden");
-            modal.classList.remove("flex");
-        }
-
-        function showReloadOverlay() {
-            const overlay = $("reloadOverlay");
-            if (!overlay) return;
-            overlay.classList.remove("hidden");
-            overlay.classList.add("flex");
-        }
-
-        function processOrder(event) {
-            const form = $("checkoutForm");
-
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return false;
-            }
-            if (!selectedPayment) {
-                alert("Please select payment method");
-                return false;
-            }
-
-            event.preventDefault();
-            showQRModal(selectedPayment);
-            return false;
-        }
-
-        function confirmPaidAndSubmit(ev) {
-            const confirmInput = $("confirmPaid");
-            if (confirmInput) confirmInput.value = "1";
-
-            const btn = $("btnCompletePayment");
-            if (btn) {
-                btn.disabled = true;
-                btn.classList.add("opacity-60", "cursor-not-allowed");
-                btn.innerHTML = `<i class="fas fa-circle-notch animate-spin mr-2"></i> Processing...`;
-            }
-
-            closeQRModal();
-            showReloadOverlay();
-
-            setTimeout(() => {
-                $("checkoutForm").submit();
-            }, 250);
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const first = document.querySelector(".payment-card[data-method]");
-            if (first) first.click();
-        });
-
-        window.addEventListener("beforeunload", () => {
-            showReloadOverlay();
-        });
-    </script>
+    <script src="../assets/Js/checkout.js"></script>
 
 </body>
 

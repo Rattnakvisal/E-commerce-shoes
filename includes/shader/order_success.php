@@ -1,47 +1,5 @@
 <?php
-
-declare(strict_types=1);
-
-if (session_status() === PHP_SESSION_NONE) session_start();
-
-function e($s): string
-{
-    return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
-}
-
-function money($n): string
-{
-    return '$' . number_format((float)$n, 2);
-}
-
-$last = $_SESSION['last_order'] ?? null;
-
-if (!$last) {
-    header('Location: /E-commerce-shoes/view/content/products.php');
-    exit;
-}
-
-unset($_SESSION['last_order']);
-
-// Normalize / defaults
-$orderId   = $last['order_id'] ?? '';
-$name      = $last['name'] ?? '';
-$email     = $last['email'] ?? '';
-$phone     = $last['phone'] ?? '';
-$address   = $last['address'] ?? '';
-$city      = $last['city'] ?? '';
-$country   = $last['country'] ?? '';
-$payment   = strtoupper((string)($last['payment'] ?? ''));
-$subtotal  = (float)($last['subtotal'] ?? 0);
-$tax       = (float)($last['tax'] ?? 0);
-$shipping  = (float)($last['shipping'] ?? 0);
-$discount  = (float)($last['discount'] ?? 0);
-$total     = (float)($last['total'] ?? ($subtotal + $tax + $shipping - $discount));
-
-$items  = $last['items'] ?? [];
-$qtyMap = $last['quantities'] ?? [];
-
-$orderDate = $last['created_at'] ?? date('Y-m-d H:i:s');
+require_once __DIR__ . '/../contract/order_success.php';
 ?>
 <!doctype html>
 <html lang="en">
@@ -140,13 +98,70 @@ $orderDate = $last['created_at'] ?? date('Y-m-d H:i:s');
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-sm border p-6">
-                        <h2 class="font-semibold text-gray-900 mb-3">Shipping</h2>
+                        <div class="flex items-start justify-between gap-3">
+                            <h2 class="font-semibold text-gray-900 mb-3">Shipping</h2>
+
+                            <?php if ($hasGps && $googleMapsUrl): ?>
+                                <a href="<?= e($googleMapsUrl) ?>" target="_blank"
+                                    class="text-sm px-3 py-2 rounded-xl bg-gray-900 text-white hover:bg-black">
+                                    <i class="fa-solid fa-location-dot mr-2"></i>Open map
+                                </a>
+                            <?php endif; ?>
+                        </div>
+
                         <div class="space-y-2 text-sm text-gray-700">
                             <p class="leading-relaxed"><?= e($address) ?></p>
                             <p><?= e($city) ?> <?= e($country) ?></p>
+
+                            <?php if ($hasGps): ?>
+                                <div class="mt-3 rounded-xl border bg-gray-50 p-3">
+                                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">GPS Location</p>
+                                    <p class="text-sm text-gray-800 mt-1">
+                                        Lat: <b><?= e((string)$lat) ?></b> |
+                                        Lng: <b><?= e((string)$lng) ?></b>
+                                    </p>
+                                </div>
+                            <?php else: ?>
+                                <div class="mt-3 rounded-xl border bg-gray-50 p-3">
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fa-regular fa-circle-question mr-1"></i>
+                                        GPS not provided (customer did not use location button).
+                                    </p>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
+
+                <!-- ✅ Map Preview -->
+                <?php if ($hasGps && $osmEmbedUrl): ?>
+                    <div class="bg-white rounded-2xl shadow-sm border p-6">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h2 class="font-semibold text-gray-900">
+                                <i class="fa-solid fa-map-location-dot mr-2"></i>Delivery location preview
+                            </h2>
+                            <?php if ($googleMapsUrl): ?>
+                                <a href="<?= e($googleMapsUrl) ?>" target="_blank"
+                                    class="text-sm px-3 py-2 rounded-xl border hover:bg-gray-50">
+                                    <i class="fa-brands fa-google mr-2"></i>Google Maps
+                                </a>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="rounded-2xl overflow-hidden border bg-gray-100">
+                            <iframe
+                                title="Map preview"
+                                src="<?= e($osmEmbedUrl) ?>"
+                                class="w-full h-72"
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+
+                        <p class="text-xs text-gray-500 mt-3">
+                            This map is based on GPS coordinates from your checkout.
+                        </p>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Items -->
                 <div class="bg-white rounded-2xl shadow-sm border p-6">
@@ -254,6 +269,13 @@ $orderDate = $last['created_at'] ?? date('Y-m-d H:i:s');
                             If you have any questions about your order, contact support and include order <b>#<?= e($orderId) ?></b>.
                         </div>
                     </div>
+
+                    <?php if ($hasGps && $googleMapsUrl): ?>
+                        <a href="<?= e($googleMapsUrl) ?>" target="_blank"
+                            class="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gray-900 text-white font-semibold hover:bg-black">
+                            <i class="fa-solid fa-map-location-dot"></i> Open delivery location
+                        </a>
+                    <?php endif; ?>
                 </div>
             </aside>
 

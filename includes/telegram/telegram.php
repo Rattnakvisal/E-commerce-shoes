@@ -17,11 +17,11 @@ final class TelegramNotificationService
 
     /** Mapping payment code => display name + logo file */
     private const BANK_INFO = [
-        'aba' => ['name' => ' ABA Bank',     'logo' => 'aba.png'],
-        'acleda' => ['name' => ' ACLEDA Bank', 'logo' => 'acleda.png'],
-        'wing' => ['name' => ' WING',         'logo' => 'wing.png'],
-        'chipmong' => ['name' => ' CHIP MONG', 'logo' => 'chipmong.png'],
-        'bakong' => ['name' => '🇰🇭 BAKONG',     'logo' => 'icon.png'],
+        'aba'      => ['name' => ' ABA Bank',      'logo' => 'aba.png'],
+        'acleda'   => ['name' => ' ACLEDA Bank',   'logo' => 'acleda.png'],
+        'wing'     => ['name' => ' WING',         'logo' => 'wing.png'],
+        'chipmong' => ['name' => ' CHIP MONG',    'logo' => 'chipmong.png'],
+        'bakong'   => ['name' => '🇰🇭 BAKONG',      'logo' => 'icon.png'],
     ];
 
     /* =====================================================
@@ -40,9 +40,14 @@ final class TelegramNotificationService
         float $total,
         array $products,
         array $cart,
+        ?float $lat = null,
+        ?float $lng = null,
         ?string $adminUrl = null
     ): void {
         if (!self::isConfigured()) return;
+
+        // Validate GPS (optional)
+        $hasGps = self::validLatLng($lat, $lng);
 
         // Caption
         $items   = self::buildItems($products, $cart);
@@ -56,7 +61,9 @@ final class TelegramNotificationService
             $country,
             $paymentCode,
             $total,
-            $items
+            $items,
+            $hasGps ? $lat : null,
+            $hasGps ? $lng : null
         );
 
         // Media: bank logo + product images (optional)
@@ -65,8 +72,14 @@ final class TelegramNotificationService
         // Send message with media if available
         self::sendCaptionWithOptionalMedia($caption, $media);
 
-        // Send buttons message
-        self::sendActionButtons($orderId, $adminUrl);
+        // Optional: send telegram "pin" location
+        // (Uncomment if you want a real location message)
+        if ($hasGps) {
+            self::sendLocation($lat, $lng);
+        }
+
+        // Send buttons message (adds Open Map)
+        self::sendActionButtons($orderId, $adminUrl, $hasGps ? $lat : null, $hasGps ? $lng : null);
     }
 
     /* =====================================================
@@ -77,6 +90,14 @@ final class TelegramNotificationService
     {
         return defined('TELEGRAM_BOT_TOKEN') && defined('TELEGRAM_CHAT_ID')
             && TELEGRAM_BOT_TOKEN !== '' && TELEGRAM_CHAT_ID !== '';
+    }
+
+    private static function validLatLng(?float $lat, ?float $lng): bool
+    {
+        if (!is_float($lat) || !is_float($lng)) return false;
+        if ($lat < -90 || $lat > 90) return false;
+        if ($lng < -180 || $lng > 180) return false;
+        return true;
     }
 
     /* =====================================================
@@ -92,7 +113,7 @@ final class TelegramNotificationService
             CURLOPT_POST           => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT        => self::API_TIMEOUT,
-            CURLOPT_POSTFIELDS     => $payload, // if payload contains CURLFile => multipart auto
+            CURLOPT_POSTFIELDS     => $payload,
         ]);
 
         $res  = curl_exec($ch);
@@ -135,17 +156,14 @@ final class TelegramNotificationService
             $i++;
             $m = ['type' => 'photo'];
 
-            // Local file path
             if (is_string($item) && self::isLocalFile($item)) {
                 $key = "file{$i}";
                 $m['media'] = 'attach://' . $key;
                 $attachments[$key] = new CURLFile($item);
             } else {
-                // Remote URL
                 $m['media'] = (string) $item;
             }
 
-            // Caption only on the first media item
             if ($i === 1 && $caption !== '') {
                 $m['caption'] = $caption;
                 $m['parse_mode'] = self::PARSE_MODE;
@@ -162,6 +180,18 @@ final class TelegramNotificationService
         ];
 
         return self::api('sendMediaGroup', array_merge($payload, $attachments));
+    }
+
+    /** Send real Telegram location pin */
+    private static function sendLocation(float $lat, float $lng): bool
+    {
+        return self::api('sendLocation', [
+            'chat_id'    => TELEGRAM_CHAT_ID,
+            'latitude'   => (string)$lat,
+            'longitude'  => (string)$lng,
+            // optional
+            'live_period' => 0,
+        ]);
     }
 
     /* =====================================================
@@ -220,7 +250,9 @@ final class TelegramNotificationService
         string $country,
         string $paymentCode,
         float $total,
-        array $items
+        array $items,
+        ?float $lat = null,
+        ?float $lng = null
     ): string {
         $bank = self::bankInfo($paymentCode);
 
@@ -234,6 +266,19 @@ final class TelegramNotificationService
 
         $location = trim(implode(', ', array_filter([$address, $city, $country])));
 
+        // Map link (only if GPS provided)
+        $mapLine = '';
+        if (self::validLatLng($lat, $lng)) {
+            $mapUrl = 'https://www.google.com/maps?q=' . rawurlencode($lat . ',' . $lng);
+            $mapLine = implode("\n", [
+                '',
+                '📍 <b>GPS</b>',
+                "Lat: <code>{$lat}</code>",
+                "Lng: <code>{$lng}</code>",
+                "Map: {$mapUrl}",
+            ]);
+        }
+
         return implode("\n", [
             '━━━━━━━━━━━━━━━━━━',
             '<b>PAYMENT SUCCESS</b>',
@@ -245,7 +290,8 @@ final class TelegramNotificationService
             " <b>Phone:</b> {$phone}",
             '',
             ' <b>Shipping</b>',
-            $location,
+            $location ?: '—',
+            $mapLine,
             '',
             " <b>Method:</b> {$bank['name']}",
             " <b>Total:</b> <b>" . self::money($total) . "</b>",
@@ -293,21 +339,16 @@ final class TelegramNotificationService
 
     private static function resolveImage(string $img): ?string
     {
-        // Remote URL
         if (preg_match('#^https?://#i', $img)) return $img;
 
-        // Try local relative to project root
         $root = __DIR__ . '/../../';
 
-        // 1) exact relative path from project root
         $p1 = $root . ltrim($img, '/\\');
         if (self::isLocalFile($p1)) return $p1;
 
-        // 2) inside /view
         $p2 = $root . 'view/' . ltrim($img, '/\\');
         if (self::isLocalFile($p2)) return $p2;
 
-        // 3) common images folders
         $candidates = [
             $root . 'assets/Images/' . basename($img),
             $root . 'assets/Images/products/' . basename($img),
@@ -336,18 +377,16 @@ final class TelegramNotificationService
             return;
         }
 
-        // One media only => sendPhoto with caption
         if (count($media) === 1) {
             $first = $media[0];
             if (self::isLocalFile($first)) {
                 self::sendPhoto(new CURLFile($first), $caption);
             } else {
-                self::sendPhoto($first, $caption); // remote url
+                self::sendPhoto($first, $caption);
             }
             return;
         }
 
-        // Multiple => media group with caption on first
         self::sendMediaGroup($media, $caption);
     }
 
@@ -355,7 +394,7 @@ final class TelegramNotificationService
        BUTTONS
     ====================================================== */
 
-    private static function sendActionButtons(int $orderId, ?string $adminUrl): void
+    private static function sendActionButtons(int $orderId, ?string $adminUrl, ?float $lat = null, ?float $lng = null): void
     {
         $row = [
             [
@@ -366,6 +405,15 @@ final class TelegramNotificationService
                 ], JSON_UNESCAPED_SLASHES),
             ],
         ];
+
+        // ✅ Add Open Map button if GPS exists
+        if (self::validLatLng($lat, $lng)) {
+            $mapUrl = 'https://www.google.com/maps?q=' . rawurlencode($lat . ',' . $lng);
+            $row[] = [
+                'text' => 'Open Map',
+                'url'  => $mapUrl,
+            ];
+        }
 
         if ($adminUrl && filter_var($adminUrl, FILTER_VALIDATE_URL)) {
             $row[] = [

@@ -47,14 +47,14 @@ try {
         ORDER BY method_name
     ");
     $paymentMethods = $pm->fetchAll(PDO::FETCH_ASSOC);
-} catch (Throwable $t) {
+} catch (Throwable) {
     $paymentMethods = [];
 }
 
 /* Build map code => id */
 $methodCodeToId = [];
 foreach ($paymentMethods as $m) {
-    $methodCodeToId[strtolower(trim($m['method_code']))] = (int)$m['method_id'];
+    $methodCodeToId[strtolower(trim((string)$m['method_code']))] = (int)$m['method_id'];
 }
 
 /* =====================================================
@@ -105,22 +105,45 @@ $error = null;
    CHECKOUT SUBMIT
 ===================================================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name    = trim($_POST['name'] ?? '');
-    $email   = trim($_POST['email'] ?? '');
-    $address = trim($_POST['address'] ?? '');
-    $city    = trim($_POST['city'] ?? '');
-    $country = trim($_POST['country'] ?? '');
-    $phone   = trim($_POST['phone'] ?? '');
 
-    // payment is now method_code (aba/acleda/wing/...)
-    $paymentCode = strtolower(trim($_POST['payment'] ?? 'aba'));
+    // Basic fields
+    $name    = trim((string)($_POST['name'] ?? ''));
+    $email   = trim((string)($_POST['email'] ?? ''));
+    $address = trim((string)($_POST['address'] ?? ''));
+    $city    = trim((string)($_POST['city'] ?? ''));
+    $country = trim((string)($_POST['country'] ?? ''));
+    $phone   = trim((string)($_POST['phone'] ?? ''));
 
+    // GPS from real-time location button
+    $latRaw = $_POST['lat'] ?? null;
+    $lngRaw = $_POST['lng'] ?? null;
+
+    $lat = null;
+    $lng = null;
+
+    if ($latRaw !== null && $latRaw !== '') {
+        $lat = (float)$latRaw;
+    }
+    if ($lngRaw !== null && $lngRaw !== '') {
+        $lng = (float)$lngRaw;
+    }
+
+    // payment is method_code (aba/acleda/wing/...)
+    $paymentCode = strtolower(trim((string)($_POST['payment'] ?? 'aba')));
+
+    // Validate required fields
     if ($name === '' || $email === '' || $address === '' || $phone === '') {
         $error = 'Please fill required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format.';
     } elseif (!isset($methodCodeToId[$paymentCode])) {
         $error = 'Invalid payment method.';
+    }
+    // Validate GPS only if provided (optional)
+    elseif ($lat !== null && ($lat < -90 || $lat > 90)) {
+        $error = 'Invalid latitude value.';
+    } elseif ($lng !== null && ($lng < -180 || $lng > 180)) {
+        $error = 'Invalid longitude value.';
     } else {
         try {
             $pdo->beginTransaction();
@@ -139,13 +162,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($dbOrderId <= 0) {
                 throw new Exception('Failed to create order.');
             }
-
-            // Insert shipping
+            // Insert shipping info
+            // Make sure your shipping table has latitude/longitude columns
             $shipStmt = $pdo->prepare("
-                INSERT INTO shipping (order_id, address, city, country)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO shipping (order_id, address, city, country, latitude, longitude)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
-            $shipStmt->execute([$dbOrderId, $address, $city, $country]);
+            $shipStmt->execute([
+                $dbOrderId,
+                $address,
+                $city,
+                $country,
+                $lat,   // can be null
+                $lng    // can be null
+            ]);
 
             // Prepare statements for items, inventory
             $itemStmt        = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
@@ -172,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $invLogStmt->execute([$pid, -$qty]);
             }
 
-            // Insert payment (NEW SCHEMA)
+            // Insert payment
             $paymentMethodId = $methodCodeToId[$paymentCode];
             $payAmount = $confirmedPayment ? $total : 0.00;
 
@@ -194,6 +224,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'country'     => $country,
                 'phone'       => $phone,
                 'payment'     => $paymentCode,
+                'lat'         => $lat,
+                'lng'         => $lng,
                 'items'       => $products,
                 'quantities'  => $cart,
                 'subtotal'    => $subtotal,
@@ -221,6 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // ignore
             }
 
+            // User notification
             try {
                 $userNoteTitle = 'Order confirmed';
                 $userNoteMsg = sprintf('Your order #%d has been received. Total: %s', $dbOrderId, number_format($total, 2));
