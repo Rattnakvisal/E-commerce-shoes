@@ -171,27 +171,38 @@ require_once __DIR__ . '/process_dashboard.php';
                 <!-- Conversion Rate -->
                 <div class="stat-card bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-6 shadow-soft-xl border border-indigo-500/30 relative overflow-hidden group hover:shadow-glow-purple">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
-
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-white/90 tracking-wider mb-1">Conversion Rate</h3>
-                            <p class="text-3xl font-bold text-white mt-2">
-                                <?= number_format($conversion_rate, 2) ?>%
-                            </p>
+                            <div class="flex items-baseline mt-2">
+                                <?php
+                                $visitors = max($summary['unique_customers'] * 5, 1);
+                                $conversionRate = ($summary['orders_count'] / $visitors) * 100;
+                                ?>
+                                <p class="text-xl font-bold text-white"><?php echo number_format($conversionRate, 2); ?>%</p>
+                                <div class="ml-2">
+                                    <span class="inline-flex items-center bg-white/20 text-white px-2 py-1 rounded-full text-xs font-medium border border-white/30">
+                                        <i class="fas fa-arrow-up mr-1 text-xs"></i>
+                                        <?php echo number_format($conversionRate / 2, 1); ?>%
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <div class="bg-white/20 p-3 rounded-xl shadow-inner">
-                            <i class="fas fa-chart-line text-lg text-white"></i>
+                            <i class="fas fa-chart-line text-xl text-white"></i>
                         </div>
                     </div>
-
                     <div class="mt-4 relative z-10">
                         <div class="flex justify-between text-sm text-white/80 mb-2">
                             <span>Overall Rate</span>
-                            <span class="font-semibold"><?= number_format($conversion_rate, 2) ?>%</span>
+                            <span class="font-semibold"><?php echo number_format($conversionRate, 2); ?>%</span>
+                        </div>
+                        <div class="w-full bg-white/30 rounded-full h-2 overflow-hidden">
+                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80"
+                                style="--target-width: <?php echo min(($conversionRate / 3.5) * 100, 100); ?>%"></div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <!-- Orders Status & Revenue -->

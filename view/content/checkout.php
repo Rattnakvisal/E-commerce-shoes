@@ -328,6 +328,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
     <?php require_once __DIR__ . '/../../includes/shader/footer.php'; ?>
 
     <script src="../assets/Js/checkout.js"></script>
+    <script src="../assets/Js/Location.js"></script>
 
 </body>
 

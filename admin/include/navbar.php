@@ -77,7 +77,7 @@ function navClass(bool $active): string
 
         <a href="/E-commerce-shoes/admin/controller/navbar/menu.php"
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/navbar/menu.php', $uri)) ?>">
-            <i class="fas fa-bars w-5 text-center text-gray-500"></i> Navbar Manager
+            <i class="fas fa-bars w-5 text-center text-gray-500"></i> Navbar
         </a>
 
         <!-- Section: E-commerce -->
@@ -164,7 +164,7 @@ function navClass(bool $active): string
 </aside>
 
 <!-- ========== MAIN ========== -->
-<div class="md:ml-64">
+<div class="md:ml-64 mt-3">
     <!-- Topbar -->
     <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-gray-200">
         <div class="px-4 sm:px-6 lg:px-8">
@@ -467,7 +467,7 @@ function navClass(bool $active): string
 
         <a href="/E-commerce-shoes/admin/controller/navbar/menu.php"
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/navbar/menu.php', $uri)) ?>">
-            <i class="fas fa-bars w-5 text-center text-gray-500"></i> Navbar Manager
+            <i class="fas fa-bars w-5 text-center text-gray-500"></i> Navbar
         </a>
 
         <!-- Section: E-commerce -->

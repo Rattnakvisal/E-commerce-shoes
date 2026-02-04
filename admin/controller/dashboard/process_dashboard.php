@@ -151,3 +151,16 @@ $completedRate   = $total_orders > 0 ? (($ordersByStatus['completed'] ?? 0) / $t
 $revenueTarget   = $revenue * 1.2;
 $revenueProgress = $revenueTarget > 0 ? min(($revenue / $revenueTarget) * 100, 100) : 0;
 $conversionBar   = $conversion_rate > 0 ? min(($conversion_rate / 3.5) * 100, 100) : 0;
+
+/* ---------- SUMMARY (compat for templates expecting $summary) ---------- */
+try {
+    $stmt = $pdo->query("SELECT COUNT(DISTINCT user_id) FROM orders WHERE user_id IS NOT NULL");
+    $unique_customers = (int)$stmt->fetchColumn();
+} catch (PDOException $e) {
+    $unique_customers = 0;
+}
+
+$summary = [
+    'unique_customers' => $unique_customers,
+    'orders_count' => (int)$total_orders,
+];

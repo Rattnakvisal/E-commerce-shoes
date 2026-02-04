@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/report_api.php';
 
-// Export categories (defaults used by the Export dropdown)
 if (!isset($exportTypes) || !is_array($exportTypes)) {
     $exportTypes = [
         'orders' => [
@@ -37,7 +36,6 @@ if (!isset($exportTypes) || !is_array($exportTypes)) {
     ];
 }
 
-// Ensure format styling/icon defaults include keys used in export formats
 if (!isset($formatColors) || !is_array($formatColors)) {
     $formatColors = [
         'csv' => 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
@@ -228,38 +226,6 @@ error_reporting(E_ALL);
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
-                <!-- Total Users -->
-                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Users</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900 glow-text"><?php echo number_format($summary['unique_customers']); ?></p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
-                                        <i class="fas fa-user-check mr-1 text-xs"></i>
-                                        <?php echo number_format(($summary['unique_customers'] / max($total_users, 1)) * 100, 1); ?>%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-users text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>Of Total Users</span>
-                            <span class="font-semibold"><?php echo number_format(($summary['unique_customers'] / max($total_users, 1)) * 100, 1); ?>%</span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
-                                style="--target-width: <?php echo ($summary['unique_customers'] / max($total_users, 1)) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Total Orders -->
                 <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group hover:shadow-glow-green">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
@@ -284,7 +250,7 @@ error_reporting(E_ALL);
                             </div>
                         </div>
                         <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-shopping-cart text-lg"></i>
+                            <i class="fas fa-shopping-cart text-2xl"></i>
                         </div>
                     </div>
                     <div class="mt-4 relative z-10">
@@ -323,7 +289,7 @@ error_reporting(E_ALL);
                             </div>
                         </div>
                         <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-dollar-sign text-lg"></i>
+                            <i class="fas fa-dollar-sign text-2xl"></i>
                         </div>
                     </div>
                     <div class="mt-4 relative z-10">
@@ -337,46 +303,6 @@ error_reporting(E_ALL);
                         </div>
                     </div>
                 </div>
-
-                <!-- Conversion Rate -->
-                <div class="stat-card bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-6 shadow-soft-xl border border-indigo-500/30 relative overflow-hidden group hover:shadow-glow-purple">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-white/90 tracking-wider mb-1">Conversion Rate</h3>
-                            <div class="flex items-baseline mt-2">
-                                <?php
-                                $visitors = max($summary['unique_customers'] * 5, 1);
-                                $conversionRate = ($summary['orders_count'] / $visitors) * 100;
-                                ?>
-                                <p class="text-2xl font-bold text-white"><?php echo number_format($conversionRate, 2); ?>%</p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center bg-white/20 text-white px-2 py-1 rounded-full text-xs font-medium border border-white/30">
-                                        <i class="fas fa-arrow-up mr-1 text-xs"></i>
-                                        <?php echo number_format($conversionRate / 2, 1); ?>%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white/20 p-3 rounded-xl shadow-inner">
-                            <i class="fas fa-chart-line text-lg text-white"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-white/80 mb-2">
-                            <span>Overall Rate</span>
-                            <span class="font-semibold"><?php echo number_format($conversionRate, 2); ?>%</span>
-                        </div>
-                        <div class="w-full bg-white/30 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-white to-white/80"
-                                style="--target-width: <?php echo min(($conversionRate / 3.5) * 100, 100); ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Users Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
-                <!-- Registered Users -->
                 <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
                     <div class="flex items-center justify-between mb-4 relative z-10">
@@ -393,7 +319,7 @@ error_reporting(E_ALL);
                             </div>
                         </div>
                         <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-users text-lg"></i>
+                            <i class="fas fa-users text-2xl"></i>
                         </div>
                     </div>
                     <div class="mt-4 relative z-10">
@@ -407,39 +333,6 @@ error_reporting(E_ALL);
                         </div>
                     </div>
                 </div>
-
-                <!-- Active Customers -->
-                <div class="stat-card bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-6 shadow-soft-xl border border-green-100/50 relative overflow-hidden group hover:shadow-glow-green">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Active Customers</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900"><?php echo number_format($summary['unique_customers'] ?? 0); ?></p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
-                                        <i class="fas fa-chart-line mr-1 text-xs"></i>
-                                        <?php echo number_format(($summary['unique_customers'] ?? 0) / max($total_users, 1) * 100, 1); ?>%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-user-check text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>Percent of users</span>
-                            <span class="font-semibold"><?php echo number_format(($summary['unique_customers'] ?? 0) / max($total_users, 1) * 100, 1); ?>%</span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-green-400 to-green-600"
-                                style="--target-width: <?php echo ($summary['unique_customers'] ?? 0) / max($total_users, 1) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Top Customer -->
                 <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group hover:shadow-glow-purple">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
@@ -454,7 +347,7 @@ error_reporting(E_ALL);
                             </div>
                         </div>
                         <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-crown text-lg"></i>
+                            <i class="fas fa-crown text-2xl"></i>
                         </div>
                     </div>
                     <div class="mt-4 relative z-10">
@@ -468,61 +361,32 @@ error_reporting(E_ALL);
                         </div>
                     </div>
                 </div>
-
-                <!-- Customers Growth -->
-                <div class="stat-card bg-gradient-to-br from-white to-pink-50/50 rounded-2xl p-6 shadow-soft-xl border border-pink-100/50 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-pink-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Customer Growth</h3>
-                            <div class="flex items-baseline mt-2">
-                                <?php $growth = ($new_users / max(($total_users - $new_users), 1)) * 100; ?>
-                                <p class="text-2xl font-bold text-gray-900"><?php echo number_format($growth, 1); ?>%</p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-pink-600 bg-pink-100/80 px-2 py-1 rounded-full text-xs font-medium border border-pink-200">
-                                        <i class="fas fa-arrow-up mr-1 text-xs"></i>
-                                        <?php echo number_format($growth / 3, 1); ?>%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-seedling text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>New vs existing</span>
-                            <span class="font-semibold"><?php echo number_format($new_users ?? 0); ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-pink-400 to-pink-600"
-                                style="--target-width: <?php echo ($total_users > 0) ? min(($new_users / $total_users) * 100, 100) : 0; ?>%"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- PAGE WRAPPER -->
+            <!-- PAGE WRAPPER (Premium Layout) -->
             <div class="min-h-screen">
-                <!-- MAIN GRID -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
+                    <!-- =========================
+                    LEFT COLUMN (Orders + Status)
+                    ========================= -->
+                    <div class="xl:col-span-7 flex flex-col gap-6 lg:gap-8">
 
-                    <!-- LEFT COLUMN (STACK) -->
-                    <div class="flex flex-col gap-8">
+                        <!-- ===== Card: Recent Orders ===== -->
+                        <section class="group rounded-3xl bg-white/75 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_25px_70px_-35px_rgba(0,0,0,0.35)]
+                        overflow-hidden transition-all duration-300 hover:shadow-[0_35px_95px_-45px_rgba(0,0,0,0.45)]">
 
-                        <!-- Recent Orders -->
-                        <div class="rounded-2xl bg-white/80 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.25)] overflow-hidden hover:shadow-[0_30px_70px_-25px_rgba(0,0,0,0.35)] transition-all duration-300">
-                            <div class="p-6 border-b border-slate-200/70">
-                                <div class="flex items-center justify-between">
+                            <!-- Header -->
+                            <div class="sticky top-0 z-10 bg-white/70 backdrop-blur-xl border-b border-slate-200/70">
+                                <div class="p-6 flex items-start justify-between gap-4">
                                     <div>
-                                        <h2 class="text-lg font-semibold text-slate-900 tracking-tight">Recent Orders</h2>
-                                        <p class="text-sm text-slate-500 mt-1">Latest 5 transactions</p>
+                                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Recent Orders</h2>
+                                        <p class="text-sm text-slate-500 mt-1">Latest 5 transactions with live updates</p>
                                     </div>
 
-                                    <div class="flex items-center space-x-2">
-                                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-white
-                           bg-gradient-to-r from-indigo-500 to-violet-500 shadow-sm ring-1 ring-white/20">
+                                    <div class="flex items-center gap-2">
+                                        <!-- Live Badge -->
+                                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold text-white
+                                bg-gradient-to-r from-indigo-500 to-violet-500 shadow-sm ring-1 ring-white/20">
                                             <span class="relative flex h-2 w-2">
                                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/70 opacity-75"></span>
                                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
@@ -530,35 +394,45 @@ error_reporting(E_ALL);
                                             Live
                                         </span>
 
-                                        <button class="p-2 rounded-xl hover:bg-slate-100/70 active:scale-95 transition">
+                                        <!-- Action Button -->
+                                        <button class="p-2 rounded-2xl hover:bg-slate-100/70 active:scale-95 transition"
+                                            title="More">
                                             <i class="fas fa-ellipsis-v text-slate-400"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="p-4">
-                                <div class="mb-6 rounded-2xl bg-gradient-to-b from-white to-slate-50 ring-1 ring-slate-200/70 p-4 shadow-sm">
-                                    <div class="h-40">
+                            <!-- Chart -->
+                            <div class="p-6 pt-5">
+                                <div class="rounded-3xl bg-gradient-to-b from-white to-slate-50 ring-1 ring-slate-200/70 p-4 shadow-sm">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Orders Trend</p>
+                                        <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200/70">
+                                            Updated just now
+                                        </span>
+                                    </div>
+                                    <div class="h-44">
                                         <canvas id="ordersChart"></canvas>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Orders list -->
-                            <div class="divide-y divide-slate-200/70 max-h-96 overflow-y-auto">
+                            <!-- Orders list (soft scroll) -->
+                            <div class="divide-y divide-slate-200/70 max-h-[420px] overflow-y-auto">
                                 <?php if (empty($recentOrders)): ?>
                                     <div class="p-10 text-center">
-                                        <div class="mx-auto mb-4 w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                        <div class="mx-auto mb-4 w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center ring-1 ring-slate-200/70">
                                             <i class="fas fa-shopping-cart text-2xl text-slate-400"></i>
                                         </div>
-                                        <p class="text-slate-500 font-medium">No recent orders</p>
+                                        <p class="text-slate-600 font-bold">No recent orders</p>
                                         <p class="text-sm mt-2 text-slate-400">Orders will appear here as they come in</p>
                                     </div>
                                 <?php else: ?>
-                                    <?php foreach ($recentOrders as $index => $order): ?>
+                                    <?php foreach ($recentOrders as $order): ?>
                                         <?php
                                         $st = $order['status'] ?? '';
+
                                         if ($st === 'completed') {
                                             $stClass = 'bg-gradient-to-r from-emerald-500 to-green-500 text-white';
                                             $stIcon  = 'fa-check-circle';
@@ -572,41 +446,48 @@ error_reporting(E_ALL);
                                             $stClass = 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white';
                                             $stIcon  = 'fa-circle';
                                         }
+
                                         $initial = strtoupper(substr($order['customer_name'] ?? 'C', 0, 1));
                                         ?>
 
-                                        <div class="p-4 hover:bg-slate-50/70 transition group recent-order-row cursor-pointer"
-                                            data-order-id="<?php echo (int)$order['order_id']; ?>">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex items-center">
-                                                    <div class="mr-4 w-11 h-11 rounded-full grid place-items-center text-white font-bold
-                                bg-gradient-to-br from-indigo-500 to-violet-600 shadow-sm ring-4 ring-indigo-500/10
-                                group-hover:ring-indigo-500/20 transition">
-                                                        <?php echo $initial; ?>
+                                        <div class="p-5 hover:bg-slate-50/70 transition cursor-pointer group recent-order-row"
+                                            data-order-id="<?= (int)$order['order_id']; ?>">
+
+                                            <div class="flex items-center justify-between gap-4">
+                                                <div class="flex items-center gap-4 min-w-0">
+                                                    <!-- Avatar -->
+                                                    <div class="w-11 h-11 rounded-2xl grid place-items-center text-white font-extrabold
+                                            bg-gradient-to-br from-indigo-500 to-violet-600 shadow-sm ring-4 ring-indigo-500/10
+                                            group-hover:ring-indigo-500/20 transition shrink-0">
+                                                        <?= $initial; ?>
                                                     </div>
 
-                                                    <div>
-                                                        <p class="font-semibold text-slate-900 leading-tight">
-                                                            <?php echo htmlspecialchars($order['customer_name'] ?? ''); ?>
+                                                    <!-- Text -->
+                                                    <div class="min-w-0">
+                                                        <p class="font-extrabold text-slate-900 truncate">
+                                                            <?= htmlspecialchars($order['customer_name'] ?? ''); ?>
                                                         </p>
 
-                                                        <div class="flex items-center gap-2 mt-2">
-                                                            <span class="text-xs text-slate-500">#<?php echo $order['order_id']; ?></span>
+                                                        <div class="flex items-center gap-2 mt-2 flex-wrap">
+                                                            <span class="text-xs text-slate-500 font-semibold">
+                                                                #<?= (int)$order['order_id']; ?>
+                                                            </span>
                                                             <span class="text-[11px] px-2 py-1 rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200/70">
-                                                                <?php echo date('M d', strtotime($order['created_at'])); ?>
+                                                                <?= isset($order['created_at']) ? date('M d', strtotime($order['created_at'])) : '—'; ?>
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="text-right">
-                                                    <p class="font-bold text-slate-900 text-lg tracking-tight">
-                                                        $<?php echo number_format($order['total'], 2); ?>
+                                                <!-- Amount + Status -->
+                                                <div class="text-right shrink-0">
+                                                    <p class="font-extrabold text-slate-900 text-2xl tracking-tight">
+                                                        $<?= number_format((float)$order['total'], 2); ?>
                                                     </p>
 
-                                                    <span class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-sm ring-1 ring-white/20 <?php echo $stClass; ?>">
-                                                        <i class="fas <?php echo $stIcon; ?> text-[11px]"></i>
-                                                        <?php echo htmlspecialchars($order['status'] ?? ''); ?>
+                                                    <span class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold shadow-sm ring-1 ring-white/20 <?= $stClass; ?>">
+                                                        <i class="fas <?= $stIcon; ?> text-[11px]"></i>
+                                                        <?= htmlspecialchars($order['status'] ?? ''); ?>
                                                     </span>
                                                 </div>
                                             </div>
@@ -614,230 +495,242 @@ error_reporting(E_ALL);
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
-                            <div class="p-4 border-slate-200/70">
-                                <div class="flex items-center justify-between">
+
+                            <!-- Footer -->
+                            <div class="p-5 border-t border-slate-200/70 bg-white/60">
+                                <div class="flex items-center justify-between gap-3">
                                     <a href="../analytics/analytics.php"
-                                        class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-2">
+                                        class="text-sm font-bold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-2">
                                         View detailed analytics
                                         <i class="fas fa-external-link-alt text-xs"></i>
                                     </a>
 
-                                    <div class="flex items-center space-x-2">
-                                        <button class="p-2 rounded-xl hover:bg-slate-100/70 active:scale-95 transition" title="Download">
+                                    <div class="flex items-center gap-2">
+                                        <button class="p-2 rounded-2xl hover:bg-slate-100/70 active:scale-95 transition" title="Download">
                                             <i class="fas fa-download text-slate-500"></i>
                                         </button>
-                                        <button class="p-2 rounded-xl hover:bg-slate-100/70 active:scale-95 transition" title="Share">
+                                        <button class="p-2 rounded-2xl hover:bg-slate-100/70 active:scale-95 transition" title="Share">
                                             <i class="fas fa-share-alt text-slate-500"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <!-- Order Status (CARD 2) -->
-                        <div class="rounded-2xl bg-white/80 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.25)] p-6 hover:shadow-[0_30px_70px_-25px_rgba(0,0,0,0.35)] transition-all duration-300">
+                        <!-- ===== Card: Order Status ===== -->
+                        <section class="rounded-3xl bg-white/75 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_25px_70px_-35px_rgba(0,0,0,0.35)]
+                p-6 hover:shadow-[0_35px_95px_-45px_rgba(0,0,0,0.45)] transition-all duration-300">
+
                             <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-semibold text-slate-900 tracking-tight">Order Status</h3>
-                                <span class="text-xs text-slate-500">Total: <?php echo (int)($summary['orders_count'] ?? 0); ?></span>
+                                <div>
+                                    <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Order Status</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Distribution by status</p>
+                                </div>
+                                <span class="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200/70 font-semibold">
+                                    Total: <?= (int)($summary['orders_count'] ?? 0); ?>
+                                </span>
                             </div>
 
                             <div class="space-y-5">
                                 <?php foreach ($statusSummary as $status):
-                                    $percentage = ($status['count'] / max($summary['orders_count'], 1)) * 100;
+                                    $percentage = ((int)$status['count'] / max((int)($summary['orders_count'] ?? 0), 1)) * 100;
                                     $statusKey = $status['status'] ?? '';
-                                    if ($statusKey === 'completed') {
-                                        $bar = 'bg-gradient-to-r from-emerald-400 to-green-500';
-                                    } elseif ($statusKey === 'pending') {
-                                        $bar = 'bg-gradient-to-r from-amber-400 to-yellow-500';
-                                    } elseif ($statusKey === 'cancelled') {
-                                        $bar = 'bg-gradient-to-r from-rose-400 to-red-500';
-                                    } else {
-                                        $bar = 'bg-gradient-to-r from-sky-400 to-blue-500';
-                                    }
+
+                                    if ($statusKey === 'completed') $bar = 'bg-gradient-to-r from-emerald-400 to-green-500';
+                                    elseif ($statusKey === 'pending') $bar = 'bg-gradient-to-r from-amber-400 to-yellow-500';
+                                    elseif ($statusKey === 'cancelled') $bar = 'bg-gradient-to-r from-rose-400 to-red-500';
+                                    else $bar = 'bg-gradient-to-r from-sky-400 to-blue-500';
                                 ?>
-                                    <div class="rounded-2xl p-4 bg-white/60 ring-1 ring-slate-200/70">
+                                    <div class="rounded-3xl p-4 bg-white/60 ring-1 ring-slate-200/70">
                                         <div class="flex items-center justify-between mb-3">
-                                            <span class="text-slate-700 font-semibold">
-                                                <?php echo htmlspecialchars($status['status'] ?? ''); ?>
+                                            <span class="text-slate-700 font-bold">
+                                                <?= htmlspecialchars($status['status'] ?? '') ?>
                                             </span>
                                             <span class="font-extrabold text-slate-900">
-                                                <?php echo (int)$status['count']; ?>
+                                                <?= (int)$status['count']; ?>
                                             </span>
                                         </div>
 
                                         <div class="flex items-center gap-3">
                                             <div class="flex-1">
                                                 <div class="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
-                                                    <div class="h-2 rounded-full <?php echo $bar; ?> transition-all duration-700"
-                                                        style="width: <?php echo max(0, min(100, $percentage)); ?>%"></div>
+                                                    <div class="h-2 rounded-full <?= $bar; ?> transition-all duration-700"
+                                                        style="width: <?= max(0, min(100, $percentage)); ?>%"></div>
                                                 </div>
                                             </div>
-
-                                            <span class="text-sm font-bold text-slate-700 w-14 text-right">
-                                                <?php echo number_format($percentage, 1); ?>%
+                                            <span class="text-sm font-extrabold text-slate-700 w-14 text-right">
+                                                <?= number_format($percentage, 1); ?>%
                                             </span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                        </div>
+                        </section>
 
                     </div>
 
-                    <!-- RIGHT COLUMN: Top Products -->
-                    <div class="rounded-2xl bg-white/80 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.25)] overflow-hidden hover:shadow-[0_30px_70px_-25px_rgba(0,0,0,0.35)] transition-all duration-300">
-                        <div class="p-6 border-b border-slate-200/70">
-                            <div class="flex items-center justify-between gap-4">
+                    <!-- =========================
+                    RIGHT COLUMN (Top Products + Shipping)
+                    ========================= -->
+                    <div class="xl:col-span-5 flex flex-col gap-6 lg:gap-8">
+                        <!-- ===== Top Products Card ===== -->
+                        <section class="rounded-3xl bg-white/75 backdrop-blur-xl ring-1 ring-black/5
+                        shadow-[0_25px_70px_-35px_rgba(0,0,0,0.35)]
+                        overflow-hidden transition-all duration-300 hover:shadow-[0_35px_95px_-45px_rgba(0,0,0,0.45)]">
+
+                            <!-- Header -->
+                            <div class="p-6 border-b border-slate-200/70 flex justify-between items-start gap-4">
                                 <div>
-                                    <h2 class="text-lg font-semibold text-slate-900 tracking-tight">Top Products</h2>
+                                    <h2 class="text-2xl font-extrabold text-slate-900">Top Products</h2>
                                     <p class="text-sm text-slate-500 mt-1">Best sellers by revenue</p>
                                 </div>
 
-                                <select class="text-sm rounded-xl border-slate-200 bg-white/80 backdrop-blur px-3 py-2
-                focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-300 transition">
-                                    <option>This Week</option>
-                                    <option>This Month</option>
-                                    <option selected>All Time</option>
+                                <select id="topProductsRange"
+                                    class="text-sm rounded-2xl border-slate-200 bg-white/80 px-3 py-2
+                                    focus:ring-4 focus:ring-indigo-500/15 transition">
+                                    <option value="all" selected>All Time</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="p-6">
-                            <?php if (empty($best)): ?>
-                                <div class="text-center py-10">
-                                    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-1 ring-slate-200/70">
-                                        <i class="fas fa-box text-slate-400 text-2xl"></i>
+                            <!-- Chart -->
+                            <div class="p-6">
+                                <div class="mb-6 rounded-3xl bg-white ring-1 ring-slate-200/70 p-4">
+                                    <div class="flex justify-between mb-3">
+                                        <p class="text-xs font-bold text-slate-500 uppercase">Revenue Distribution</p>
+                                        <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100">
+                                            Top <?= count($best ?? []) ?>
+                                        </span>
                                     </div>
-                                    <p class="text-slate-500 font-medium">No product data available</p>
 
-                                    <a href="?page=products" class="mt-5 inline-flex items-center px-4 py-2.5 rounded-xl text-white font-semibold
-                    bg-gradient-to-r from-indigo-500 to-violet-500 shadow-sm ring-1 ring-white/20
-                    hover:brightness-105 active:scale-95 transition">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Add Products
+                                    <div class="h-56">
+                                        <canvas id="topProductsChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Products List -->
+                                <?php if (empty($best)): ?>
+                                    <div class="text-center py-10">
+                                        <p class="text-slate-500 font-medium">No product data available</p>
+                                    </div>
+                                <?php else: ?>
+                                    <div
+                                        class="space-y-5 max-h-[420px] overflow-y-auto pr-2
+               scrollbar-thin scrollbar-thumb-slate-300
+               hover:scrollbar-thumb-slate-400 scrollbar-track-transparent">
+
+                                        <?php foreach ($best as $i => $p):
+                                            $percent = ($p['revenue'] / $totalSales) * 100;
+                                        ?>
+                                            <div class="rounded-2xl p-4 bg-white ring-1 ring-slate-200/70">
+
+                                                <div class="flex justify-between items-start gap-4">
+                                                    <div>
+                                                        <p class="font-semibold text-slate-900">
+                                                            <?= htmlspecialchars($p['product_name']) ?>
+                                                        </p>
+                                                        <p class="text-xs text-slate-500 mt-1">
+                                                            <?= number_format($p['qty_sold']) ?> sold
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="text-right">
+                                                        <p class="font-extrabold text-slate-900">
+                                                            $<?= number_format($p['revenue'], 2) ?>
+                                                        </p>
+                                                        <p class="text-xs text-slate-500">
+                                                            <?= number_format($percent, 1) ?>%
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Progress -->
+                                                <div class="mt-3 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        class="h-2 bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500"
+                                                        style="width: <?= min(100, $percent) ?>%">
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                            </div>
+                        </section>
+
+                        <!-- ===== Card: Shipping & Locations ===== -->
+                        <section class="rounded-3xl bg-white/75 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_25px_70px_-35px_rgba(0,0,0,0.35)]
+                        overflow-hidden hover:shadow-[0_35px_95px_-45px_rgba(0,0,0,0.45)] transition-all duration-300">
+
+                            <div class="p-6 border-b border-slate-200/70">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Shipping & Locations</h2>
+                                        <p class="text-sm text-slate-500 mt-1">Recent shipments and customer locations</p>
+                                    </div>
+
+                                    <a href="?page=shipping"
+                                        class="text-sm font-bold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-2">
+                                        View all
+                                        <i class="fas fa-external-link-alt text-xs"></i>
                                     </a>
                                 </div>
-                            <?php else: ?>
-                                <div class="space-y-6">
-                                    <?php foreach ($best as $index => $product):
-                                        $totalSales = max((float)($summary['total_sales'] ?? 0), 1);
-                                        $revenue    = (float)($product['revenue'] ?? 0);
-                                        $qtySold    = (int)($product['qty_sold'] ?? 0);
-                                        $percentage = ($revenue / $totalSales) * 100;
-
-                                        // Rank bar color
-                                        $rankBar = 'bg-slate-200';
-                                        if ($index === 0) $rankBar = 'bg-gradient-to-b from-yellow-400 to-amber-500';
-                                        if ($index === 1) $rankBar = 'bg-gradient-to-b from-slate-300 to-slate-400';
-                                        if ($index === 2) $rankBar = 'bg-gradient-to-b from-amber-700 to-yellow-700';
-
-                                        // Rank badge color
-                                        $rankBadge = 'bg-slate-100 text-slate-700 ring-slate-200/70';
-                                        if ($index === 0) $rankBadge = 'bg-yellow-50 text-yellow-800 ring-yellow-200/70';
-                                        if ($index === 1) $rankBadge = 'bg-slate-100 text-slate-700 ring-slate-200/70';
-                                        if ($index === 2) $rankBadge = 'bg-amber-50 text-amber-800 ring-amber-200/70';
-                                    ?>
-                                        <div class="group relative rounded-2xl p-4 ring-1 ring-slate-200/70 bg-white/60 hover:bg-white transition">
-
-                                            <!-- Left rank accent bar (THINNER) -->
-                                            <div class="absolute left-0 top-4 bottom-4 w-1 rounded-full <?php echo $rankBar; ?>"></div>
-
-                                            <div class="flex items-start justify-between pl-4 gap-4">
-                                                <div class="flex items-start gap-4">
-                                                    <!-- Rank box -->
-                                                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-100 to-white
-                                    ring-1 ring-slate-200/70 shadow-sm grid place-items-center
-                                    group-hover:scale-[1.03] transition">
-                                                        <span class="font-extrabold text-slate-700"><?php echo $index + 1; ?></span>
-                                                    </div>
-
-                                                    <div class="min-w-0">
-                                                        <div class="flex items-center gap-2 flex-wrap">
-                                                            <p class="font-semibold text-slate-900 leading-tight truncate max-w-[260px]">
-                                                                <?php echo htmlspecialchars($product['product_name'] ?? ''); ?>
-                                                            </p>
-
-                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1 <?php echo $rankBadge; ?>">
-                                                                <i class="fas fa-crown mr-1 text-[10px] opacity-80"></i>
-                                                                Rank <?php echo $index + 1; ?>
-                                                            </span>
-                                                        </div>
-
-                                                        <div class="flex items-center gap-2 mt-2 flex-wrap">
-                                                            <span class="text-xs text-slate-500">
-                                                                <i class="fas fa-shopping-bag mr-1"></i>
-                                                                <?php echo number_format($qtySold); ?> sold
-                                                            </span>
-
-                                                            <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100">
-                                                                $<?php echo number_format($revenue, 0); ?>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="text-right shrink-0">
-                                                    <div class="text-2xl font-extrabold text-slate-900 tracking-tight">
-                                                        <?php echo number_format($percentage, 1); ?>%
-                                                    </div>
-                                                    <div class="text-xs text-slate-500 mt-1">of total revenue</div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Progress bar -->
-                                            <div class="mt-4 pl-4">
-                                                <div class="h-2 w-full rounded-full bg-slate-200/80 overflow-hidden">
-                                                    <div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-700"
-                                                        style="width: <?php echo max(0, min(100, $percentage)); ?>%">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Actions -->
-                                            <div class="mt-4 pl-4 flex items-center justify-between">
-                                                <span class="text-xs text-slate-400">
-                                                    Updated: <span class="time-display">--:--</span>
-                                                </span>
-
-                                                <a href="?page=products&product=<?php echo urlencode((string)($product['product_id'] ?? '')); ?>"
-                                                    class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-2">
-                                                    View
-                                                    <i class="fas fa-arrow-right text-[10px]"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="p-4 border-t border-slate-200/70">
-                            <div class="flex items-center justify-between">
-                                <a href="../analytics/analytics.php"
-                                    class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-2">
-                                    View detailed analytics
-                                    <i class="fas fa-external-link-alt text-xs"></i>
-                                </a>
-
-                                <div class="flex items-center space-x-2">
-                                    <button class="p-2 rounded-xl hover:bg-slate-100/70 active:scale-95 transition" title="Download">
-                                        <i class="fas fa-download text-slate-500"></i>
-                                    </button>
-                                    <button class="p-2 rounded-xl hover:bg-slate-100/70 active:scale-95 transition" title="Share">
-                                        <i class="fas fa-share-alt text-slate-500"></i>
-                                    </button>
-                                </div>
                             </div>
-                        </div>
+
+                            <div class="p-6">
+                                <?php if (empty($shippingDetails)): ?>
+                                    <div class="text-center py-8">
+                                        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-1 ring-slate-200/70">
+                                            <i class="fas fa-truck text-slate-400 text-2xl"></i>
+                                        </div>
+                                        <p class="text-slate-500 font-medium">No shipping data available</p>
+                                        <p class="text-sm mt-2 text-slate-400">Shipments will appear here when available</p>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="space-y-4 max-h-72 overflow-y-auto">
+                                        <?php foreach ($shippingDetails as $ship):
+                                            $lat = $ship['lat'] ?? null;
+                                            $lng = $ship['lng'] ?? null;
+                                            $mapUrl = ($lat && $lng) ? "https://www.google.com/maps?q={$lat},{$lng}" : null;
+                                        ?>
+                                            <div class="p-3 rounded-lg bg-white/60 ring-1 ring-slate-200/70 flex items-start justify-between">
+                                                <div>
+                                                    <p class="font-semibold text-slate-900"><?php echo htmlspecialchars($ship['user'] ?? 'Unknown'); ?></p>
+                                                    <p class="text-sm text-slate-500">
+                                                        <?php echo htmlspecialchars($ship['address'] ?? ''); ?><?php echo !empty($ship['city']) ? ', ' . htmlspecialchars($ship['city']) : ''; ?><?php echo !empty($ship['country']) ? ', ' . htmlspecialchars($ship['country']) : ''; ?>
+                                                    </p>
+                                                    <p class="text-xs text-slate-400 mt-1">Shipped: <?php echo isset($ship['shipped_at']) ? date('M d, Y', strtotime($ship['shipped_at'])) : '—'; ?></p>
+                                                </div>
+
+                                                <div class="text-right flex flex-col items-end gap-2">
+                                                    <?php if ($mapUrl): ?>
+                                                        <div class="flex items-center gap-2">
+                                                            <a href="<?php echo $mapUrl; ?>" target="_blank" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-2">Map <i class="fas fa-map-marker-alt text-[10px]"></i></a>
+                                                            <button type="button" class="share-btn text-xs px-2 py-1 rounded-lg border text-slate-600 hover:bg-slate-100" data-address="<?php echo htmlspecialchars($ship['address'] ?? '', ENT_QUOTES); ?>" data-map="<?php echo $mapUrl; ?>">Share</button>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-xs text-slate-500">No coords</span>
+                                                            <button type="button" class="share-btn text-xs px-2 py-1 rounded-lg border text-slate-600 hover:bg-slate-100" data-address="<?php echo htmlspecialchars($ship['address'] ?? '', ENT_QUOTES); ?>" data-map="">Share</button>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
-    <!-- Enhanced Scripts -->
     <script src="../../../assets/Js/reports.js"></script>
     <script src="../../../assets/Js/exports.js"></script>
+    <script src="../../../assets/Js/share.js"></script>
+
 </body>
 
 </html>
