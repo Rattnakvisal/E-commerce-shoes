@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // keep privacy message; do NOT expose errors to user
             }
 
-            header("Location: verify.php");
+            header("Location: ../verify/verify.php");
             exit;
         }
     }

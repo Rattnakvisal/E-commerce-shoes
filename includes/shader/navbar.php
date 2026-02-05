@@ -198,8 +198,6 @@ require_once __DIR__ . '/../contract/navbar.php';
 					</div>
 				</div>
 			</div>
-			<!-- End Desktop Search -->
-			<!-- Mobile Search Trigger -->
 			<button id="mobileSearchTrigger" type="button" class="md:hidden text-xl text-gray-700">
 				<i class="fas fa-search"></i>
 			</button>

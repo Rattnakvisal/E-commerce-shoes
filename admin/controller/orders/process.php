@@ -4,101 +4,82 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../../config/conn.php';
 
-/* =====================================================
-   SESSION & AUTH
-===================================================== */
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)) {
-    header('Location: ../auth/Log/login.php');
+$pdo = $pdo ?? ($conn ?? null);
+if (!$pdo instanceof PDO) {
+    die('Database connection missing.');
+}
+
+/* ================= AUTH ================= */
+$userId = (int)($_SESSION['user_id'] ?? 0);
+$role   = (string)($_SESSION['role'] ?? '');
+
+if ($userId <= 0 || !in_array($role, ['admin', 'staff'], true)) {
+    header('Location: /E-commerce-shoes/admin/Log/login.php');
     exit;
 }
 
-$pdo = $pdo ?? ($conn ?? null);
-if (!$pdo instanceof PDO) die('Database connection missing.');
-
-/* =====================================================
-   INPUT HELPERS
-===================================================== */
-function s(string $key, string $default = ''): string
+/* ================= HELPERS ================= */
+function s(string $k, string $d = ''): string
 {
-    return trim((string)($_GET[$key] ?? $default));
+    return trim((string)($_GET[$k] ?? $d));
 }
-function sl(string $key, string $default = ''): string
+function sl(string $k, string $d = ''): string
 {
-    return strtolower(s($key, $default));
+    return strtolower(s($k, $d));
 }
-function allow(string $value, array $allowed): string
+function allow(string $v, array $allowed): string
 {
-    return in_array($value, $allowed, true) ? $value : '';
+    return in_array($v, $allowed, true) ? $v : '';
 }
 
-/* =====================================================
-   FILTERS
-===================================================== */
+/* ================= FILTERS ================= */
 $filters = [
-    'status'      => allow(sl('status'),  ['pending', 'processing', 'completed', 'cancelled', '']),
-    'payment'     => allow(sl('payment'), ['pending', 'paid', 'failed', 'refunded', 'unpaid', '']),
-    'type'        => sl('type'),
-    'method_code' => sl('method'), // ?method=aba
-    'date_from'   => s('date_from'),
-    'date_to'     => s('date_to'),
-    'search'      => s('search'),
-    'sort'        => allow(sl('sort', 'newest'), ['newest', 'oldest', 'total_asc', 'total_desc']),
+    'status'    => allow(sl('status'),  ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', '']),
+    'payment'   => allow(sl('payment'), ['paid', 'unpaid', 'refunded', 'pending', 'failed', '']),
+    'type'      => allow(sl('type'),    ['pos', 'online', '']),
+    'search'    => s('search'),
+    'date_from' => s('date_from'),
+    'date_to'   => s('date_to'),
+    'sort'      => allow(sl('sort', 'newest'), ['newest', 'oldest', 'total_asc', 'total_desc']),
 ];
 
 $page    = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 15;
 $offset  = ($page - 1) * $perPage;
 
-/* =====================================================
-   WHERE (use named params)
-===================================================== */
-$where  = [];
+/* ================= WHERE ================= */
+$where = [];
 $params = [];
 
 if ($filters['status'] !== '') {
-    $where[] = 'o.order_status = :status';
-    $params[':status'] = $filters['status'];
+    $where[] = 'o.order_status = :st';
+    $params[':st'] = $filters['status'];
 }
-
 if ($filters['payment'] !== '') {
-    $where[] = 'o.payment_status = :pay';
-    $params[':pay'] = $filters['payment'];
+    $where[] = 'o.payment_status = :ps';
+    $params[':ps'] = $filters['payment'];
 }
-
 if ($filters['type'] !== '') {
-    $where[] = 'LOWER(o.order_type) = :type';
-    $params[':type'] = $filters['type'];
+    $where[] = 'o.order_type = :tp';
+    $params[':tp'] = $filters['type'];
 }
-
 if ($filters['date_from'] !== '') {
     $where[] = 'o.created_at >= :df';
     $params[':df'] = $filters['date_from'] . ' 00:00:00';
 }
-
 if ($filters['date_to'] !== '') {
     $where[] = 'o.created_at <= :dt';
     $params[':dt'] = $filters['date_to'] . ' 23:59:59';
 }
-
 if ($filters['search'] !== '') {
     $where[] = '(CAST(o.order_id AS CHAR) LIKE :q OR COALESCE(u.name,"") LIKE :q OR COALESCE(u.email,"") LIKE :q)';
     $params[':q'] = '%' . $filters['search'] . '%';
 }
 
-// method filter needs join (derived latest payment method)
-$needMethodJoin = ($filters['method_code'] !== '');
-if ($needMethodJoin) {
-    $where[] = 'LOWER(latest_pm.method_code) = :m';
-    $params[':m'] = $filters['method_code'];
-}
-
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
-/* =====================================================
-   SORT
-===================================================== */
 $orderBy = match ($filters['sort']) {
     'oldest'     => 'o.created_at ASC',
     'total_asc'  => 'o.total ASC',
@@ -106,70 +87,50 @@ $orderBy = match ($filters['sort']) {
     default      => 'o.created_at DESC',
 };
 
-/* =====================================================
-   GLOBAL STATS (not filtered)
-===================================================== */
+/* ================= STATS ================= */
 $stats = [
-    'total_orders'   => 0,
-    'pending_orders' => 0,
-    'today_orders'   => 0,
-    'today_revenue'  => 0.0,
-    'total_revenue'  => 0.0,
-    'pending_count'  => 0, // for template compatibility
+    'total_orders' => 0,
+    'pending_count' => 0,
+    'today_orders' => 0,
+    'today_revenue' => 0.0,
+    'total_revenue' => 0.0,
 ];
 
 try {
-    $row = $pdo->query("
-        SELECT
-            COUNT(*) AS total_orders,
-            SUM(CASE WHEN order_status='pending' THEN 1 ELSE 0 END) AS pending_orders
-        FROM orders
-    ")->fetch(PDO::FETCH_ASSOC) ?: [];
-
-    $stats['total_orders']   = (int)($row['total_orders'] ?? 0);
-    $stats['pending_orders'] = (int)($row['pending_orders'] ?? 0);
-    $stats['pending_count']  = $stats['pending_orders'];
+    $row = $pdo->query("SELECT COUNT(*) total_orders, SUM(order_status='pending') pending_count FROM orders")
+        ->fetch(PDO::FETCH_ASSOC) ?: [];
+    $stats['total_orders'] = (int)($row['total_orders'] ?? 0);
+    $stats['pending_count'] = (int)($row['pending_count'] ?? 0);
 
     $row = $pdo->query("
-        SELECT
-            COUNT(*) AS today_orders,
-            COALESCE(SUM(total),0) AS today_revenue
+        SELECT COUNT(*) today_orders, COALESCE(SUM(total),0) today_revenue
         FROM orders
-        WHERE DATE(created_at) = CURDATE()
+        WHERE DATE(created_at)=CURDATE()
     ")->fetch(PDO::FETCH_ASSOC) ?: [];
-
-    $stats['today_orders']  = (int)($row['today_orders'] ?? 0);
+    $stats['today_orders'] = (int)($row['today_orders'] ?? 0);
     $stats['today_revenue'] = (float)($row['today_revenue'] ?? 0);
 
-    $row = $pdo->query("
-        SELECT COALESCE(SUM(total),0) AS total_revenue
-        FROM orders
-        WHERE payment_status='paid'
-    ")->fetch(PDO::FETCH_ASSOC) ?: [];
-
+    $row = $pdo->query("SELECT COALESCE(SUM(total),0) total_revenue FROM orders WHERE payment_status='paid'")
+        ->fetch(PDO::FETCH_ASSOC) ?: [];
     $stats['total_revenue'] = (float)($row['total_revenue'] ?? 0);
 } catch (Throwable $e) {
-    error_log('[orders_process stats] ' . $e->getMessage());
+    error_log('[process_orders stats] ' . $e->getMessage());
 }
 
-/* =====================================================
-   TAB COUNTS (not filtered)
-===================================================== */
+/* ================= TAB COUNTS ================= */
 $statusCounts = [
-    'all'        => (int)($stats['total_orders'] ?? 0),
+    'all'        => (int)$stats['total_orders'],
     'pending'    => 0,
     'processing' => 0,
+    'shipped'    => 0,
+    'delivered'  => 0,
     'completed'  => 0,
     'cancelled'  => 0,
 ];
 
 try {
-    $rows = $pdo->query("
-        SELECT LOWER(order_status) AS st, COUNT(*) AS cnt
-        FROM orders
-        GROUP BY LOWER(order_status)
-    ")->fetchAll(PDO::FETCH_ASSOC);
-
+    $rows = $pdo->query("SELECT LOWER(order_status) st, COUNT(*) cnt FROM orders GROUP BY LOWER(order_status)")
+        ->fetchAll(PDO::FETCH_ASSOC) ?: [];
     foreach ($rows as $r) {
         $k = (string)($r['st'] ?? '');
         if ($k !== '' && array_key_exists($k, $statusCounts)) {
@@ -177,109 +138,71 @@ try {
         }
     }
 } catch (Throwable $e) {
-    error_log('[orders_process statusCounts] ' . $e->getMessage());
+    error_log('[process_orders tabcounts] ' . $e->getMessage());
 }
+
+/* ================= QUERY (latest payment method) ================= */
+$joinLatestPayment = "
+LEFT JOIN (
+  SELECT p1.*
+  FROM payments p1
+  JOIN (
+    SELECT order_id, MAX(payment_date) max_date
+    FROM payments
+    GROUP BY order_id
+  ) x ON x.order_id = p1.order_id AND x.max_date = p1.payment_date
+) lp ON lp.order_id = o.order_id
+LEFT JOIN payment_methods pm ON pm.method_id = lp.payment_method_id
+";
+
+/* count */
+$countSql = "
+SELECT COUNT(*)
+FROM orders o
+LEFT JOIN users u ON u.user_id = o.user_id
+$joinLatestPayment
+$whereSql
+";
+
+/* list */
+$listSql = "
+SELECT
+  o.order_id, o.user_id, o.total, o.order_status, o.payment_status, o.order_type, o.created_at,
+  COALESCE(u.name, u.email, 'Guest') customer_name,
+  u.email customer_email,
+  lp.amount paid_amount,
+  lp.payment_date,
+  pm.method_code payment_method_code,
+  pm.method_name payment_method_name
+FROM orders o
+LEFT JOIN users u ON u.user_id = o.user_id
+$joinLatestPayment
+$whereSql
+ORDER BY $orderBy
+LIMIT :limit OFFSET :offset
+";
 
 $filteredTotal = 0;
 $orders = [];
 
-$joinLatestPayment = "
-    LEFT JOIN (
-        SELECT p.order_id, p.payment_id, p.amount, p.payment_date, p.payment_method_id
-        FROM payments p
-        JOIN (
-            SELECT order_id, MAX(payment_date) AS max_date
-            FROM payments
-            GROUP BY order_id
-        ) x ON x.order_id = p.order_id AND x.max_date = p.payment_date
-    ) lp ON lp.order_id = o.order_id
-    LEFT JOIN payment_methods latest_pm ON latest_pm.method_id = lp.payment_method_id
-";
-
-$countSql = "
-    SELECT COUNT(*) 
-    FROM orders o
-    LEFT JOIN users u ON u.user_id = o.user_id
-    " . ($needMethodJoin ? $joinLatestPayment : '') . "
-    $whereSql
-";
-
-$listSql = "
-    SELECT
-        o.order_id,
-        o.total,
-        o.order_status,
-        o.payment_status,
-        o.order_type,
-        o.created_at,
-
-        u.user_id AS user_id,
-        COALESCE(u.name, u.email, 'Guest') AS customer_name,
-        u.email AS customer_email,
-
-        lp.payment_id,
-        lp.amount AS paid_amount,
-        lp.payment_date,
-        latest_pm.method_code AS payment_method_code,
-        latest_pm.method_name AS payment_method_name,
-
-        (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.order_id) AS item_count
-    FROM orders o
-    LEFT JOIN users u ON u.user_id = o.user_id
-    $joinLatestPayment
-    $whereSql
-    ORDER BY $orderBy
-    LIMIT :limit OFFSET :offset
-";
-
 try {
-    $stmt = $pdo->prepare($countSql);
-    $stmt->execute($params);
-    $filteredTotal = (int)$stmt->fetchColumn();
+    $st = $pdo->prepare($countSql);
+    $st->execute($params);
+    $filteredTotal = (int)$st->fetchColumn();
 
-    $stmt = $pdo->prepare($listSql);
-    foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v);
-    }
-    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
-    $stmt->execute();
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $st = $pdo->prepare($listSql);
+    foreach ($params as $k => $v) $st->bindValue($k, $v);
+    $st->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $st->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $st->execute();
+    $orders = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Throwable $e) {
-    error_log('[orders_process list/count] ' . $e->getMessage());
-    $filteredTotal = 0;
-    $orders = [];
+    error_log('[process_orders list] ' . $e->getMessage());
 }
 
 $totalPages = max(1, (int)ceil($filteredTotal / $perPage));
 
-/* =====================================================
-   PAYMENT METHODS (for dropdown)
-===================================================== */
-$paymentMethodsList = [];
-try {
-    $paymentMethodsList = $pdo->query("
-        SELECT method_id, method_code, method_name
-        FROM payment_methods
-        WHERE is_active = 1
-        ORDER BY method_name
-    ")->fetchAll(PDO::FETCH_ASSOC) ?: [];
-} catch (Throwable $e) {
-    $paymentMethodsList = [];
-}
-
-/* =====================================================
-   TEMPLATE VARS
-===================================================== */
-$totalOrders  = (int)($stats['total_orders'] ?? 0);
-$todayOrders  = (int)($stats['today_orders'] ?? 0);
-$totalRevenue = (float)($stats['total_revenue'] ?? 0);
-$todayRevenue = (float)($stats['today_revenue'] ?? 0);
-
-// Ensure required keys exist
-$statusCounts['all']        = $statusCounts['all'] ?? $totalOrders;
-$statusCounts['pending']    = $statusCounts['pending'] ?? 0;
-$statusCounts['processing'] = $statusCounts['processing'] ?? 0;
-$statusCounts['completed']  = $statusCounts['completed'] ?? 0;
-$statusCounts['cancelled']  = $statusCounts['cancelled'] ?? 0;
+$totalOrders  = (int)$stats['total_orders'];
+$todayOrders  = (int)$stats['today_orders'];
+$totalRevenue = (float)$stats['total_revenue'];
+$todayRevenue = (float)$stats['today_revenue'];

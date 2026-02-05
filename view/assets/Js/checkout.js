@@ -8,7 +8,6 @@ const qrMap = {
   wing: "../assets/qr/wing.jpg",
   bakong: "../assets/qr/bakong.jpg",
   acleda: "../assets/qr/acleda.jpg",
-  chipmong: "../assets/qr/chipmong.jpg",
 };
 
 const $ = (id) => document.getElementById(id);

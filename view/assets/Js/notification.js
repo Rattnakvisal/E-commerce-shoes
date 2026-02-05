@@ -1,235 +1,292 @@
-(function () {
+(() => {
+  /* ================================
+    Notification Dropdown (Clean + Safe)
+  ================================= */
+
+  const apiBase = "/E-commerce-shoes/admin/controller/notifications_api.php";
+
+  const countEl = document.getElementById("notificationCount");
+  const listEl = document.getElementById("notificationList");
+  const dropdown = document.getElementById("notificationDropdown");
+  const trigger = document.getElementById("notificationTrigger");
+  const markAllBtn = document.getElementById("markAllRead");
+  const clearAllBtn = document.getElementById("clearAll");
+  const closeBtn = document.getElementById("closeNotification");
+  const backdrop = document.getElementById("notificationBackdrop");
+
+  // If core elements are missing, stop safely.
+  if (!countEl || !listEl || !dropdown || !trigger) return;
+
   function esc(s) {
-    return String(s || "").replace(/[&<>"'\\]/g, function (c) {
-      return {
+    return String(s ?? "").replace(/[&<>"'\\]/g, (c) => {
+      const map = {
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;",
         "\\": "\\\\",
-      }[c];
+      };
+      return map[c] || c;
     });
   }
 
-  const apiBase = "/E-commerce-shoes/admin/controller/notifications_api.php";
-  const countEl = document.getElementById("notificationCount");
-  const listEl = document.getElementById("notificationList");
-  const dropdown = document.getElementById("notificationDropdown");
-  const trigger = document.getElementById("notificationTrigger");
-  const markAllBtn = document.getElementById("markAllRead");
+  function isLogoutItem(it) {
+    const t = String(it?.title ?? "").toLowerCase();
+    const m = String(it?.message ?? "").toLowerCase();
+    return (
+      t.includes("logout") ||
+      t.includes("logged out") ||
+      m.includes("logout") ||
+      m.includes("logged out")
+    );
+  }
+
+  async function apiGet(action) {
+    const res = await fetch(`${apiBase}?action=${encodeURIComponent(action)}`, {
+      credentials: "same-origin",
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }
+
+  async function apiPost(action, data = {}) {
+    const res = await fetch(`${apiBase}?action=${encodeURIComponent(action)}`, {
+      method: "POST",
+      credentials: "same-origin",
+      body: new URLSearchParams(data),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }
+
+  function setBadge(n) {
+    const num = Math.max(0, Number(n) || 0);
+    countEl.textContent = String(num);
+    // Optional: hide badge when 0
+    if (num <= 0) countEl.classList.add("hidden");
+    else countEl.classList.remove("hidden");
+  }
+
+  function renderList(items) {
+    listEl.innerHTML = "";
+
+    if (!Array.isArray(items) || items.length === 0) {
+      listEl.innerHTML = `<div class="p-3 text-gray-600">No notifications</div>`;
+      setBadge(0);
+      return;
+    }
+
+    const visible = items.filter((it) => !isLogoutItem(it));
+    if (visible.length === 0) {
+      listEl.innerHTML = `<div class="p-3 text-gray-600">No notifications</div>`;
+      setBadge(0);
+      return;
+    }
+
+    // Render rows
+    const frag = document.createDocumentFragment();
+    let visibleUnread = 0;
+
+    for (const it of visible) {
+      const id = it?.notification_id ?? "";
+      const isRead = Number(it?.is_read) === 1;
+
+      if (!isRead) visibleUnread++;
+
+      const row = document.createElement("div");
+      row.className =
+        "notification-row px-3 py-2 hover:bg-gray-50 border-b cursor-pointer";
+      row.dataset.id = String(id);
+      row.dataset.read = isRead ? "1" : "0";
+      if (!isRead) row.classList.add("font-semibold");
+
+      row.innerHTML = `
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex-1">
+            <div class="font-medium">${esc(it?.title)}</div>
+            <div class="text-gray-600 text-xs mt-1">${esc(it?.message)}</div>
+            <div class="text-gray-400 text-xs mt-1">${esc(it?.created_at)}</div>
+          </div>
+          <div class="flex-shrink-0 pl-2">
+            <button type="button" class="notif-delete text-red-500 text-xs hover:underline">
+              Clear
+            </button>
+          </div>
+        </div>
+      `;
+
+      frag.appendChild(row);
+    }
+
+    listEl.appendChild(frag);
+    setBadge(visibleUnread);
+  }
 
   async function fetchCount() {
     try {
-      const res = await fetch(apiBase + "?action=fetch_unread_count", {
-        credentials: "same-origin",
-      });
-      if (!res.ok) return;
-      const j = await res.json();
-      if (j && j.ok) {
-        countEl.textContent = Number(j.unread || 0);
-      }
-    } catch (e) {}
+      const j = await apiGet("fetch_unread_count");
+      if (j?.ok) setBadge(j?.unread ?? 0);
+    } catch (_) {
+      // ignore
+    }
   }
 
   async function fetchLatest() {
     try {
-      const res = await fetch(apiBase + "?action=fetch_latest", {
-        credentials: "same-origin",
-      });
-      if (!res.ok) return;
-      const j = await res.json();
-      if (!(j && j.ok)) return;
-      listEl.innerHTML = "";
-      if (!Array.isArray(j.items) || j.items.length === 0) {
-        listEl.innerHTML =
-          '<div class="p-3 text-gray-600">No notifications</div>';
-        return;
-      }
-      j.items.forEach((it) => {
-        const row = document.createElement("div");
-        row.className =
-          "notification-row px-3 py-2 hover:bg-gray-50 border-b cursor-pointer";
-        row.dataset.id = it.notification_id ?? "";
-        row.dataset.read = it.is_read ? "1" : "0";
-        row.innerHTML =
-          '<div class="flex justify-between items-start gap-3">' +
-          '<div class="flex-1">' +
-          '<div class="font-medium">' +
-          esc(it.title) +
-          "</div>" +
-          '<div class="text-gray-600 text-xs mt-1">' +
-          esc(it.message) +
-          "</div>" +
-          '<div class="text-gray-400 text-xs mt-1">' +
-          esc(it.created_at) +
-          "</div>" +
-          "</div>" +
-          '<div class="flex-shrink-0 pl-2">' +
-          '<button class="notif-delete text-red-500 text-xs">Clear</button>' +
-          "</div>" +
-          "</div>";
-        if (it.is_read == 0) {
-          row.classList.add("font-semibold");
-        }
-        listEl.appendChild(row);
-      });
-
-      listEl.querySelectorAll(".notification-row").forEach((r) => {
-        r.addEventListener("click", async function (ev) {
-          const nid = this.dataset.id;
-          if (!nid) return;
-          try {
-            const res = await fetch(apiBase + "?action=mark_read", {
-              method: "POST",
-              credentials: "same-origin",
-              body: new URLSearchParams({
-                id: nid,
-              }),
-            });
-            if (!res.ok) return;
-            const jj = await res.json();
-            if (jj && jj.ok) {
-              await fetchCount();
-              await fetchLatest();
-            }
-          } catch (e) {}
-        });
-        // delete button inside row -> delete single notification
-        r.querySelectorAll(".notif-delete").forEach((btn) => {
-          btn.addEventListener("click", async function (ev) {
-            ev.stopPropagation();
-            const nid = r.dataset.id;
-            if (!nid) return;
-            try {
-              const res = await fetch(apiBase + "?action=delete", {
-                method: "POST",
-                credentials: "same-origin",
-                body: new URLSearchParams({
-                  id: nid,
-                }),
-              });
-              if (!res.ok) return;
-              const jj = await res.json();
-              if (jj && jj.ok) {
-                await fetchCount();
-                await fetchLatest();
-              }
-            } catch (e) {}
-          });
-        });
-      });
-    } catch (e) {}
+      const j = await apiGet("fetch_latest");
+      if (!j?.ok) return;
+      renderList(j.items || []);
+    } catch (_) {
+      // ignore
+    }
   }
 
   // Utility to position dropdown centered under the trigger and clamp to viewport
   function positionDropdown() {
-    if (!trigger || !dropdown) return;
-    // ensure dropdown is visible to measure
     dropdown.style.visibility = "hidden";
     dropdown.classList.remove("hidden");
     dropdown.style.position = "fixed";
 
     const rect = trigger.getBoundingClientRect();
-    const ddW = dropdown.offsetWidth || 300;
-    const ddH = dropdown.offsetHeight || 200;
+    const ddW = dropdown.offsetWidth || 320;
+    const ddH = dropdown.offsetHeight || 240;
 
     let left = rect.left + rect.width / 2 - ddW / 2;
     const padding = 8;
-    if (left < padding) left = padding;
-    if (left + ddW > window.innerWidth - padding)
-      left = window.innerWidth - ddW - padding;
 
-    let top = rect.bottom + 8; // 8px gap
-    // if not enough space below, show above
+    left = Math.max(padding, Math.min(left, window.innerWidth - ddW - padding));
+
+    let top = rect.bottom + 8;
     if (top + ddH > window.innerHeight - padding) {
       top = rect.top - ddH - 8;
       if (top < padding) top = padding;
     }
 
-    dropdown.style.left = left + "px";
-    dropdown.style.top = top + "px";
+    dropdown.style.left = `${left}px`;
+    dropdown.style.top = `${top}px`;
     dropdown.style.right = "auto";
     dropdown.style.transform = "none";
     dropdown.style.visibility = "visible";
   }
 
+  function showDropdown() {
+    positionDropdown();
+    backdrop?.classList.remove("hidden");
+  }
+
   function hideDropdown() {
-    if (!dropdown) return;
     dropdown.classList.add("hidden");
     dropdown.style.left = "";
     dropdown.style.top = "";
     dropdown.style.position = "";
-    const back = document.getElementById("notificationBackdrop");
-    if (back) back.classList.add("hidden");
+    dropdown.style.transform = "";
+    dropdown.style.visibility = "";
+    backdrop?.classList.add("hidden");
   }
 
-  trigger?.addEventListener("click", async function (e) {
-    e.preventDefault();
-    if (!dropdown) return;
+  function isOpen() {
+    return !dropdown.classList.contains("hidden");
+  }
 
-    const wasHidden = dropdown.classList.contains("hidden");
-    if (wasHidden) {
+  // Open/Close trigger
+  trigger.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    if (!isOpen()) {
       await fetchLatest();
-      positionDropdown();
-      const back = document.getElementById("notificationBackdrop");
-      if (back) back.classList.remove("hidden");
+      showDropdown();
     } else {
       hideDropdown();
     }
   });
 
-  // Close button (inside dropdown)
-  document
-    .getElementById("closeNotification")
-    ?.addEventListener("click", function () {
-      hideDropdown();
-    });
+  // Close controls
+  closeBtn?.addEventListener("click", hideDropdown);
+  backdrop?.addEventListener("click", hideDropdown);
 
-  // Clicking backdrop closes dropdown
-  document
-    .getElementById("notificationBackdrop")
-    ?.addEventListener("click", function () {
-      hideDropdown();
-    });
-
-  // Close on ESC
-  document.addEventListener("keydown", function (ev) {
+  document.addEventListener("keydown", (ev) => {
     if (ev.key === "Escape") hideDropdown();
   });
 
-  markAllBtn?.addEventListener("click", async function () {
+  // Reposition on resize/scroll (only when open)
+  window.addEventListener("resize", () => {
+    if (isOpen()) positionDropdown();
+  });
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (isOpen()) positionDropdown();
+    },
+    { passive: true },
+  );
+
+  /* ================================
+    Event Delegation (NO duplicates)
+  ================================= */
+
+  listEl.addEventListener("click", async (ev) => {
+    const row = ev.target.closest(".notification-row");
+    if (!row) return;
+
+    const id = row.dataset.id;
+    if (!id) return;
+
+    // If clicked delete button -> delete only
+    if (ev.target.closest(".notif-delete")) {
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      try {
+        const j = await apiPost("delete", { id });
+        if (j?.ok) {
+          // remove from UI quickly
+          row.remove();
+          // refresh badge + list if empty
+          await fetchLatest();
+          await fetchCount();
+        }
+      } catch (_) {}
+      return;
+    }
+
+    // Clicked row -> mark read (only if unread)
+    if (row.dataset.read === "1") return;
+
     try {
-      const res = await fetch(apiBase + "?action=mark_all_read", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-      const j = await res.json();
-      if (j && j.ok) {
-        await fetchCount();
-        await fetchLatest();
+      const j = await apiPost("mark_read", { id });
+      if (j?.ok) {
+        row.dataset.read = "1";
+        row.classList.remove("font-semibold");
+        // update badge quickly (avoid full reload)
+        const current = Number(countEl.textContent || 0);
+        setBadge(Math.max(0, current - 1));
       }
-    } catch (e) {}
+    } catch (_) {}
   });
 
-  const clearAllBtn = document.getElementById("clearAll");
-  clearAllBtn?.addEventListener("click", async function () {
+  markAllBtn?.addEventListener("click", async () => {
     try {
-      const res = await fetch(apiBase + "?action=delete_all", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-      if (!res.ok) return;
-      const j = await res.json();
-      if (j && j.ok) {
-        await fetchCount();
+      const j = await apiPost("mark_all_read");
+      if (j?.ok) {
         await fetchLatest();
+        await fetchCount();
       }
-    } catch (e) {}
+    } catch (_) {}
+  });
+
+  clearAllBtn?.addEventListener("click", async () => {
+    try {
+      const j = await apiPost("delete_all");
+      if (j?.ok) {
+        await fetchLatest();
+        await fetchCount();
+      }
+    } catch (_) {}
   });
 
   // init
+  fetchLatest(); // optional: show fresh list on load
   fetchCount();
-  // poll
   setInterval(fetchCount, 30000);
 })();

@@ -118,8 +118,10 @@ CREATE TABLE orders (
     user_id INT UNSIGNED NULL,
     order_type ENUM('pos', 'online') NOT NULL,
     total DECIMAL(10, 2) NOT NULL,
-    payment_status ENUM('paid', 'unpaid', 'refunded') NOT NULL DEFAULT 'unpaid',
-    order_status ENUM('pending', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+    -- include full set of payment states used in app
+    payment_status ENUM('pending','paid', 'unpaid', 'failed', 'refunded') NOT NULL DEFAULT 'unpaid',
+    -- include pipeline states: pending -> processing -> delivered -> completed -> cancelled
+    order_status ENUM('pending', 'processing', 'delivered', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user (user_id),
     CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE

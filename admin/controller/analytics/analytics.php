@@ -1,6 +1,68 @@
 <?php
 require_once __DIR__ . '/../../../config/conn.php';
 require_once __DIR__ . '/analyties_api.php';
+// =======================================
+// HELPERS
+// =======================================
+if (!function_exists('e')) {
+    function e($s): string
+    {
+        return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+function bankLogo(string $name): ?string
+{
+    $n = strtolower(trim($name));
+
+    $map = [
+        'aba'        => '/E-commerce-shoes/view/assets/Payments/aba.png',
+        'aba bank'   => '/E-commerce-shoes/view/assets/Payments/aba.png',
+
+        'acleda'     => '/E-commerce-shoes/view/assets/Payments/acleda.png',
+        'acleda bank' => '/E-commerce-shoes/view/assets/Payments/acleda.png',
+
+        'wing'       => '/E-commerce-shoes/view/assets/Payments/wing.png',
+        'wing bank'  => '/E-commerce-shoes/view/assets/Payments/wing.png',
+
+        'bakong'  => '/E-commerce-shoes/view/assets/Payments/icon.png',
+        'bakong' => '/E-commerce-shoes/view/assets/Payments/icon.png',
+
+        'chip mong bank'   => '/E-commerce-shoes/view/assets/Payments/chipmong.png',
+        'chip mong (nbc)'  => '/E-commerce-shoes/view/assets/Payments/chipmong.png',
+    ];
+
+    // direct match
+    if (isset($map[$n])) return $map[$n];
+
+    // partial match
+    foreach ($map as $key => $path) {
+        if ($key !== '' && str_contains($n, $key)) return $path;
+    }
+
+    return null;
+}
+
+function bankIcon(string $name): string
+{
+    $n = strtolower(trim($name));
+    if (str_contains($n, 'aba')) return 'fa-solid fa-building-columns';
+    if (str_contains($n, 'acleda')) return 'fa-solid fa-landmark';
+    if (str_contains($n, 'wing')) return 'fa-solid fa-wallet';
+    if (str_contains($n, 'bakong')) return 'fa-solid fa-wallet';
+    if (str_contains($n, 'chipmong') || str_contains($n, 'chip mong')) return 'fa-solid fa-wallet';
+    return 'fa-solid fa-credit-card';
+}
+
+$colorMap = [
+    'blue'    => ['bg' => 'from-blue-50 to-blue-100',     'border' => 'border-blue-200',     'icon-bg' => 'bg-blue-200',     'icon-text' => 'text-blue-700'],
+    'red'     => ['bg' => 'from-red-50 to-red-100',       'border' => 'border-red-200',      'icon-bg' => 'bg-red-200',      'icon-text' => 'text-red-700'],
+    'green'   => ['bg' => 'from-green-50 to-green-100',   'border' => 'border-green-200',    'icon-bg' => 'bg-green-200',    'icon-text' => 'text-green-700'],
+    'purple'  => ['bg' => 'from-purple-50 to-purple-100', 'border' => 'border-purple-200',   'icon-bg' => 'bg-purple-200',   'icon-text' => 'text-purple-700'],
+    'amber'   => ['bg' => 'from-amber-50 to-amber-100',   'border' => 'border-amber-200',    'icon-bg' => 'bg-amber-200',    'icon-text' => 'text-amber-700'],
+    'cyan'    => ['bg' => 'from-cyan-50 to-cyan-100',     'border' => 'border-cyan-200',     'icon-bg' => 'bg-cyan-200',     'icon-text' => 'text-cyan-700'],
+    'emerald' => ['bg' => 'from-emerald-50 to-emerald-100', 'border' => 'border-emerald-200', 'icon-bg' => 'bg-emerald-200',  'icon-text' => 'text-emerald-700'],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -315,83 +377,6 @@ require_once __DIR__ . '/analyties_api.php';
                     </div>
                 </div>
             </div>
-
-            <!-- Detailed Stats Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <!-- Top Products -->
-                <div class="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 class="text-lg font-semibold mb-4">Top Selling Products</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="text-left py-2 px-4">Product</th>
-                                    <th class="text-left py-2 px-4">Units Sold</th>
-                                    <th class="text-left py-2 px-4">Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($topProducts)): ?>
-                                    <?php foreach ($topProducts as $product): ?>
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-3 px-4">
-                                                <?php $pid = $product['product_id'] ?? null; ?>
-                                                <?php if ($pid): ?>
-                                                    <a href="/E-commerce-shoes/admin/process/products/products.php?search=<?= urlencode($product['name'] ?? '') ?>" class="text-indigo-600 hover:underline"><?= htmlspecialchars($product['name'] ?? 'N/A') ?></a>
-                                                <?php else: ?>
-                                                    <?= htmlspecialchars($product['name'] ?? 'N/A') ?>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="py-3 px-4"><?= number_format($product['total_sold'] ?? 0) ?></td>
-                                            <td class="py-3 px-4">$<?= number_format($product['revenue'] ?? 0, 2) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="3" class="py-4 px-4 text-center text-gray-500">
-                                            No product sales data available
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Top Customers -->
-                <div class="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 class="text-lg font-semibold mb-4">Top Customers</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="text-left py-2 px-4">Customer</th>
-                                    <th class="text-left py-2 px-4">Orders</th>
-                                    <th class="text-left py-2 px-4">Total Spent</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($topCustomers)): ?>
-                                    <?php foreach ($topCustomers as $customer): ?>
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-3 px-4"><?= htmlspecialchars($customer['username'] ?? $customer['email'] ?? 'N/A') ?></td>
-                                            <td class="py-3 px-4"><?= number_format($customer['orders_count'] ?? 0) ?></td>
-                                            <td class="py-3 px-4">$<?= number_format($customer['total_spent'] ?? 0, 2) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="3" class="py-4 px-4 text-center text-gray-500">
-                                            No customer data available
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
             <!-- Additional Metrics -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 md:auto-rows-fr items-stretch">
 
@@ -518,6 +503,7 @@ require_once __DIR__ . '/analyties_api.php';
                             </div>
                             <h3 class="text-lg font-semibold text-gray-900">Payment Gateways</h3>
                         </div>
+
                         <a href="../view/transactions.php" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
                             View all
                             <i class="fas fa-arrow-right ml-1"></i>
@@ -525,43 +511,54 @@ require_once __DIR__ . '/analyties_api.php';
                     </div>
 
                     <div class="space-y-4">
-                        <?php foreach (($paymentGateways ?? []) as $key => $gateway):
-                            $colorMap = [
-                                'blue' => ['bg' => 'from-blue-50 to-blue-100', 'border' => 'border-blue-200', 'icon-bg' => 'bg-blue-200', 'icon-text' => 'text-blue-700'],
-                                'red' => ['bg' => 'from-red-50 to-red-100', 'border' => 'border-red-200', 'icon-bg' => 'bg-red-200', 'icon-text' => 'text-red-700'],
-                                'green' => ['bg' => 'from-green-50 to-green-100', 'border' => 'border-green-200', 'icon-bg' => 'bg-green-200', 'icon-text' => 'text-green-700'],
-                                'purple' => ['bg' => 'from-purple-50 to-purple-100', 'border' => 'border-purple-200', 'icon-bg' => 'bg-purple-200', 'icon-text' => 'text-purple-700'],
-                                'amber' => ['bg' => 'from-amber-50 to-amber-100', 'border' => 'border-amber-200', 'icon-bg' => 'bg-amber-200', 'icon-text' => 'text-amber-700'],
-                                'cyan' => ['bg' => 'from-cyan-50 to-cyan-100', 'border' => 'border-cyan-200', 'icon-bg' => 'bg-cyan-200', 'icon-text' => 'text-cyan-700'],
-                                'emerald' => ['bg' => 'from-emerald-50 to-emerald-100', 'border' => 'border-emerald-200', 'icon-bg' => 'bg-emerald-200', 'icon-text' => 'text-emerald-700'],
-                            ];
+                        <?php
+                        $paymentGateways = array_slice($paymentGateways, 0, 5);
+                        ?>
+                        <?php foreach ($paymentGateways as $key => $gateway):
 
                             $colorKey = strtolower((string)($gateway['color'] ?? 'blue'));
                             $colorConfig = $colorMap[$colorKey] ?? $colorMap['blue'];
 
-                            $icon = (string)($gateway['icon'] ?? 'fas fa-money-check-alt');
-                            $name = (string)($gateway['name'] ?? 'Unknown');
-                            $desc = (string)($gateway['description'] ?? '');
+                            $name   = (string)($gateway['name'] ?? 'Unknown');
+                            $desc   = (string)($gateway['description'] ?? '');
                             $amount = (float)($gateway['amount'] ?? 0);
-                            $count = (int)($gateway['count'] ?? 0);
+                            $count  = (int)($gateway['count'] ?? 0);
                             $recent = (array)($gateway['recent'] ?? []);
+                            $logo = !empty($gateway['image']) ? (string)$gateway['image'] : bankLogo($name);
+
+                            // Icon fallback if no image
+                            $icon = !empty($gateway['icon']) ? (string)$gateway['icon'] : bankIcon($name);
+
                         ?>
                             <div class="p-4 bg-gradient-to-r <?= $colorConfig['bg'] ?> border <?= $colorConfig['border'] ?> rounded-lg hover:shadow transition duration-300">
                                 <div class="flex justify-between items-center gap-4">
                                     <div class="flex items-center min-w-0">
-                                        <div class="w-10 h-10 flex items-center justify-center <?= $colorConfig['icon-bg'] ?> rounded-lg mr-3 shrink-0">
-                                            <i class="<?= $icon ?> <?= $colorConfig['icon-text'] ?>"></i>
+
+                                        <!-- LOGO (image first, icon fallback) -->
+                                        <div class="w-10 h-10 rounded-lg mr-3 shrink-0 bg-white
+                                        flex items-center justify-center overflow-hidden border
+                                        ring-1 ring-black/5 hover:ring-indigo-400 transition">
+                                            <?php if (!empty($logo)): ?>
+                                                <img
+                                                    src="<?= e($logo) ?>"
+                                                    alt="<?= e($name) ?>"
+                                                    class="w-full h-full object-contain p-1"
+                                                    loading="lazy">
+                                            <?php else: ?>
+                                                <div class="w-full h-full flex items-center justify-center <?= $colorConfig['icon-bg'] ?>">
+                                                    <i class="<?= e($icon) ?> <?= $colorConfig['icon-text'] ?>"></i>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
+
                                         <div class="min-w-0">
-                                            <p class="font-semibold text-gray-900 truncate"><?= $name ?></p>
-                                            <p class="text-xs text-gray-600 truncate"><?= $desc ?></p>
+                                            <p class="font-semibold text-gray-900 truncate"><?= e($name) ?></p>
+                                            <p class="text-xs text-gray-600 truncate"><?= e($desc) ?></p>
                                         </div>
                                     </div>
 
                                     <div class="text-right shrink-0">
-                                        <p class="text-xl font-bold text-gray-900">
-                                            $<?= number_format($amount, 2) ?>
-                                        </p>
+                                        <p class="text-xl font-bold text-gray-900">$<?= number_format($amount, 2) ?></p>
                                         <p class="text-xs text-gray-600">
                                             <?= number_format($count) ?> transaction<?= ($count !== 1) ? 's' : '' ?>
                                         </p>
@@ -579,25 +576,22 @@ require_once __DIR__ . '/analyties_api.php';
 
                                         <div class="mt-3 space-y-2">
                                             <?php foreach (array_slice($recent, 0, 3) as $payment):
-                                                $orderId = $payment['order_id'] ?? '';
-                                                $payDate = $payment['payment_date'] ?? '';
-                                                $payAmount = (float)($payment['amount'] ?? 0);
-                                                $email = (string)($payment['email'] ?? 'Guest');
+                                                $orderId    = $payment['order_id'] ?? '';
+                                                $payDate    = $payment['payment_date'] ?? '';
+                                                $payAmount  = (float)($payment['amount'] ?? 0);
+                                                $email      = (string)($payment['email'] ?? 'Guest');
+                                                $timeText   = $payDate ? date('h:i A', strtotime((string)$payDate)) : '-';
+                                                $emailShort = mb_substr($email, 0, 15);
                                             ?>
                                                 <div class="flex items-center justify-between p-2 bg-white/50 rounded">
                                                     <div>
-                                                        <p class="text-sm font-medium text-gray-800">#<?= htmlspecialchars((string)$orderId) ?></p>
-                                                        <p class="text-xs text-gray-600 mt-0.5">
-                                                            <?= $payDate ? date('h:i A', strtotime((string)$payDate)) : '-' ?>
-                                                        </p>
+                                                        <p class="text-sm font-medium text-gray-800">#<?= e($orderId) ?></p>
+                                                        <p class="text-xs text-gray-600 mt-0.5"><?= e($timeText) ?></p>
                                                     </div>
+
                                                     <div class="text-right">
-                                                        <p class="font-bold text-gray-900">
-                                                            $<?= number_format($payAmount, 2) ?>
-                                                        </p>
-                                                        <p class="text-xs text-gray-500">
-                                                            <?= htmlspecialchars(mb_substr($email, 0, 15)) ?>...
-                                                        </p>
+                                                        <p class="font-bold text-gray-900">$<?= number_format($payAmount, 2) ?></p>
+                                                        <p class="text-xs text-gray-500"><?= e($emailShort) ?>...</p>
                                                     </div>
                                                 </div>
                                             <?php endforeach; ?>
@@ -610,8 +604,6 @@ require_once __DIR__ . '/analyties_api.php';
                 </div>
 
             </div>
-
-
             <!-- Location Stats (if available) -->
             <?php if (!empty($locationStats)): ?>
                 <div class="bg-white rounded-xl p-6 shadow-sm mb-8">

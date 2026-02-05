@@ -1,454 +1,634 @@
 /* =====================================================
-   CONFIG
+   ORDERS ADMIN (FULL + FIXED)
+  - pending -> processing -> shipped -> delivered -> completed
+   - Cancel with reason (uses order_update_status.php)
+   - Payment update + refund (uses orders_api.php)
+   - View modal (orders_api.php?action=view)
+   - Works with your data-action buttons
 ===================================================== */
-const API_BASE_URL = "get_order.php";
-const RELOAD_DELAY = 700;
 
-/* =====================================================
-   EVENT DELEGATION
-===================================================== */
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-action]");
-  if (!btn) return;
+(() => {
+  "use strict";
 
-  const { action, id, status, payment } = btn.dataset;
+  /* ===============================
+     CONFIG (EDIT PATHS)
+  ================================ */
+  // Controller endpoints (corrected paths)
+  const ORDERS_API = "/E-commerce-shoes/admin/controller/orders/get_order.php";
+  const STATUS_API =
+    "/E-commerce-shoes/admin/controller/orders/order_update_status.php";
 
-  switch (action) {
-    case "view":
-      viewOrder(id);
-      break;
-    case "edit":
-      editOrder(id, status);
-      break;
-    case "payment":
-      editPayment(id, payment);
-      break;
-    case "refund":
-      refundOrder(id);
-      break;
-    case "complete":
-      confirmStatusChange(id, "completed");
-      break;
-    case "cancel":
-      confirmStatusChange(id, "cancelled");
-      break;
-  }
-});
+  const RELOAD_DELAY = 700;
 
-/* =====================================================
-   SWEETALERT HELPERS (GLOBAL STANDARD)
-===================================================== */
-function showLoading(msg = "Loading...") {
-  Swal.fire({
-    title: msg,
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    showConfirmButton: false,
-    didOpen: () => Swal.showLoading(),
-  });
-}
+  // Allowed pipeline
+  const FLOW = ["pending", "processing", "shipped", "delivered", "completed"];
+  const VALID_STATUS = new Set([...FLOW, "cancelled"]);
+  const VALID_PAYMENT = new Set([
+    "pending",
+    "paid",
+    "failed",
+    "refunded",
+    "unpaid",
+  ]);
 
-function showSuccess(title, text = "") {
-  return Swal.fire({
-    icon: "success",
-    title,
-    text: text || undefined,
-    showConfirmButton: false,
-    timer: 1200,
-    timerProgressBar: true,
-  });
-}
+  /* =====================================================
+     EVENT DELEGATION
+  ===================================================== */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
 
-function showError(msg) {
-  Swal.fire({
-    icon: "error",
-    title: "Error",
-    text: msg,
-    confirmButtonColor: "#dc2626",
-  });
-}
+    const action = (btn.dataset.action || "").trim();
+    const id = Number(btn.dataset.id || 0);
+    const status = normalizeStatus(btn.dataset.status || "pending");
+    const payment = normalizePayment(btn.dataset.payment || "pending");
 
-/* =====================================================
-   CONFIRM HELPERS (MATCH USERS & PRODUCTS)
-===================================================== */
-function confirmEdit(title, text) {
-  return Swal.fire({
-    icon: "question",
-    title,
-    html: `
-      <p class="text-gray-600 mt-2">
-        ${text}
-      </p>
-    `,
-    showCancelButton: true,
-    confirmButtonText: "Update",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#4f46e5",
-    cancelButtonColor: "#6b7280",
-  });
-}
+    if (!id) return showError("Missing order id.");
 
-function confirmDelete(title, text) {
-  return Swal.fire({
-    icon: "warning",
-    title,
-    html: `
-      <p class="text-gray-600 mt-2">
-        ${text}
-      </p>
-    `,
-    showCancelButton: true,
-    confirmButtonText: "Confirm",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#dc2626",
-  });
-}
+    switch (action) {
+      case "view":
+        return viewOrder(id);
 
-/* =====================================================
-   EDIT ORDER STATUS
-===================================================== */
-function editOrder(orderId, currentStatus = "pending") {
-  if (!orderId) return;
+      case "edit":
+        return editOrder(id, status);
 
-  const allowed = ["pending", "processing", "completed", "cancelled"];
-  currentStatus = allowed.includes(currentStatus) ? currentStatus : "pending";
+      case "mark-processing":
+        return confirmMoveNext(btn, id, status, payment, "processing");
 
-  Swal.fire({
-    title: "Update Order Status",
-    html: `
-      <p class="text-gray-600 mt-2">
-        Select the new status for this order.
-      </p>
-    `,
-    input: "select",
-    inputOptions: {
-      pending: "Pending",
-      processing: "Processing",
-      completed: "Completed",
-      cancelled: "Cancelled",
-    },
-    inputValue: currentStatus,
-    showCancelButton: true,
-    confirmButtonText: "Update",
-    confirmButtonColor: "#4f46e5",
-  }).then((res) => {
-    if (res.isConfirmed && res.value) {
-      updateOrderStatus(orderId, res.value);
+      case "mark-shipped":
+        return confirmMoveNext(btn, id, status, payment, "shipped");
+
+      case "mark-delivered":
+        return confirmMoveNext(btn, id, status, payment, "delivered");
+
+      case "complete":
+        return confirmMoveNext(btn, id, status, payment, "completed");
+
+      case "cancel":
+        return confirmCancel(btn, id, status);
+
+      case "payment":
+        return editPayment(btn, id, payment);
+
+      case "refund":
+        return refundOrder(btn, id);
+
+      default:
+        return;
     }
   });
-}
 
-/* =====================================================
-   UPDATE ORDER STATUS
-===================================================== */
-async function updateOrderStatus(orderId, status) {
-  try {
-    showLoading("Updating order...");
-
-    const res = await fetch(`${API_BASE_URL}?action=update_status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ order_id: orderId, status }),
+  /* =====================================================
+     SWEETALERT HELPERS
+  ===================================================== */
+  function showLoading(msg = "Loading...") {
+    Swal.fire({
+      title: msg,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading(),
     });
-
-    const data = await res.json();
-    if (!res.ok || !data.success)
-      throw new Error(data.error || data.message || "Update failed");
-
-    Swal.close();
-    showSuccess("Order updated", "Order status updated successfully.");
-    setTimeout(() => location.reload(), RELOAD_DELAY);
-  } catch (err) {
-    Swal.close();
-    showError(err.message);
   }
-}
 
-/* =====================================================
-   EDIT PAYMENT STATUS
-===================================================== */
-function editPayment(orderId, currentPayment = "pending") {
-  if (!orderId) return;
+  function showSuccess(title, text = "") {
+    return Swal.fire({
+      icon: "success",
+      title,
+      text: text || undefined,
+      showConfirmButton: false,
+      timer: 1200,
+      timerProgressBar: true,
+    });
+  }
 
-  Swal.fire({
-    title: "Update Payment Status",
-    html: `
-      <p class="text-gray-600 mt-2">
-        Select the new payment status for this order.
-      </p>
-    `,
-    input: "select",
-    inputOptions: {
-      pending: "Pending",
-      paid: "Paid",
-      failed: "Failed",
-      refunded: "Refunded",
-    },
-    inputValue: currentPayment,
-    showCancelButton: true,
-    confirmButtonText: "Update",
-    confirmButtonColor: "#2563eb",
-  }).then(async (res) => {
-    if (!res.isConfirmed || !res.value) return;
+  function showError(msg) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: msg || "Something went wrong",
+      confirmButtonColor: "#dc2626",
+    });
+  }
+
+  function confirmEdit(title, text) {
+    return Swal.fire({
+      icon: "question",
+      title,
+      html: `<p class="text-gray-600 mt-2">${text}</p>`,
+      showCancelButton: true,
+      confirmButtonText: "Update",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#4f46e5",
+      cancelButtonColor: "#6b7280",
+    });
+  }
+
+  function confirmDelete(title, text) {
+    return Swal.fire({
+      icon: "warning",
+      title,
+      html: `<p class="text-gray-600 mt-2">${text}</p>`,
+      showCancelButton: true,
+      confirmButtonText: "Confirm",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+    });
+  }
+
+  /* =====================================================
+     STEP LOGIC
+  ===================================================== */
+  function nextStatusFrom(current) {
+    const idx = FLOW.indexOf(current);
+    return idx >= 0 && idx < FLOW.length - 1 ? FLOW[idx + 1] : null;
+  }
+
+  function canMoveTo(target, current) {
+    const idxC = FLOW.indexOf(current);
+    const idxT = FLOW.indexOf(target);
+    return idxC >= 0 && idxT === idxC + 1;
+  }
+
+  function normalizeStatus(s, fallback = "pending") {
+    s = String(s || "")
+      .toLowerCase()
+      .trim();
+    return VALID_STATUS.has(s) ? s : fallback;
+  }
+
+  function normalizePayment(p, fallback = "pending") {
+    p = String(p || "")
+      .toLowerCase()
+      .trim();
+    return VALID_PAYMENT.has(p) ? p : fallback;
+  }
+
+  /* =====================================================
+     API HELPERS
+  ===================================================== */
+  async function safeJson(res) {
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    if (!ct.includes("application/json")) {
+      const t = await res.text().catch(() => "");
+      return { success: false, error: t || "Non-JSON response from server." };
+    }
+    return await res.json();
+  }
+
+  async function postJson(url, body) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      credentials: "same-origin",
+      body: JSON.stringify(body || {}),
+    });
+    const data = await safeJson(res);
+    if (!res.ok || !data?.success) {
+      throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
+    }
+    return data;
+  }
+
+  async function getJson(url) {
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+    const data = await safeJson(res);
+    if (!res.ok || !data?.success) {
+      throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
+    }
+    return data;
+  }
+
+  /* =====================================================
+     EDIT ORDER STATUS (MANUAL SELECT)
+     - Uses STATUS_API (logs + transition validation)
+  ===================================================== */
+  function editOrder(orderId, currentStatus = "pending") {
+    currentStatus = normalizeStatus(currentStatus, "pending");
+
+    Swal.fire({
+      title: "Update Order Status",
+      html: `<p class="text-gray-600 mt-2">Select the new status for this order.</p>`,
+      input: "select",
+      inputOptions: {
+        pending: "Pending",
+        processing: "Processing",
+        shipped: "Shipped",
+        delivered: "Delivered",
+        completed: "Completed",
+        cancelled: "Cancelled",
+      },
+      inputValue: currentStatus,
+      showCancelButton: true,
+      confirmButtonText: "Update",
+      confirmButtonColor: "#4f46e5",
+    }).then(async (res) => {
+      if (!res.isConfirmed || !res.value) return;
+      const newStatus = normalizeStatus(res.value, currentStatus);
+
+      // If cancel from manual, ask reason
+      if (newStatus === "cancelled") {
+        return confirmCancel(null, orderId, currentStatus);
+      }
+
+      // If trying to "jump", backend will block, but we also warn.
+      await updateOrderStatus(orderId, newStatus, null);
+    });
+  }
+
+  /* =====================================================
+     CONFIRM QUICK STATUS CHANGE (STEP BUTTONS)
+  ===================================================== */
+  function confirmMoveNext(
+    btn,
+    orderId,
+    currentStatus,
+    currentPayment,
+    target,
+  ) {
+    currentStatus = normalizeStatus(currentStatus, "pending");
+    currentPayment = normalizePayment(currentPayment, "pending");
+    target = normalizeStatus(target, currentStatus);
+
+    if (currentStatus === "completed" || currentStatus === "cancelled") {
+      return showError("This order is locked.");
+    }
+
+    if (!canMoveTo(target, currentStatus)) {
+      const expected = nextStatusFrom(currentStatus);
+      return showError(
+        expected
+          ? `Invalid step. This order must go: ${currentStatus} → ${expected}`
+          : "Invalid step for this status.",
+      );
+    }
+
+    if (target === "completed" && currentPayment !== "paid") {
+      return showError("You must set payment to PAID before completing.");
+    }
+
+    confirmEdit(
+      "Confirm status change",
+      `Change order status to <b>${target.toUpperCase()}</b>?`,
+    ).then(async (res) => {
+      if (!res.isConfirmed) return;
+      await updateOrderStatus(orderId, target, btn);
+    });
+  }
+
+  /* =====================================================
+     CANCEL (REASON REQUIRED)
+     - Uses STATUS_API with note
+  ===================================================== */
+  function confirmCancel(btn, orderId, currentStatus) {
+    currentStatus = normalizeStatus(currentStatus, "pending");
+    if (currentStatus === "completed")
+      return showError("Completed order cannot be cancelled.");
+    if (currentStatus === "cancelled")
+      return showError("Order is already cancelled.");
+
+    Swal.fire({
+      title: "Cancel Order?",
+      input: "text",
+      inputLabel: "Reason (required)",
+      inputPlaceholder: "Example: customer requested cancel",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Cancel",
+      confirmButtonColor: "#dc2626",
+      preConfirm: (val) => {
+        if (!val || !val.trim()) {
+          Swal.showValidationMessage("Reason is required");
+          return false;
+        }
+        return val.trim();
+      },
+    }).then(async (res) => {
+      if (!res.isConfirmed) return;
+      await updateOrderStatus(orderId, "cancelled", btn, res.value);
+    });
+  }
+
+  /* =====================================================
+     UPDATE ORDER STATUS (FIXED)
+     - Uses STATUS_API (to_status + note)
+  ===================================================== */
+  async function updateOrderStatus(orderId, status, btn = null, note = "") {
+    status = normalizeStatus(status, "pending");
 
     try {
-      showLoading("Updating payment...");
+      setBtnLoading(btn, true, "Updating...");
+      showLoading("Updating order...");
 
-      const response = await fetch(`${API_BASE_URL}?action=update_payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          order_id: orderId,
-          payment_status: res.value,
-        }),
+      await postJson(STATUS_API, {
+        order_id: Number(orderId),
+        to_status: status,
+        note: note || "",
       });
 
-      const data = await response.json();
-      if (!response.ok || !data.success)
-        throw new Error(data.error || data.message || "Update failed");
-
       Swal.close();
-      showSuccess("Payment updated", "Payment status updated successfully.");
+      await showSuccess(
+        "Order updated",
+        `Status changed to ${status.toUpperCase()}`,
+      );
+
+      if (btn) {
+        const row = btn.closest("tr");
+        if (row) patchRowStatus(row, status);
+      }
+
       setTimeout(() => location.reload(), RELOAD_DELAY);
     } catch (err) {
       Swal.close();
-      showError(err.message);
+      showError(err?.message || "Update failed");
+    } finally {
+      setBtnLoading(btn, false);
     }
-  });
-}
+  }
 
-/* =====================================================
-   REFUND ORDER
-===================================================== */
-async function refundOrder(orderId) {
-  const res = await confirmDelete(
-    "Refund order?",
-    "This will refund the payment and restock all items associated with this order.",
-  );
-  if (!res.isConfirmed) return;
+  /* =====================================================
+     EDIT PAYMENT STATUS (FIXED)
+     - Uses ORDERS_API?action=update_payment
+  ===================================================== */
+  function editPayment(btn, orderId, currentPayment = "pending") {
+    currentPayment = normalizePayment(currentPayment, "pending");
 
-  try {
-    showLoading("Processing refund...");
+    Swal.fire({
+      title: "Update Payment Status",
+      html: `<p class="text-gray-600 mt-2">Select the new payment status for this order.</p>`,
+      input: "select",
+      inputOptions: {
+        pending: "Pending",
+        unpaid: "Unpaid",
+        paid: "Paid",
+        failed: "Failed",
+        refunded: "Refunded",
+      },
+      inputValue: currentPayment,
+      showCancelButton: true,
+      confirmButtonText: "Update",
+      confirmButtonColor: "#2563eb",
+    }).then(async (res) => {
+      if (!res.isConfirmed || !res.value) return;
+      const nextPay = normalizePayment(res.value, currentPayment);
 
-    const response = await fetch(`${API_BASE_URL}?action=refund`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ order_id: orderId }),
+      try {
+        setBtnLoading(btn, true, "Updating...");
+        showLoading("Updating payment...");
+
+        await postJson(`${ORDERS_API}?action=update_payment`, {
+          order_id: Number(orderId),
+          payment_status: nextPay,
+        });
+
+        Swal.close();
+        await showSuccess(
+          "Payment updated",
+          `Payment set to ${nextPay.toUpperCase()}`,
+        );
+        setTimeout(() => location.reload(), RELOAD_DELAY);
+      } catch (err) {
+        Swal.close();
+        showError(err?.message || "Payment update failed");
+      } finally {
+        setBtnLoading(btn, false);
+      }
     });
-
-    const data = await response.json();
-    if (!response.ok || !data.success)
-      throw new Error(data.error || data.message || "Refund failed");
-
-    Swal.close();
-    showSuccess("Order refunded", "Payment has been refunded successfully.");
-    setTimeout(() => location.reload(), RELOAD_DELAY);
-  } catch (err) {
-    Swal.close();
-    showError(err.message);
   }
-}
 
-/* =====================================================
-   CONFIRM QUICK STATUS CHANGE
-===================================================== */
-function confirmStatusChange(orderId, status) {
-  confirmEdit(
-    "Confirm status change",
-    `Change order status to <b>${status.toUpperCase()}</b>?`,
-  ).then((res) => {
-    if (res.isConfirmed) updateOrderStatus(orderId, status);
-  });
-}
+  /* =====================================================
+     REFUND ORDER
+     - Uses ORDERS_API?action=refund
+  ===================================================== */
+  async function refundOrder(btn, orderId) {
+    const res = await confirmDelete(
+      "Refund order?",
+      "This will refund the payment and restock all items associated with this order.",
+    );
+    if (!res.isConfirmed) return;
 
-/* =====================================================
-   VIEW ORDER
-===================================================== */
-async function viewOrder(orderId) {
-  try {
-    showLoading("Loading order...");
+    try {
+      setBtnLoading(btn, true, "Refunding...");
+      showLoading("Processing refund...");
 
-    const res = await fetch(`${API_BASE_URL}?action=view&order_id=${orderId}`);
-    const data = await res.json();
-    if (!res.ok || !data.success)
-      throw new Error(data.error || "Failed to load order");
+      await postJson(`${ORDERS_API}?action=refund`, {
+        order_id: Number(orderId),
+      });
 
-    renderOrderModal(data.order, data.items);
-  } catch (err) {
-    Swal.close();
-    showError(err.message);
+      Swal.close();
+      await showSuccess(
+        "Order refunded",
+        "Payment has been refunded successfully.",
+      );
+      setTimeout(() => location.reload(), RELOAD_DELAY);
+    } catch (err) {
+      Swal.close();
+      showError(err?.message || "Refund failed");
+    } finally {
+      setBtnLoading(btn, false);
+    }
   }
-}
 
-/* =====================================================
-   BADGE HELPER
-===================================================== */
-function badgeHTML(type, status) {
-  status = String(status || "").toLowerCase();
-  const base =
-    "inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold";
-  let variant = "bg-gray-100 text-gray-800";
+  /* =====================================================
+     VIEW ORDER (MODAL)
+     - Uses ORDERS_API?action=view
+  ===================================================== */
+  async function viewOrder(orderId) {
+    try {
+      showLoading("Loading order...");
 
-  if (status === "completed" || status === "paid")
-    variant = "bg-emerald-100 text-emerald-800";
-  else if (status === "processing") variant = "bg-blue-100 text-blue-800";
-  else if (status === "pending") variant = "bg-yellow-100 text-amber-800";
-  else if (status === "cancelled" || status === "failed")
-    variant = "bg-red-100 text-red-800";
-  else if (status === "refunded") variant = "bg-purple-100 text-purple-800";
+      const data = await getJson(
+        `${ORDERS_API}?action=view&order_id=${encodeURIComponent(orderId)}`,
+      );
 
-  const label = String(status || "").replace(/(^|\s)\S/g, (c) =>
-    c.toUpperCase(),
-  );
-  return `<span class="${base} ${variant}">${escapeHtml(type)}: ${escapeHtml(label)}</span>`;
-}
+      renderOrderModal(data.order, data.items || []);
+    } catch (err) {
+      Swal.close();
+      showError(err?.message || "Failed to load order");
+    }
+  }
 
-/* =====================================================
-   RENDER ORDER MODAL
-===================================================== */
-function renderOrderModal(order, items = []) {
-  let total = 0;
+  /* =====================================================
+     BADGE HELPERS
+  ===================================================== */
+  function badgeHTML(type, status) {
+    status = String(status || "").toLowerCase();
+    const base =
+      "inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold";
+    let variant = "bg-gray-100 text-gray-800";
 
-  const rows = items
-    .map((i) => {
-      const price = Number(i.price || 0);
-      const qty = Number(i.quantity || 0);
-      const line = price * qty;
-      total += line;
+    if (status === "completed" || status === "paid")
+      variant = "bg-emerald-100 text-emerald-800";
+    else if (status === "processing") variant = "bg-blue-100 text-blue-800";
+    else if (status === "pending" || status === "unpaid")
+      variant = "bg-amber-100 text-amber-800";
+    else if (status === "delivered") variant = "bg-indigo-100 text-indigo-800";
+    else if (status === "cancelled" || status === "failed")
+      variant = "bg-red-100 text-red-800";
+    else if (status === "refunded") variant = "bg-purple-100 text-purple-800";
 
-      return `
-        <tr>
-          <td>${escapeHtml(i.product_name)}</td>
-          <td>${qty}</td>
-          <td>$${price.toFixed(2)}</td>
-          <td>$${line.toFixed(2)}</td>
-        </tr>`;
-    })
-    .join("");
+    const label = status.replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+    return `<span class="${base} ${variant}">${escapeHtml(type)}: ${escapeHtml(label)}</span>`;
+  }
 
-  Swal.fire({
-    title: `Order #${escapeHtml(order.order_id)}`,
-    width: 860,
-    showCloseButton: true,
-    focusConfirm: false,
-    confirmButtonText: "Close",
-    confirmButtonColor: "#111827",
-    background: "#ffffff",
-    customClass: {
-      popup: "rounded-3xl shadow-2xl",
-      title: "text-left text-xl font-extrabold text-gray-900",
-      htmlContainer: "p-0",
-      confirmButton:
-        "rounded-xl px-6 py-2.5 font-bold bg-gray-900 hover:bg-black",
-      closeButton: "text-gray-400 hover:text-gray-700",
-    },
+  /* =====================================================
+     RENDER ORDER MODAL (FIXED)
+     - supports item fields: product_name OR name
+  ===================================================== */
+  function renderOrderModal(order, items = []) {
+    let total = 0;
 
-    html: `
-  <div class="text-left">
+    const rows = (Array.isArray(items) ? items : [])
+      .map((i) => {
+        const name = i.product_name || i.name || "";
+        const price = Number(i.price || 0);
+        const qty = Number(i.quantity || i.qty || 0);
+        const line = price * qty;
+        total += line;
 
-    <!-- CUSTOMER + STATUS -->
-    <div class="mt-4 p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        return `
+          <tr class="border-b border-gray-100">
+            <td class="px-5 py-3 font-semibold text-gray-800">${escapeHtml(name)}</td>
+            <td class="px-5 py-3 text-center">${qty}</td>
+            <td class="px-5 py-3 text-right">$${price.toFixed(2)}</td>
+            <td class="px-5 py-3 text-right font-bold">$${line.toFixed(2)}</td>
+          </tr>`;
+      })
+      .join("");
 
-      <!-- Customer -->
-      <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Customer</p>
-        <p class="mt-1 text-base font-extrabold text-gray-900 truncate">
-          ${escapeHtml(order.customer_name)}
-        </p>
-        <p class="mt-3 text-xs text-gray-500">
-          <span class="font-semibold">Date:</span>
-          ${escapeHtml(new Date(order.created_at).toLocaleString())}
-        </p>
-      </div>
+    Swal.close();
 
-      <!-- Status -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-5">
-        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Status</p>
+    Swal.fire({
+      title: `Order #${escapeHtml(order.order_id)}`,
+      width: 860,
+      showCloseButton: true,
+      focusConfirm: false,
+      confirmButtonText: "Close",
+      confirmButtonColor: "#111827",
+      background: "#ffffff",
+      customClass: {
+        popup: "rounded-3xl shadow-2xl",
+        title: "text-left text-xl font-extrabold text-gray-900",
+        htmlContainer: "p-0",
+        confirmButton:
+          "rounded-xl px-6 py-2.5 font-bold bg-gray-900 hover:bg-black",
+        closeButton: "text-gray-400 hover:text-gray-700",
+      },
+      html: `
+        <div class="text-left">
 
-        <div class="mt-3 flex flex-wrap items-center gap-2">
-          ${badgeHTML("Order", order.order_status)}
-          ${badgeHTML("Payment", order.payment_status)}
+          <div class="mt-4 p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Customer</p>
+              <p class="mt-1 text-base font-extrabold text-gray-900 truncate">
+                ${escapeHtml(order.customer_name || "Guest")}
+              </p>
+              <p class="mt-3 text-xs text-gray-500">
+                <span class="font-semibold">Date:</span>
+                ${escapeHtml(new Date(order.created_at).toLocaleString())}
+              </p>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Status</p>
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                ${badgeHTML("Order", order.order_status)}
+                ${badgeHTML("Payment", order.payment_status)}
+              </div>
+
+              <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+                <span class="font-semibold">Order ID</span>
+                <span class="font-mono text-gray-700">${escapeHtml(order.order_id)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4">
+            <div class="mt-5 rounded-2xl border border-gray-200 overflow-hidden">
+              <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <p class="text-sm font-extrabold text-gray-900">Order Items</p>
+                <p class="text-xs text-gray-500">${(items || []).length} item(s)</p>
+              </div>
+
+              <div class="max-h-[340px] overflow-auto">
+                <table class="w-full text-sm">
+                  <thead class="sticky top-0 bg-white z-10">
+                    <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                      <th class="text-left px-5 py-3 font-bold">Item</th>
+                      <th class="text-center px-5 py-3 font-bold w-20">Qty</th>
+                      <th class="text-right px-5 py-3 font-bold w-24">Price</th>
+                      <th class="text-right px-5 py-3 font-bold w-28">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    ${rows || `<tr><td class="px-5 py-6 text-gray-500" colspan="4">No items found.</td></tr>`}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="px-5 py-4 bg-white border-t border-gray-100 flex items-center justify-between">
+                <span class="text-sm font-bold text-gray-600">Grand Total</span>
+                <span class="text-xl font-extrabold text-gray-900">$${Number(total).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-4 flex items-center justify-between text-xs text-gray-400">
+            <span>Press <span class="px-2 py-1 rounded-lg border bg-gray-50 font-semibold">ESC</span> to close</span>
+            <span class="font-semibold">Admin View</span>
+          </div>
+
         </div>
+      `,
+    });
+  }
 
-        <!-- mini timeline -->
-        <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
-          <span class="font-semibold text-gray-600">Order</span>
-          <span>→</span>
-          <span class="font-semibold text-gray-600">Payment</span>
-        </div>
+  /* =====================================================
+     UI PATCH (optional)
+  ===================================================== */
+  function patchRowStatus(row, newStatus) {
+    row.dataset.status = newStatus;
+    row
+      .querySelectorAll("[data-status]")
+      .forEach((b) => (b.dataset.status = newStatus));
+  }
 
-        <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
-          <span class="font-semibold">Order ID</span>
-          <span class="font-mono text-gray-700">${escapeHtml(order.order_id)}</span>
-        </div>
-      </div>
-    </div>
+  /* =====================================================
+     UTILITIES
+  ===================================================== */
+  function escapeHtml(text = "") {
+    const el = document.createElement("div");
+    el.textContent = text == null ? "" : String(text);
+    return el.innerHTML;
+  }
 
-    <!-- ITEMS -->
-    <div class="px-4">
-      <div class="mt-5 rounded-2xl border border-gray-200 overflow-hidden">
-        <!-- Header -->
-        <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-          <p class="text-sm font-extrabold text-gray-900">Order Items</p>
-          <p class="text-xs text-gray-500">Scroll to view</p>
-        </div>
-        <!-- Table -->
-        <div class="max-h-[340px] overflow-auto">
-          <table class="w-full text-sm">
-            <thead class="sticky top-0 bg-white z-10">
-              <tr class="text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                <th class="text-left px-5 py-3 font-bold">Item</th>
-                <th class="text-center px-5 py-3 font-bold w-20">Qty</th>
-                <th class="text-right px-5 py-3 font-bold w-24">Price</th>
-                <th class="text-right px-5 py-3 font-bold w-28">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              ${rows}
-            </tbody>
-          </table>
-        </div>
+  function setBtnLoading(btn, on, text = "Loading...") {
+    if (!btn) return;
+    if (on) {
+      btn.dataset._oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.classList.add("opacity-70", "cursor-not-allowed");
+      btn.innerHTML = text;
+    } else {
+      btn.disabled = false;
+      btn.classList.remove("opacity-70", "cursor-not-allowed");
+      if (btn.dataset._oldHtml) btn.innerHTML = btn.dataset._oldHtml;
+      delete btn.dataset._oldHtml;
+    }
+  }
 
-        <!-- Sticky Total -->
-        <div class="px-5 py-4 bg-white border-t border-gray-100 flex items-center justify-between">
-          <span class="text-sm font-bold text-gray-600">Grand Total</span>
-          <span class="text-xl font-extrabold text-gray-900">
-            $${Number(total).toFixed(2)}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer tip -->
-    <div class="mt-4 p-4 flex items-center justify-between text-xs text-gray-400">
-      <span>
-        Press <span class="px-2 py-1 rounded-lg border bg-gray-50 font-semibold">ESC</span> to close
-      </span>
-      <span class="font-semibold">Admin View</span>
-    </div>
-
-  </div>
-  `,
+  /* =====================================================
+     GLOBAL EXPORTS (optional)
+  ===================================================== */
+  Object.assign(window, {
+    ordersEdit: editOrder,
+    ordersView: viewOrder,
+    ordersRefund: (id) => refundOrder(null, id),
   });
-}
-
-/* =====================================================
-   UTILITIES
-===================================================== */
-function escapeHtml(text = "") {
-  const el = document.createElement("div");
-  el.textContent = text;
-  return el.innerHTML;
-}
-
-/* =====================================================
-   GLOBAL EXPORTS
-===================================================== */
-Object.assign(window, {
-  ordersEdit: editOrder,
-  ordersView: viewOrder,
-  ordersComplete: (id) => confirmStatusChange(id, "completed"),
-});
+})();

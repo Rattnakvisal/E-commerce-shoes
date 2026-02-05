@@ -218,15 +218,29 @@ try {
     $newUsersStmt->execute(['start' => $start, 'end' => $end]);
     $new_users = (int)$newUsersStmt->fetchColumn();
 
-    $topCustomerStmt = $conn->prepare("
-        SELECT u.user_id, u.NAME, u.email, COALESCE(SUM(o.total),0) AS total_spent
+    // include avatar/profile image if available in users table
+    $userCols = $conn->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+    $avatarCol = null;
+    foreach (['avatar', 'image', 'profile_image', 'photo', 'avatar_url'] as $c) {
+        if (in_array($c, $userCols, true)) {
+            $avatarCol = $c;
+            break;
+        }
+    }
+
+    $selectAvatar = $avatarCol ? "u.`$avatarCol` AS avatar, " : '';
+
+    $topCustomerSql = "
+        SELECT {$selectAvatar}u.user_id, u.NAME, u.email, COALESCE(SUM(o.total),0) AS total_spent
         FROM users u
         JOIN orders o ON u.user_id = o.user_id
         WHERE DATE(o.created_at) BETWEEN :start AND :end
         GROUP BY u.user_id
         ORDER BY total_spent DESC
         LIMIT 1
-    ");
+    ";
+
+    $topCustomerStmt = $conn->prepare($topCustomerSql);
     $topCustomerStmt->execute(['start' => $start, 'end' => $end]);
     $top_customer = $topCustomerStmt->fetch(PDO::FETCH_ASSOC) ?: ['user_id' => '—', 'total_spent' => 0];
 

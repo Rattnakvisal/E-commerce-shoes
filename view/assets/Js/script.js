@@ -287,11 +287,6 @@
     });
   });
 
-  // ==========================================================
-  // Global close logic (ONE listener only)
-  // - Click/touch outside closes dropdowns + mega
-  // - ESC closes everything + mobile
-  // ==========================================================
   function closeEverything() {
     closeAllDropdowns(null);
     closeMegaAll();
@@ -304,14 +299,11 @@
     (e) => {
       const t = e.target;
 
-      // If click is inside any dropdown (button or panel), do nothing
       const insideDropdown = dropdowns.some((d) => d.isTargetInside(t));
       if (insideDropdown) return;
 
-      // If click is inside mega parent/trigger, do nothing (mega handler toggles it)
       if (t && t.closest && t.closest(".mega-parent")) return;
 
-      // If click is inside mobile menu or its button, do nothing
       if (
         (mobileMenu && mobileMenu.contains(t)) ||
         (mobileBtn && mobileBtn.contains(t))

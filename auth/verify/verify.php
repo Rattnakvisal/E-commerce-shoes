@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Cleanup
                         unset($_SESSION['verify_email'], $_SESSION['debug_code']);
 
-                        header("Location: reset-password.php");
+                        header("Location: ../Log/reset-password.php");
                         exit;
                     }
                 }

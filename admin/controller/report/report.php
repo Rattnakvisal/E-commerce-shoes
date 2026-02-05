@@ -103,22 +103,20 @@ error_reporting(E_ALL);
                             <p class="text-gray-600 text-sm sm:text-base max-w-2xl">
                                 Welcome back, <span class="font-semibold text-gray-900">Admin</span>! Here's what's happening with your store today.
                             </p>
-
-                            <!-- Meta -->
-                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
-                                <span class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-3 mt-4 text-sm text-slate-500">
+                                <span class="inline-flex items-center gap-2">
                                     <i class="fa-regular fa-calendar"></i>
                                     <?= date('l, F j, Y') ?>
                                 </span>
 
-                                <span class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2">
                                     <i class="fa-regular fa-clock"></i>
-                                    <span id="liveTime"></span>
+                                    <span id="liveTime" class="font-semibold text-slate-700"></span>
                                 </span>
 
-                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold border border-emerald-100">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    Reports Ready
+                                    Admin Online
                                 </span>
                             </div>
                         </div>
@@ -219,145 +217,6 @@ error_reporting(E_ALL);
                                 <i class="fa-solid fa-rotate"></i>
                             </button>
 
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in-up">
-                <!-- Total Orders -->
-                <div class="stat-card bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl p-6 shadow-soft-xl border border-emerald-100/50 relative overflow-hidden group hover:shadow-glow-green">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Orders</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900"><?php echo number_format($summary['orders_count']); ?></p>
-                                <div class="ml-2">
-                                    <?php
-                                    $lastWeekOrders = $summary['orders_count'] * 0.92;
-                                    $percentage = $summary['orders_count'] > 0 ?
-                                        (($summary['orders_count'] - $lastWeekOrders) / $lastWeekOrders * 100) : 0;
-                                    $trend = $percentage >= 0 ? 'up' : 'down';
-                                    $trendColor = $trend === 'up' ? 'green' : 'red';
-                                    ?>
-                                    <span class="inline-flex items-center text-<?php echo $trendColor; ?>-600 bg-<?php echo $trendColor; ?>-100/80 px-2 py-1 rounded-full text-xs font-medium border border-<?php echo $trendColor; ?>-200">
-                                        <i class="fas fa-arrow-<?php echo $trend; ?> mr-1 text-xs"></i>
-                                        <?php echo number_format(abs($percentage), 1); ?>%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-shopping-cart text-2xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>Completed</span>
-                            <span class="font-semibold"><?php echo number_format(($statusSummaryMap['completed'] ?? 0) / max($summary['orders_count'], 1) * 100, 0); ?>%</span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-emerald-400 to-emerald-600"
-                                style="--target-width: <?php echo ($statusSummaryMap['completed'] ?? 0) / max($summary['orders_count'], 1) * 100; ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Revenue -->
-                <div class="stat-card bg-gradient-to-br from-white to-amber-50/50 rounded-2xl p-6 shadow-soft-xl border border-amber-100/50 relative overflow-hidden group hover:shadow-glow">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Revenue</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900">$<?php echo number_format($summary['total_sales'], 2); ?></p>
-                                <div class="ml-2">
-                                    <?php
-                                    $lastMonthRevenue = $summary['total_sales'] * 1.032;
-                                    $revPercentage = $summary['total_sales'] > 0 ?
-                                        (($summary['total_sales'] - $lastMonthRevenue) / $lastMonthRevenue * 100) : 0;
-                                    $revTrend = $revPercentage >= 0 ? 'up' : 'down';
-                                    $revTrendColor = $revTrend === 'up' ? 'green' : 'red';
-                                    ?>
-                                    <span class="inline-flex items-center text-<?php echo $revTrendColor; ?>-600 bg-<?php echo $revTrendColor; ?>-100/80 px-2 py-1 rounded-full text-xs font-medium border border-<?php echo $revTrendColor; ?>-200">
-                                        <i class="fas fa-arrow-<?php echo $revTrend; ?> mr-1 text-xs"></i>
-                                        <?php echo number_format(abs($revPercentage), 1); ?>%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-dollar-sign text-2xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>Target</span>
-                            <span class="font-semibold">$<?php echo number_format($summary['total_sales'] * 1.2, 0); ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-amber-400 to-amber-600"
-                                style="--target-width: <?php echo min(($summary['total_sales'] / ($summary['total_sales'] * 1.2)) * 100, 100); ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="stat-card bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-soft-xl border border-blue-100/50 relative overflow-hidden group hover:shadow-glow-blue">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Registered Users</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900 glow-text"><?php echo number_format($total_users ?? 0); ?></p>
-                                <div class="ml-2">
-                                    <span class="inline-flex items-center text-green-600 bg-green-100/80 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
-                                        <i class="fas fa-user-plus mr-1 text-xs"></i>
-                                        <?php echo $new_users > 0 ? number_format(($new_users / max($total_users, 1)) * 100, 1) . '%' : '0%'; ?>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-users text-2xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>New (range)</span>
-                            <span class="font-semibold"><?php echo number_format($new_users ?? 0); ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-blue-500 to-indigo-500"
-                                style="--target-width: <?php echo ($new_users && $total_users) ? min(($new_users / max($total_users, 1)) * 100, 100) : 0; ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Top Customer -->
-                <div class="stat-card bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-6 shadow-soft-xl border border-purple-100/50 relative overflow-hidden group hover:shadow-glow-purple">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full -translate-y-10 translate-x-10"></div>
-                    <div class="flex items-center justify-between mb-4 relative z-10">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Top Customer</h3>
-                            <div class="flex items-baseline mt-2">
-                                <p class="text-2xl font-bold text-gray-900"><?php echo htmlspecialchars($top_customer['user_id'] ?? '—'); ?></p>
-                                <div class="ml-2">
-                                    <span class="text-sm text-gray-500">$<?php echo number_format($top_customer['total_spent'] ?? 0, 2); ?></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-3 rounded-xl shadow-md">
-                            <i class="fas fa-crown text-2xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 relative z-10">
-                        <div class="flex justify-between text-sm text-gray-500 mb-2">
-                            <span>Orders in range</span>
-                            <span class="font-semibold"><?php echo isset($top_customer['total_spent']) && $top_customer['total_spent'] > 0 ? 'Yes' : 'No'; ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
-                            <div class="h-2 rounded-full report-progress bg-gradient-to-r from-amber-400 to-amber-600"
-                                style="--target-width: <?php echo isset($top_customer['total_spent']) ? min(($top_customer['total_spent'] / max($summary['total_sales'], 1)) * 100, 100) : 0; ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -659,6 +518,57 @@ error_reporting(E_ALL);
                             </div>
                         </section>
 
+                        <!-- ===== Top Customer (NEW) ===== -->
+                        <section class="rounded-3xl bg-white/75 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_25px_70px_-35px_rgba(0,0,0,0.35)]
+                        overflow-hidden hover:shadow-[0_35px_95px_-45px_rgba(0,0,0,0.45)] transition-all duration-300">
+
+                            <div class="p-6 border-b border-slate-200/70">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Top Customer</h2>
+                                        <p class="text-sm text-slate-500 mt-1">Highest spender in the selected period</p>
+                                    </div>
+
+                                    <span class="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200/70 font-semibold">
+                                        Total: $<?= number_format((float)($top_customer['total_spent'] ?? 0), 2) ?>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="p-6">
+                                <?php if (!empty($top_customer) && (!empty($top_customer['user_id']) || !empty($top_customer['NAME']))): ?>
+                                    <div class="rounded-2xl p-4 bg-white ring-1 ring-slate-200/70 flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <?php if (!empty($top_customer['avatar'])): ?>
+                                                <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 mr-2">
+                                                    <img src="<?= htmlspecialchars($top_customer['avatar'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($top_customer['NAME'] ?? 'Customer', ENT_QUOTES) ?>" class="w-full h-full object-cover">
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="w-16 h-16 rounded-xl grid place-items-center text-white font-extrabold bg-gradient-to-br from-amber-400 to-yellow-500">
+                                                    <?= htmlspecialchars(strtoupper(substr(($top_customer['NAME'] ?? ''), 0, 1))) ?>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <div>
+                                                <p class="font-semibold text-slate-900"><?= htmlspecialchars($top_customer['NAME'] ?? '—') ?></p>
+                                                <p class="text-xs text-slate-500"><?= htmlspecialchars($top_customer['email'] ?? '') ?></p>
+                                                <p class="text-sm text-slate-600 mt-2">First order: <?= isset($top_customer['first_order_date']) ? date('M d, Y', strtotime($top_customer['first_order_date'])) : '—' ?></p>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-right">
+                                            <p class="font-extrabold text-slate-900 text-2xl">$<?= number_format((float)($top_customer['total_spent'] ?? 0), 2) ?></p>
+                                            <a href="../users/profile.php?id=<?= (int)($top_customer['user_id'] ?? 0) ?>" class="text-xs text-indigo-600 hover:text-indigo-700">View customer</a>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="text-center py-8">
+                                        <p class="text-slate-500 font-medium">No top customer data</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </section>
+
                         <!-- ===== Card: Shipping & Locations ===== -->
                         <section class="rounded-3xl bg-white/75 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_25px_70px_-35px_rgba(0,0,0,0.35)]
                         overflow-hidden hover:shadow-[0_35px_95px_-45px_rgba(0,0,0,0.45)] transition-all duration-300">
@@ -730,7 +640,22 @@ error_reporting(E_ALL);
     <script src="../../../assets/Js/reports.js"></script>
     <script src="../../../assets/Js/exports.js"></script>
     <script src="../../../assets/Js/share.js"></script>
+    <script>
+        // Live Clock
+        const liveTime = document.getElementById("liveTime");
 
+        function pad(n) {
+            return String(n).padStart(2, '0');
+        }
+
+        function tick() {
+            const d = new Date();
+            const t = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            if (liveTime) liveTime.textContent = t;
+        }
+        tick();
+        setInterval(tick, 1000);
+    </script>
 </body>
 
 </html>

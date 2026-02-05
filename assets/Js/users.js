@@ -515,13 +515,3 @@
 
   document.addEventListener("DOMContentLoaded", init);
 })();
-function refreshUsers() {
-  Swal.fire({
-    title: "Refreshing…",
-    allowOutsideClick: false,
-    showConfirmButton: false,
-    didOpen: () => Swal.showLoading(),
-  });
-
-  setTimeout(() => location.reload(), 600);
-}

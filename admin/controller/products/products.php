@@ -636,7 +636,6 @@ $tabs = [
         <?php endif; ?>
     </main>
     <script src="../../../assets/js/products.js"></script>
-    <script src="../../../assets/js/reports.js"></script>
     <script>
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {

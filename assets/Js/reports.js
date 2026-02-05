@@ -410,63 +410,6 @@ function bindRefreshButtons() {
     });
 }
 
-function bindProgressAnimation() {
-  const cards = document.querySelectorAll(".stat-card");
-  if (!cards.length) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-
-        entry.target.querySelectorAll(".report-progress").forEach((bar) => {
-          // Your HTML uses CSS var: --target-width: XX%;
-          const cssTarget = bar.style.getPropertyValue("--target-width").trim();
-          const target =
-            cssTarget || bar.dataset.width || bar.style.width || "0%";
-
-          bar.style.width = "0%";
-          requestAnimationFrame(() => (bar.style.width = target));
-        });
-
-        observer.unobserve(entry.target);
-      });
-    },
-    { threshold: 0.45 },
-  );
-
-  cards.forEach((card) => observer.observe(card));
-}
-
-function bindRowHover() {
-  document.querySelectorAll(".table-row").forEach((row) => {
-    row.classList.add("transition", "duration-200", "hover:bg-slate-50/80");
-  });
-}
-
-function initTimeDisplay() {
-  const els = document.querySelectorAll(".time-display");
-  if (!els.length) return;
-
-  const update = () => {
-    const now = new Date();
-    const time = now.toLocaleTimeString(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    els.forEach((el) => (el.textContent = time));
-  };
-
-  update();
-  setInterval(update, 60000);
-}
-
-function animateStatCards() {
-  document.querySelectorAll(".stat-card").forEach((card, i) => {
-    card.style.animationDelay = `${i * 0.08}s`;
-  });
-}
-
 function bindExportButtons() {
   document.querySelectorAll("[data-export]").forEach((el) => {
     el.addEventListener("click", () => {
@@ -480,16 +423,6 @@ function bindExportButtons() {
   });
 }
 
-function updateTime() {
-  const now = new Date();
-  const el = document.getElementById("liveTime");
-  if (!el) return;
-  el.textContent = now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 /* =========================================================
    INIT STYLES
 ========================================================= */
@@ -498,12 +431,7 @@ function injectStyles() {
     "dashboard-ui-styles",
     `
       .rotate-180 { transform: rotate(180deg); transition: transform .5s ease; }
-      .stat-card { animation: fadeInUp .6s ease-out both; }
-
-      .report-progress {
-        transition: width .9s cubic-bezier(.4,0,.2,1);
-        will-change: width;
-      }
+      /* Removed stat-card and report-progress styles */
 
       .loading-shimmer.is-loading { position: relative; overflow: hidden; }
       .loading-shimmer.is-loading::after {
@@ -537,14 +465,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   initTopProducts();
 
   bindRefreshButtons();
-  bindProgressAnimation();
   bindRowHover();
-  initTimeDisplay();
-  animateStatCards();
   bindExportButtons();
 
-  updateTime();
-  setInterval(updateTime, 60000);
+  // Time and stat-related initializers removed
 
   setLoading(false);
 });

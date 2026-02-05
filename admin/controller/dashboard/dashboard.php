@@ -54,22 +54,20 @@ require_once __DIR__ . '/process_dashboard.php';
                                 Here's a quick overview of your store performance and activity today.
                             </p>
 
-                            <!-- Meta Info -->
-                            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-500">
-                                <span class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-3 mt-4 text-sm text-slate-500">
+                                <span class="inline-flex items-center gap-2">
                                     <i class="fa-regular fa-calendar"></i>
                                     <?= date('l, F j, Y') ?>
                                 </span>
 
-                                <span class="flex items-center gap-2">
-                                    <i class="fa-regular fa-clock "></i>
-                                    <span id="liveTime"></span>
+                                <span class="inline-flex items-center gap-2">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span id="liveTime" class="font-semibold text-slate-700"></span>
                                 </span>
 
-                                <span
-                                    class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold border border-emerald-100">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    Store Live
+                                    Admin Online
                                 </span>
                             </div>
                         </div>
@@ -84,7 +82,8 @@ require_once __DIR__ . '/process_dashboard.php';
 
                             <button
                                 class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
-                                title="Refresh">
+                                title="Refresh"
+                                onclick="window.location.reload()">
                                 <i class="fa-solid fa-rotate"></i>
                             </button>
                         </div>
@@ -565,16 +564,20 @@ require_once __DIR__ . '/process_dashboard.php';
         });
     </script>
     <script>
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('liveTime').textContent =
-                now.toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+        // Live Clock
+        const liveTime = document.getElementById("liveTime");
+
+        function pad(n) {
+            return String(n).padStart(2, '0');
         }
-        updateTime();
-        setInterval(updateTime, 60000);
+
+        function tick() {
+            const d = new Date();
+            const t = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            if (liveTime) liveTime.textContent = t;
+        }
+        tick();
+        setInterval(tick, 1000);
     </script>
 
 </body>

@@ -144,7 +144,7 @@ $tabs = [
 
                             <!-- Refresh -->
                             <button
-                                onclick="refreshUsers()"
+                                onclick="window.location.reload()"
                                 class="inline-flex items-center justify-center w-11 h-11 rounded-2xl border hover:bg-gray-50 transition"
                                 title="Refresh">
                                 <i class="fa-solid fa-rotate"></i>
@@ -704,7 +704,6 @@ $tabs = [
 
 
     <script src="../../../assets/Js/users.js"></script>
-    <script src="../../../assets/js/reports.js"></script>
 </body>
 
 </html>

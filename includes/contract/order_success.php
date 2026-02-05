@@ -43,7 +43,7 @@ $qtyMap = $last['quantities'] ?? [];
 
 $orderDate = $last['created_at'] ?? date('Y-m-d H:i:s');
 
-// ✅ GPS (optional)
+// GPS (optional)
 $lat = isset($last['lat']) && $last['lat'] !== '' ? (float)$last['lat'] : null;
 $lng = isset($last['lng']) && $last['lng'] !== '' ? (float)$last['lng'] : null;
 
