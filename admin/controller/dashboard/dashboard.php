@@ -26,7 +26,7 @@ require_once __DIR__ . '/process_dashboard.php';
             ================================ -->
             <div class="mb-8">
                 <div
-                    class="relative overflow-hidden rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
+                    class="relative overflow-hidden rounded-2xl border bg-white shadow-soft p-6 sm:p-8">
 
                     <!-- Soft Background Accent -->
                     <div
@@ -42,7 +42,7 @@ require_once __DIR__ . '/process_dashboard.php';
                                     <i class="fa-solid fa-bolt"></i>
                                 </span>
 
-                                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+                                <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
                                     Welcome back,
                                     <span class="gradient-text">
                                         <?= htmlspecialchars(explode(' ', $admin_name)[0]) ?>
@@ -103,7 +103,7 @@ require_once __DIR__ . '/process_dashboard.php';
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Users</h3>
-                            <p class="text-3xl font-bold text-gray-900 glow-text mt-2">
+                            <p class="text-2xl font-bold text-gray-900 glow-text mt-2">
                                 <?= number_format($total_users) ?>
                             </p>
                         </div>
@@ -127,7 +127,7 @@ require_once __DIR__ . '/process_dashboard.php';
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Total Orders</h3>
-                            <p class="text-3xl font-bold text-gray-900 mt-2">
+                            <p class="text-2xl font-bold text-gray-900 mt-2">
                                 <?= number_format($total_orders) ?>
                             </p>
                         </div>
@@ -151,7 +151,7 @@ require_once __DIR__ . '/process_dashboard.php';
                     <div class="flex items-center justify-between mb-4 relative z-10">
                         <div>
                             <h3 class="text-sm font-medium text-gray-600 tracking-wider mb-1">Revenue</h3>
-                            <p class="text-3xl font-bold text-gray-900 mt-2">
+                            <p class="text-2xl font-bold text-gray-900 mt-2">
                                 $<?= number_format($revenue, 2) ?>
                             </p>
                         </div>

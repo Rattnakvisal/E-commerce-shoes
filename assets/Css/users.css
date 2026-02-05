@@ -233,3 +233,29 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* =====================================================
+   UPLOAD / PREVIEW FIXES
+   Improve profile image preview and upload box layout
+===================================================== */
+#userUploadBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 160px;
+}
+
+#userUploadBox .fa-cloud-upload-alt {
+  color: #4f46e5;
+}
+
+#userPreviewImg {
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
