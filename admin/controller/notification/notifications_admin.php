@@ -44,6 +44,12 @@ if (!$userId) {
 
 // If you want ADMIN ONLY, uncomment this:
 
+// Enforce admin-only access: only users with an admin role may use this API
+$isAdmin = in_array(strtolower($role), ['admin', 'administrator'], true);
+if (!$isAdmin) {
+    respond(false, 'Forbidden');
+}
+
 $pdo = $pdo ?? ($conn ?? null);
 if (!$pdo instanceof PDO) {
     respond(false, 'Database connection missing');
@@ -63,11 +69,10 @@ try {
                 if (!in_array($method, ['GET', 'POST'], true)) respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
                     "SELECT COUNT(*)
-                 FROM notifications
-                 WHERE is_read = 0
-                   AND (user_id = :uid OR user_id IS NULL)"
+                                            FROM notifications
+                                            WHERE is_read = 0"
                 );
-                $stmt->execute([':uid' => $userId]);
+                $stmt->execute();
                 respond(true, 'OK', ['unread' => (int)$stmt->fetchColumn()]);
             }
 
@@ -77,11 +82,10 @@ try {
                 $stmt = $pdo->prepare(
                     "SELECT notification_id, title, message, is_read, created_at
                  FROM notifications
-                 WHERE (user_id = :uid OR user_id IS NULL)
                  ORDER BY created_at DESC
                  LIMIT 10"
                 );
-                $stmt->execute([':uid' => $userId]);
+                $stmt->execute();
                 respond(true, 'OK', ['items' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
             }
 
@@ -89,11 +93,10 @@ try {
                 if ($method !== 'POST') respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
                     "UPDATE notifications
-                 SET is_read = 1
-                 WHERE is_read = 0
-                   AND (user_id = :uid OR user_id IS NULL)"
+                                            SET is_read = 1
+                                            WHERE is_read = 0"
                 );
-                $stmt->execute([':uid' => $userId]);
+                $stmt->execute();
                 respond(true, 'All marked read', ['affected' => $stmt->rowCount()]);
             }
 
@@ -104,12 +107,11 @@ try {
 
                 $stmt = $pdo->prepare(
                     "UPDATE notifications
-                 SET is_read = 1
-                 WHERE notification_id = :id
-                   AND (user_id = :uid OR user_id IS NULL)
-                 LIMIT 1"
+                                 SET is_read = 1
+                                 WHERE notification_id = :id
+                                 LIMIT 1"
                 );
-                $stmt->execute([':id' => $id, ':uid' => $userId]);
+                $stmt->execute([':id' => $id]);
                 respond(true, 'Marked read', ['affected' => $stmt->rowCount()]);
             }
 
@@ -120,21 +122,19 @@ try {
 
                 $stmt = $pdo->prepare(
                     "DELETE FROM notifications
-                 WHERE notification_id = :id
-                   AND (user_id = :uid OR user_id IS NULL)
-                 LIMIT 1"
+                                 WHERE notification_id = :id
+                                 LIMIT 1"
                 );
-                $stmt->execute([':id' => $id, ':uid' => $userId]);
+                $stmt->execute([':id' => $id]);
                 respond(true, 'Deleted', ['affected' => $stmt->rowCount()]);
             }
 
         case 'delete_all': {
                 if ($method !== 'POST') respond(false, 'Method not allowed');
                 $stmt = $pdo->prepare(
-                    "DELETE FROM notifications
-                 WHERE (user_id = :uid OR user_id IS NULL)"
+                    "DELETE FROM notifications"
                 );
-                $stmt->execute([':uid' => $userId]);
+                $stmt->execute();
                 respond(true, 'All deleted', ['affected' => $stmt->rowCount()]);
             }
 

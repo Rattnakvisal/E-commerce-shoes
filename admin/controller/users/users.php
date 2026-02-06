@@ -88,9 +88,9 @@ $tabs = [
             <!-- ===============================
                 Users Management Header
             ================================ -->
-            <div class="mb-8">
+            <div>
                 <div
-                    class="relative overflow-hidden rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
+                    class="relative mb-6 overflow-hidden rounded-3xl border bg-white shadow-soft p-6 sm:p-8">
 
                     <!-- Subtle Background Accent -->
                     <div

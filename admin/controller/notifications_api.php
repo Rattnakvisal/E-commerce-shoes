@@ -1,7 +1,20 @@
 <?php
 
 declare(strict_types=1);
-$target = __DIR__ . '/notification/notifications_api.php';
+
+// Simple router: include admin handler for admins, otherwise include user handler.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$adminTarget = __DIR__ . '/notification/notifications_admin.php';
+$userTarget = __DIR__ . '/notification/notifications_user.php';
+
+$role = (string)($_SESSION['role'] ?? '');
+$isAdmin = in_array(strtolower($role), ['admin', 'administrator'], true);
+
+$target = $isAdmin && is_file($adminTarget) ? $adminTarget : $userTarget;
+
 if (is_file($target)) {
     require $target;
     return;

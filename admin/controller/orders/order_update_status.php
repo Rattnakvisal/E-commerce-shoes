@@ -34,7 +34,7 @@ if ($userId <= 0 || !in_array($role, ['admin', 'staff'], true)) {
 $in = jsonInput();
 $orderId   = (int)($in['order_id'] ?? 0);
 $toStatus  = strtolower(trim((string)($in['to_status'] ?? '')));
-$note      = trim((string)($in['note'] ?? '')); // cancellation reason / admin note
+$note      = trim((string)($in['note'] ?? ''));
 
 $allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'];
 if ($orderId <= 0) respond(['success' => false, 'error' => 'Invalid order_id'], 422);
@@ -49,15 +49,15 @@ $nextAllowed = [
     'processing' => ['shipped', 'cancelled'],
     'shipped'    => ['delivered', 'cancelled'],
     'delivered'  => ['completed', 'cancelled'],
-    'completed'  => [], // no change
-    'cancelled'  => [], // no change
+    'completed'  => [],
+    'cancelled'  => [],
 ];
 
 try {
     $pdo->beginTransaction();
 
-    // lock order
-    $st = $pdo->prepare("SELECT order_id, order_status FROM orders WHERE order_id = :id FOR UPDATE");
+    // lock order (also fetch user_id to notify customer)
+    $st = $pdo->prepare("SELECT order_id, order_status, user_id FROM orders WHERE order_id = :id FOR UPDATE");
     $st->execute([':id' => $orderId]);
     $order = $st->fetch(PDO::FETCH_ASSOC);
 
@@ -133,6 +133,21 @@ try {
         ':to'   => $toStatus,
         ':note' => ($toStatus === 'cancelled') ? $note : ($note ?: null),
     ]);
+
+    // Notify customer on major status changes
+    try {
+        $customerId = (int)($order['user_id'] ?? 0);
+        $notifyStages = ['processing', 'shipped', 'delivered', 'completed'];
+        if ($customerId > 0 && in_array($toStatus, $notifyStages, true)) {
+            $title = sprintf('Order #%d status update', $orderId);
+            $message = sprintf('Your order #%d is now %s.', $orderId, ucfirst($toStatus));
+            $ins = $pdo->prepare("INSERT INTO notifications (user_id, title, message, TYPE, reference_id) VALUES (:uid, :title, :msg, 'order', :ref)");
+            $ins->execute([':uid' => $customerId, ':title' => $title, ':msg' => $message, ':ref' => $orderId]);
+        }
+    } catch (Throwable $ne) {
+        // don't fail the entire request for notification errors; log and continue
+        error_log('[order_update_status][notify] ' . $ne->getMessage());
+    }
 
     $pdo->commit();
 
