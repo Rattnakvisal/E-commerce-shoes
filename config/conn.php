@@ -1,9 +1,9 @@
 <?php
 $host = 'localhost';
-$port = '3306';
+$port = '3307';
 $db = 'ecommerce';
 $user = 'root';
-$pass = '';
+$pass = 'E12345e';
 $charset = 'utf8mb4';
 
 try {

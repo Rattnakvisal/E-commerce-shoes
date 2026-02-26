@@ -1,7 +1,7 @@
 /* =========================================================
  DATABASE
  ========================================================= */
-CREATE DATABASE ecommerce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS ecommerce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE ecommerce;
 
@@ -21,25 +21,13 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
+    auth_token VARCHAR(128) NULL,
+    google_id VARCHAR(255) NULL,
+    provider ENUM('local', 'google') DEFAULT 'local',
     INDEX idx_role (ROLE),
     INDEX idx_status (STATUS),
     INDEX idx_email (email)
 ) ENGINE = INNODB;
-
-ALTER TABLE
-    users
-ADD
-    auth_token VARCHAR(128) NULL;
-
-ADD
-    google_id VARCHAR(255) NULL,
-ADD
-    provider ENUM('local', 'google') DEFAULT 'local';
-
-ALTER TABLE
-    users
-MODIFY
-    PASSWORD VARCHAR(255) NULL;
 
 CREATE TABLE password_resets (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -78,9 +66,7 @@ CREATE TABLE categories (
     parent_id INT UNSIGNED NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_parent (parent_id),
-    CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(category_id) ON DELETE
-    SET
-        NULL
+    CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(category_id) ON DELETE SET NULL
 ) ENGINE = INNODB;
 
 /* =========================================================
@@ -100,15 +86,8 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_category (category_id),
     INDEX idx_status (STATUS),
-    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE
-    SET
-        NULL
+    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
 ) ENGINE = INNODB;
-
-ALTER TABLE
-    products
-ADD
-    STATUS VARCHAR(20) DEFAULT 'active';
 
 /* =========================================================
  ORDERS
@@ -118,15 +97,11 @@ CREATE TABLE orders (
     user_id INT UNSIGNED NULL,
     order_type ENUM('pos', 'online') NOT NULL,
     total DECIMAL(10, 2) NOT NULL,
-    -- include full set of payment states used in app
     payment_status ENUM('pending','paid', 'unpaid', 'failed', 'refunded') NOT NULL DEFAULT 'unpaid',
-    -- include pipeline states: pending -> processing -> delivered -> completed -> cancelled
     order_status ENUM('pending', 'processing', 'delivered', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user (user_id),
-    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE
-    SET
-        NULL
+    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
 ) ENGINE = INNODB;
 
 /* =========================================================
@@ -212,21 +187,13 @@ CREATE TABLE notifications (
     user_id INT UNSIGNED NULL,
     title VARCHAR(150) NOT NULL,
     message TEXT NOT NULL,
-    TYPE ENUM(
-        'order',
-        'payment',
-        'inventory',
-        'shipping',
-        'system'
-    ) NOT NULL DEFAULT 'system',
+    TYPE ENUM('order', 'payment', 'inventory', 'shipping', 'system') NOT NULL DEFAULT 'system',
     reference_id INT UNSIGNED NULL,
     is_read TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user (user_id),
     CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE = INNODB;
-
-DROP TABLE notification_reads;
 
 /* =========================================================
  FEATURED ITEMS
@@ -251,37 +218,32 @@ CREATE TABLE contact_messages (
     NAME VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     message TEXT NOT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    read_at TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = INNODB;
 
-ALTER TABLE
-    contact_messages
-ADD
-    COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0;
-
-ALTER TABLE
-    contact_messages
-ADD
-    COLUMN read_at TIMESTAMP NULL DEFAULT NULL;
-
-    CREATE TABLE IF NOT EXISTS wallets (
-  wallet_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT UNSIGNED NOT NULL,
-  balance DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  STATUS ENUM('active','blocked') NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_wallet_user (user_id)
+/* =========================================================
+ WALLETS
+ ========================================================= */
+CREATE TABLE IF NOT EXISTS wallets (
+    wallet_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    balance DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    STATUS ENUM('active','blocked') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_wallet_user (user_id)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS wallet_transactions (
-  tx_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  wallet_id BIGINT UNSIGNED NOT NULL,
-  admin_id BIGINT UNSIGNED NULL,
-  TYPE ENUM('deposit','withdraw','adjust','refund','purchase') NOT NULL,
-  amount DECIMAL(12,2) NOT NULL,
-  note VARCHAR(255) NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_wallet_id (wallet_id),
-  INDEX idx_created (created_at)
+    tx_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    wallet_id BIGINT UNSIGNED NOT NULL,
+    admin_id BIGINT UNSIGNED NULL,
+    TYPE ENUM('deposit','withdraw','adjust','refund','purchase') NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    note VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_wallet_id (wallet_id),
+    INDEX idx_created (created_at)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;

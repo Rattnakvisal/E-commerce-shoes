@@ -88,8 +88,29 @@ final class TelegramNotificationService
 
     private static function isConfigured(): bool
     {
-        return defined('TELEGRAM_BOT_TOKEN') && defined('TELEGRAM_CHAT_ID')
-            && TELEGRAM_BOT_TOKEN !== '' && TELEGRAM_CHAT_ID !== '';
+        return self::botToken() !== '' && self::chatId() !== '';
+    }
+
+    /** Return bot token: prefer defined constant, then env var */
+    private static function botToken(): string
+    {
+        if (defined('TELEGRAM_BOT_TOKEN')) {
+            return (string) TELEGRAM_BOT_TOKEN;
+        }
+
+        $v = getenv('TELEGRAM_BOT_TOKEN');
+        return $v === false ? '' : (string) $v;
+    }
+
+    /** Return chat id: prefer defined constant, then env var */
+    private static function chatId(): string
+    {
+        if (defined('TELEGRAM_CHAT_ID')) {
+            return (string) TELEGRAM_CHAT_ID;
+        }
+
+        $v = getenv('TELEGRAM_CHAT_ID');
+        return $v === false ? '' : (string) $v;
     }
 
     private static function validLatLng(?float $lat, ?float $lng): bool
@@ -106,7 +127,10 @@ final class TelegramNotificationService
 
     private static function api(string $method, array $payload): bool
     {
-        $url = 'https://api.telegram.org/bot' . TELEGRAM_BOT_TOKEN . '/' . $method;
+        $token = self::botToken();
+        if ($token === '') return false;
+
+        $url = 'https://api.telegram.org/bot' . $token . '/' . $method;
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -126,8 +150,11 @@ final class TelegramNotificationService
 
     private static function sendMessage(string $text): bool
     {
+        $chat = self::chatId();
+        if ($chat === '') return false;
+
         return self::api('sendMessage', [
-            'chat_id'                  => TELEGRAM_CHAT_ID,
+            'chat_id'                  => $chat,
             'text'                     => $text,
             'parse_mode'               => self::PARSE_MODE,
             'disable_web_page_preview' => true,
@@ -136,8 +163,11 @@ final class TelegramNotificationService
 
     private static function sendPhoto($photo, string $caption = ''): bool
     {
+        $chat = self::chatId();
+        if ($chat === '') return false;
+
         return self::api('sendPhoto', [
-            'chat_id'    => TELEGRAM_CHAT_ID,
+            'chat_id'    => $chat,
             'photo'      => $photo,
             'caption'    => $caption,
             'parse_mode' => self::PARSE_MODE,
@@ -174,8 +204,11 @@ final class TelegramNotificationService
             if ($i >= self::MAX_MEDIA_GROUP) break;
         }
 
+        $chat = self::chatId();
+        if ($chat === '') return false;
+
         $payload = [
-            'chat_id' => TELEGRAM_CHAT_ID,
+            'chat_id' => $chat,
             'media'   => json_encode($media, JSON_UNESCAPED_SLASHES),
         ];
 
@@ -185,8 +218,11 @@ final class TelegramNotificationService
     /** Send real Telegram location pin */
     private static function sendLocation(float $lat, float $lng): bool
     {
+        $chat = self::chatId();
+        if ($chat === '') return false;
+
         return self::api('sendLocation', [
-            'chat_id'    => TELEGRAM_CHAT_ID,
+            'chat_id'    => $chat,
             'latitude'   => (string)$lat,
             'longitude'  => (string)$lng,
             // optional
@@ -422,8 +458,11 @@ final class TelegramNotificationService
             ];
         }
 
+        $chat = self::chatId();
+        if ($chat === '') return;
+
         self::api('sendMessage', [
-            'chat_id'      => TELEGRAM_CHAT_ID,
+            'chat_id'      => $chat,
             'text'         => "Order #{$orderId} processed successfully.",
             'parse_mode'   => self::PARSE_MODE,
             'reply_markup' => json_encode([
