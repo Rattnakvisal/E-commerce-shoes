@@ -54,8 +54,18 @@ function telegram_notify_payment_success(
     float $total,
     array $products,
     array $cart,
+    $lat = null,
+    $lng = null,
     ?string $adminUrl = null
 ): bool {
+    if (is_string($lat) && $lng === null && $adminUrl === null && filter_var($lat, FILTER_VALIDATE_URL)) {
+        $adminUrl = $lat;
+        $lat = null;
+    }
+
+    $lat = is_numeric($lat) ? (float)$lat : null;
+    $lng = is_numeric($lng) ? (float)$lng : null;
+
     // If the full service class is available, delegate to it
     if (class_exists('TelegramNotificationService')) {
         try {
@@ -71,6 +81,8 @@ function telegram_notify_payment_success(
                 $total,
                 $products,
                 $cart,
+                $lat,
+                $lng,
                 $adminUrl
             );
 

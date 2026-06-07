@@ -27,6 +27,16 @@ function e(mixed $v): string
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
+function profileNormalizeAvatarUrl(?string $url): string
+{
+    $url = trim((string)$url);
+    if ($url === '') return '';
+
+    if (preg_match('#^https?://#i', $url)) return $url;
+    if ($url[0] !== '/') $url = '/' . ltrim($url, '/');
+    return $url;
+}
+
 function colExists(PDO $pdo, string $table, string $col): bool
 {
     static $cache = [];
@@ -71,7 +81,12 @@ $user['name']       = (string)($user['name'] ?? '');
 $user['email']      = (string)($user['email'] ?? '');
 $user['phone']      = (string)($user['phone'] ?? '');
 $user['address']    = (string)($user['address'] ?? '');
-$user['avatar_url'] = (string)($user['avatar_url'] ?? '');
+$user['avatar_url'] = profileNormalizeAvatarUrl((string)($user['avatar_url'] ?? ''));
+$user['can_upload_avatar'] = colExists($pdo, 'users', 'avatar_url');
+
+if ($user['avatar_url'] === '') {
+    $user['avatar_url'] = profileNormalizeAvatarUrl((string)($_SESSION['avatar_url'] ?? $_SESSION['avatar'] ?? ''));
+}
 
 /* ================= UPDATE SESSION (Navbar uses session) ================= */
 if ($user['name'] !== '')  $_SESSION['name'] = $user['name'];

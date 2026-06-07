@@ -1,3 +1,4 @@
 config/google.local.php
 config/telegram.php
 .env
+storage/

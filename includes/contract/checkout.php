@@ -30,6 +30,19 @@ function redirect(string $url): void
     exit;
 }
 
+function checkoutColExists(PDO $pdo, string $table, string $col): bool
+{
+    static $cache = [];
+    $key = $table . '.' . $col;
+    if (isset($cache[$key])) return $cache[$key];
+
+    $stmt = $pdo->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
+    $stmt->execute([$col]);
+    $cache[$key] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $cache[$key];
+}
+
 /* =========================
    AUTH
 ========================= */
@@ -41,7 +54,14 @@ if ($userId <= 0) {
 }
 
 // FK safe: confirm user exists
-$u = $pdo->prepare("SELECT user_id, name, email, phone, address FROM users WHERE user_id = :id LIMIT 1");
+$userCols = ['user_id', 'name', 'email'];
+if (checkoutColExists($pdo, 'users', 'phone')) {
+    $userCols[] = 'phone';
+}
+if (checkoutColExists($pdo, 'users', 'address')) {
+    $userCols[] = 'address';
+}
+$u = $pdo->prepare("SELECT " . implode(', ', $userCols) . " FROM users WHERE user_id = :id LIMIT 1");
 $u->execute([':id' => $userId]);
 $userRow = $u->fetch(PDO::FETCH_ASSOC);
 
@@ -193,18 +213,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
 
             // CREATE ORDER
+            $orderColumns = ['user_id', 'order_type', 'total', 'payment_status', 'order_status'];
+            $orderValues = [$userId, 'online', $total, $payment_status, $order_status];
+
+            if (checkoutColExists($pdo, 'orders', 'latitude')) {
+                $orderColumns[] = 'latitude';
+                $orderValues[] = $lat;
+            }
+            if (checkoutColExists($pdo, 'orders', 'longitude')) {
+                $orderColumns[] = 'longitude';
+                $orderValues[] = $lng;
+            }
+
+            $orderPlaceholders = implode(', ', array_fill(0, count($orderColumns), '?'));
             $orderStmt = $pdo->prepare("
-                INSERT INTO orders (user_id, order_type, total, payment_status, order_status, latitude, longitude)
-                VALUES (?, 'online', ?, ?, ?, ?, ?)
+                INSERT INTO orders (" . implode(', ', $orderColumns) . ")
+                VALUES ($orderPlaceholders)
             ");
-            $orderStmt->execute([
-                $userId,
-                $total,
-                $payment_status,
-                $order_status,
-                $lat,
-                $lng
-            ]);
+            $orderStmt->execute($orderValues);
 
             $dbOrderId = (int)$pdo->lastInsertId();
             if ($dbOrderId <= 0) {
@@ -212,19 +238,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // INSERT SHIPPING
+            $shippingColumns = ['order_id', 'address'];
+            $shippingValues = [$dbOrderId, $address];
+
+            if (checkoutColExists($pdo, 'shipping', 'city')) {
+                $shippingColumns[] = 'city';
+                $shippingValues[] = $city;
+            }
+            if (checkoutColExists($pdo, 'shipping', 'country')) {
+                $shippingColumns[] = 'country';
+                $shippingValues[] = $country;
+            }
+            if (checkoutColExists($pdo, 'shipping', 'latitude')) {
+                $shippingColumns[] = 'latitude';
+                $shippingValues[] = $lat;
+            }
+            if (checkoutColExists($pdo, 'shipping', 'longitude')) {
+                $shippingColumns[] = 'longitude';
+                $shippingValues[] = $lng;
+            }
+            if (checkoutColExists($pdo, 'shipping', 'status') || checkoutColExists($pdo, 'shipping', 'STATUS')) {
+                $shippingColumns[] = 'status';
+                $shippingValues[] = $ship_status;
+            }
+
+            $shippingPlaceholders = implode(', ', array_fill(0, count($shippingColumns), '?'));
             $shipStmt = $pdo->prepare("
-                INSERT INTO shipping (order_id, address, city, country, latitude, longitude, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO shipping (" . implode(', ', $shippingColumns) . ")
+                VALUES ($shippingPlaceholders)
             ");
-            $shipStmt->execute([
-                $dbOrderId,
-                $address,
-                $city,
-                $country,
-                $lat,
-                $lng,
-                $ship_status
-            ]);
+            $shipStmt->execute($shippingValues);
 
             // ORDER ITEMS + STOCK
             $itemStmt  = $pdo->prepare("
@@ -349,7 +392,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $paymentCode,
                         (float)$total,
                         $products,
-                        $cart
+                        $cart,
+                        $lat,
+                        $lng
                     );
                 }
             } catch (Throwable) { /* ignore */

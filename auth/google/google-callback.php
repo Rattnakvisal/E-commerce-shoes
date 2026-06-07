@@ -89,6 +89,7 @@ $gUser = $oauth->userinfo->get();
 $googleId = (string)($gUser->id ?? '');
 $email    = strtolower(trim((string)($gUser->email ?? '')));
 $name     = trim((string)($gUser->name ?? ''));
+$picture  = trim((string)($gUser->picture ?? ''));
 
 if ($googleId === '' || $email === '') {
     go_login('?error=google_userinfo');
@@ -106,6 +107,9 @@ $stmt = $conn->prepare(
 );
 $stmt->execute([$googleId]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($user) {
+    $user['picture'] = $picture;
+}
 
 /* ---------------------------------
    2) If not found: link by email OR create
@@ -136,19 +140,23 @@ if (!$user) {
             $stmt->execute([$name, $user['user_id']]);
             $user['name'] = $name;
         }
+
+        $user['picture'] = $picture;
     } else {
         // create new user (DEFAULT ROLE = customer)
+        $generatedPasswordHash = password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
         $stmt = $conn->prepare(
-            "INSERT INTO users (name, email, role, provider, google_id, created_at)
-             VALUES (?, ?, 'customer', 'google', ?, NOW())"
+            "INSERT INTO users (name, email, password, role, provider, google_id, email_verified, created_at)
+             VALUES (?, ?, ?, 'customer', 'google', ?, 1, NOW())"
         );
-        $stmt->execute([$name, $email, $googleId]);
+        $stmt->execute([$name, $email, $generatedPasswordHash, $googleId]);
 
         $user = [
             'user_id' => (int)$conn->lastInsertId(),
             'name'    => $name,
             'email'   => $email,
             'role'    => 'customer',
+            'picture' => $picture,
         ];
     }
 }

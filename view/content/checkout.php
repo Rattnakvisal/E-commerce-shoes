@@ -157,7 +157,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                             <div class="relative">
                                 <i class="fas fa-user absolute left-3 top-3.5 text-gray-400"></i>
-                                <input id="fullName" name="name" value="<?= e($_POST['name'] ?? '') ?>" required
+                                <input id="fullName" name="name" value="<?= e($form['name'] ?? '') ?>" required
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -166,7 +166,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                             <div class="relative">
                                 <i class="fas fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
-                                <input id="email" type="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" required
+                                <input id="email" type="email" name="email" value="<?= e($form['email'] ?? '') ?>" required
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -176,7 +176,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                         <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
                         <div class="relative">
                             <i class="fas fa-map-marker-alt absolute left-3 top-3.5 text-gray-400"></i>
-                            <input id="address" name="address" value="<?= e($_POST['address'] ?? '') ?>" required
+                            <input id="address" name="address" value="<?= e($form['address'] ?? '') ?>" required
                                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                         </div>
                         <p class="text-xs text-gray-500 mt-2">
@@ -189,7 +189,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
                             <div class="relative">
                                 <i class="fas fa-city absolute left-3 top-3.5 text-gray-400"></i>
-                                <input id="city" name="city" value="<?= e($_POST['city'] ?? '') ?>"
+                                <input id="city" name="city" value="<?= e($form['city'] ?? '') ?>"
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -198,7 +198,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
                             <div class="relative">
                                 <i class="fas fa-globe absolute left-3 top-3.5 text-gray-400"></i>
-                                <input id="country" name="country" value="<?= e($_POST['country'] ?? 'Cambodia') ?>"
+                                <input id="country" name="country" value="<?= e($form['country'] ?? 'Cambodia') ?>"
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>
@@ -207,7 +207,7 @@ require_once __DIR__ . '/../../includes/contract/checkout.php';
                             <label class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
                             <div class="relative">
                                 <i class="fas fa-phone absolute left-3 top-3.5 text-gray-400"></i>
-                                <input id="phone" name="phone" value="<?= e($_POST['phone'] ?? '') ?>" required
+                                <input id="phone" name="phone" value="<?= e($form['phone'] ?? '') ?>" required
                                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500">
                             </div>
                         </div>

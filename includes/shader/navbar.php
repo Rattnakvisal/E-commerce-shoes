@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../../config/conn.php';
 require_once __DIR__ . '/../contract/navbar.php';
+
+$parents = is_array($parents ?? null) ? $parents : [];
+$groupsByParent = is_array($groupsByParent ?? null) ? $groupsByParent : [];
+$itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script src="https://cdn.tailwindcss.com"></script>

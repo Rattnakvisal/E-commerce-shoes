@@ -94,19 +94,20 @@ if ($flash) {
                     <div class="flex items-center gap-4">
                         <?php
                         $avatar = (string)($user['avatar_url'] ?? '');
+                        $canUploadAvatar = (bool)($user['can_upload_avatar'] ?? false);
                         $nameForInitial = (string)($user['name'] ?? 'User');
                         $initial = strtoupper(substr($nameForInitial ?: 'U', 0, 1));
                         ?>
 
                         <?php if ($avatar): ?>
                             <img id="avatarPreview" src="<?= e($avatar) ?>"
-                                class="w-16 h-16 rounded-2xl object-cover border" alt="Avatar">
-                        <?php else: ?>
-                            <div id="avatarFallback"
-                                class="w-16 h-16 rounded-2xl bg-gray-100 border flex items-center justify-center text-2xl font-bold">
-                                <?= e($initial) ?>
-                            </div>
+                                class="w-16 h-16 rounded-2xl object-cover border" alt="Avatar"
+                                onerror="this.style.display='none'; document.getElementById('avatarFallback')?.classList.remove('hidden');">
                         <?php endif; ?>
+                        <div id="avatarFallback"
+                            class="w-16 h-16 rounded-2xl bg-gray-100 border flex items-center justify-center text-2xl font-bold <?= $avatar ? 'hidden' : '' ?>">
+                            <?= e($initial) ?>
+                        </div>
 
                         <div class="min-w-0">
                             <p class="text-lg font-bold truncate"><?= e($user['name'] ?? 'User') ?></p>
@@ -162,25 +163,31 @@ if ($flash) {
 
                 <!-- Avatar upload -->
                 <div class="border-t p-6">
-                    <form action="/E-commerce-shoes/view/actions/profile_update.php" method="post"
-                        enctype="multipart/form-data" class="space-y-3">
-                        <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
-                        <input type="hidden" name="action" value="avatar">
+                    <?php if ($canUploadAvatar): ?>
+                        <form action="/E-commerce-shoes/view/actions/profile_update.php" method="post"
+                            enctype="multipart/form-data" class="space-y-3">
+                            <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+                            <input type="hidden" name="action" value="avatar">
 
-                        <label class="block text-sm font-bold">Change Avatar</label>
+                            <label class="block text-sm font-bold">Change Avatar</label>
 
-                        <input id="avatarInput" type="file" name="avatar" accept="image/*"
-                            class="block w-full text-sm
+                            <input id="avatarInput" type="file" name="avatar" accept="image/*"
+                                class="block w-full text-sm
                            file:mr-4 file:py-2 file:px-4 file:rounded-full
                            file:border-0 file:bg-gray-100 file:text-gray-900
                            hover:file:bg-gray-200">
 
-                        <p class="text-xs text-gray-500">JPG / PNG / WEBP • Max 2MB</p>
+                            <p class="text-xs text-gray-500">JPG / PNG / WEBP • Max 2MB</p>
 
-                        <button class="w-full px-4 py-3 rounded-full bg-black text-white font-bold hover:bg-gray-900">
-                            Upload
-                        </button>
-                    </form>
+                            <button class="w-full px-4 py-3 rounded-full bg-black text-white font-bold hover:bg-gray-900">
+                                Upload
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <div class="rounded-2xl border bg-gray-50 px-4 py-4 text-sm text-gray-600">
+                            Profile image upload is not enabled in this database yet. Your current photo will use your Google or session avatar automatically.
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

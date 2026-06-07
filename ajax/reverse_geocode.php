@@ -20,7 +20,8 @@ if (!is_finite($lat) || !is_finite($lon) || $lat < -90 || $lat > 90 || $lon < -1
 // -----------------------------
 // Real-time protection: cache + rate limit
 // -----------------------------
-$cacheDir = __DIR__ . '/../../storage/geocode_cache';
+$projectRoot = dirname(__DIR__);
+$cacheDir = $projectRoot . '/storage/geocode_cache';
 if (!is_dir($cacheDir)) {
     @mkdir($cacheDir, 0775, true);
 }
@@ -73,7 +74,7 @@ $url = sprintf(
 );
 
 $ch = curl_init($url);
-curl_setopt_array($ch, [
+$curlOptions = [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT        => 12,
     CURLOPT_CONNECTTIMEOUT => 8,
@@ -83,7 +84,23 @@ curl_setopt_array($ch, [
         'User-Agent: E-commerce-shoes/1.0 (contact: admin@myshop.local)',
         'Accept: application/json'
     ],
+];
+
+$caCandidates = array_filter([
+    getenv('CURL_CA_BUNDLE') ?: null,
+    ini_get('curl.cainfo') ?: null,
+    'C:/xampp/apache/bin/curl-ca-bundle.crt',
+    'C:/xampp/php/extras/ssl/cacert.pem',
 ]);
+
+foreach ($caCandidates as $caFile) {
+    if (is_string($caFile) && is_file($caFile)) {
+        $curlOptions[CURLOPT_CAINFO] = $caFile;
+        break;
+    }
+}
+
+curl_setopt_array($ch, $curlOptions);
 
 $res  = curl_exec($ch);
 $err  = curl_error($ch);
