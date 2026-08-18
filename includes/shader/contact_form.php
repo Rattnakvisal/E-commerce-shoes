@@ -104,7 +104,7 @@ require_once __DIR__ . '/../contract/contact.php';
                         <?php endif; ?>
                     <?php endif; ?>
 
-                    <form action="/E-commerce-shoes/admin/controller/message/messages_api.php" method="post" class="space-y-4">
+                    <form action="/MyBrand_Ecommerce/admin/controller/message/messages_api.php" method="post" class="space-y-4">
                         <!-- Name -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Name</label>
@@ -155,7 +155,7 @@ require_once __DIR__ . '/../contract/contact.php';
                                 Get a Solution
                             </button>
 
-                            <a href="/E-commerce-shoes/view/content/products.php"
+                            <a href="/MyBrand_Ecommerce/view/content/products.php"
                                 class="ml-3 inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900">
                                 <i class="fas fa-arrow-left"></i> Back to shop
                             </a>

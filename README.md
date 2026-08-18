@@ -1,14 +1,14 @@
 ## Quickstart
 
 1. Clone the repo:
-   git clone https://github.com/yourname/E-commerce-shoes.git
+   git clone https://github.com/yourname/MyBrand_Ecommerce.git
 2. Import DB schema:
    - Use `database/table.sql` to create tables and sample data.
 3. Configure:
    - Copy `config/google.local.php` from `config/google.php` and set credentials if using OAuth.
    - Edit `config/conn.php` with your MySQL credentials.
 4. Serve:
-   - Place project in your local webroot (XAMPP: `c:\xampp\htdocs\E-commerce-shoes`) and visit `http://localhost/E-commerce-shoes/`.
+   - Place project in your local webroot (XAMPP: `c:\xampp\htdocs\MyBrand_Ecommerce`) and visit `http://localhost/MyBrand_Ecommerce/`.
 
 ## Requirements
 
@@ -39,10 +39,10 @@
 
 ## Running Locally (Windows / XAMPP)
 
-- Copy project to `c:\xampp\htdocs\E-commerce-shoes`.
+- Copy project to `c:\xampp\htdocs\MyBrand_Ecommerce`.
 - Start Apache & MySQL via XAMPP Control Panel.
-- Open browser: `http://localhost/E-commerce-shoes/`.
-- Admin panel: `http://localhost/E-commerce-shoes/admin/` (login route depends on project routes).
+- Open browser: `http://localhost/MyBrand_Ecommerce/`.
+- Admin panel: `http://localhost/MyBrand_Ecommerce/admin/` (login route depends on project routes).
 
 ## Default Admin Credentials (example)
 

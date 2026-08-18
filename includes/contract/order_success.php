@@ -17,7 +17,7 @@ function money($n): string
 $last = $_SESSION['last_order'] ?? null;
 
 if (!$last) {
-    header('Location: /E-commerce-shoes/view/content/products.php');
+    header('Location: /MyBrand_Ecommerce/view/content/products.php');
     exit;
 }
 

@@ -214,12 +214,12 @@ require_once __DIR__ . '/../contract/order_success.php';
 
                 <!-- Actions -->
                 <div class="flex flex-wrap gap-3">
-                    <a href="/E-commerce-shoes/view/content/products.php"
+                    <a href="/MyBrand_Ecommerce/view/content/products.php"
                         class="px-5 py-3 rounded-2xl bg-gray-900 text-white font-semibold hover:bg-black">
                         <i class="fa-solid fa-bag-shopping mr-2"></i>Continue shopping
                     </a>
 
-                    <a href="/E-commerce-shoes/view/content/myorder.php"
+                    <a href="/MyBrand_Ecommerce/view/content/myorder.php"
                         class="px-5 py-3 rounded-2xl border font-semibold hover:bg-gray-50">
                         <i class="fa-regular fa-rectangle-list mr-2"></i>View my orders
                     </a>

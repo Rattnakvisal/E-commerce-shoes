@@ -13,7 +13,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 	<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 
 		<!-- LOGO -->
-		<a href="/E-commerce-shoes/view/content/index.php" class="flex items-center gap-2">
+		<a href="/MyBrand_Ecommerce/view/content/index.php" class="flex items-center gap-2">
 			<div class="w-8 h-8 rounded-full bg-black text-white font-bold flex items-center justify-center">✓</div>
 			<span class="text-xl font-bold text-gray-900">MyBrand</span>
 		</a>
@@ -75,7 +75,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 								</span>
 
 								<a
-									href="/E-commerce-shoes/view/content/products.php"
+									href="/MyBrand_Ecommerce/view/content/products.php"
 									class="font-semibold text-gray-900 hover:text-red-600 transition">
 									View All →
 								</a>
@@ -279,7 +279,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 			<?php endif; ?>
 
 			<!-- Wishlist -->
-			<a href="/E-commerce-shoes/view/content/wishlist.php"
+			<a href="/MyBrand_Ecommerce/view/content/wishlist.php"
 				class="relative hidden md:block text-xl text-gray-700 hover:text-black">
 				<i class="far fa-heart"></i>
 				<span id="wishlistCount"
@@ -289,7 +289,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 			</a>
 
 			<!-- Cart -->
-			<a href="/E-commerce-shoes/view/content/cart.php"
+			<a href="/MyBrand_Ecommerce/view/content/cart.php"
 				class="relative text-xl text-gray-700 hover:text-black">
 				<i class="fas fa-shopping-bag"></i>
 				<span id="cartCount"
@@ -347,21 +347,21 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 						</div>
 
 						<!-- Menu Items -->
-						<a href="/E-commerce-shoes/view/content/profile.php"
+						<a href="/MyBrand_Ecommerce/view/content/profile.php"
 							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-gray-900"
 							role="menuitem">
 							<i class="fas fa-user text-gray-400 w-4"></i>
 							<span class="text-sm font-semibold">My Profile</span>
 						</a>
 
-						<a href="/E-commerce-shoes/view/content/myorder.php"
+						<a href="/MyBrand_Ecommerce/view/content/myorder.php"
 							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-gray-900"
 							role="menuitem">
 							<i class="fas fa-receipt text-gray-400 w-4"></i>
 							<span class="text-sm font-semibold">My Orders</span>
 						</a>
 
-						<a href="/E-commerce-shoes/view/content/wishlist.php"
+						<a href="/MyBrand_Ecommerce/view/content/wishlist.php"
 							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-gray-900"
 							role="menuitem">
 							<i class="fas fa-heart text-gray-400 w-4"></i>
@@ -370,7 +370,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 
 						<div class="border-t my-2"></div>
 
-						<a href="/E-commerce-shoes/auth/Log/logout.php"
+						<a href="/MyBrand_Ecommerce/auth/Log/logout.php"
 							class="dropdown-row flex items-center gap-3 mx-2 px-3 py-3 text-red-600 hover:bg-red-50"
 							role="menuitem">
 							<i class="fas fa-right-from-bracket text-red-400 w-4"></i>
@@ -380,7 +380,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 
 				<?php else: ?>
 
-					<a href="/E-commerce-shoes/auth/Log/login.php"
+					<a href="/MyBrand_Ecommerce/auth/Log/login.php"
 						class="flex items-center gap-2 text-gray-700 hover:text-black">
 						<div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
 							<i class="far fa-user text-gray-600"></i>
@@ -600,7 +600,7 @@ $itemsByGroup = is_array($itemsByGroup ?? null) ? $itemsByGroup : [];
 	<!-- OPTIONAL FOOTER -->
 	<div class="border-t border-gray-200/70 bg-white/70 px-4 py-4 text-sm flex items-center justify-between">
 		<span class="text-gray-600">Free Shipping • 60-Day Returns</span>
-		<a href="/E-commerce-shoes/view/content/products.php"
+		<a href="/MyBrand_Ecommerce/view/content/products.php"
 			class="font-semibold text-gray-900 hover:text-red-600 transition">
 			View All →
 		</a>

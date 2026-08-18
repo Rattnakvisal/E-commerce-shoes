@@ -16,7 +16,7 @@ $userId = (int)($_SESSION['user_id'] ?? 0);
 $role   = (string)($_SESSION['role'] ?? '');
 
 if ($userId <= 0 || !in_array($role, ['admin', 'staff'], true)) {
-    header('Location: /E-commerce-shoes/admin/Log/login.php');
+    header('Location: /MyBrand_Ecommerce/admin/Log/login.php');
     exit;
 }
 

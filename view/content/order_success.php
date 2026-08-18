@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Prevent headers-sent when there's no last order — redirect early
 if (empty($_SESSION['last_order'])) {
-    header('Location: /E-commerce-shoes/view/content/products.php');
+    header('Location: /MyBrand_Ecommerce/view/content/products.php');
     exit;
 }
 ?>

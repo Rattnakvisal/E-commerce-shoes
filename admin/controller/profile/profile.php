@@ -208,7 +208,7 @@ $initials = $initials ?: 'AD';
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <a href="/E-commerce-shoes/admin/controller/orders/order.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/orders/order.php"
                             class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 transition">
                             <i class="fa-solid fa-bag-shopping"></i> Orders
                         </a>
@@ -297,7 +297,7 @@ $initials = $initials ?: 'AD';
                                 class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 transition text-center">
                                 Dashboard
                             </a>
-                            <a href="/E-commerce-shoes/admin/controller/users/user.php"
+                            <a href="/MyBrand_Ecommerce/admin/controller/users/user.php"
                                 class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 transition text-center">
                                 Users
                             </a>

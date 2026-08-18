@@ -59,25 +59,25 @@ function navClass(bool $active): string
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto hide-scrollbar">
         <!-- Dashboard -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/controller/dashboard/dashboard.php"
+            <a href="/MyBrand_Ecommerce/admin/controller/dashboard/dashboard.php"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/dashboard/dashboard.php', $uri)) ?>">
                 <i class="fas fa-home w-5 text-center text-gray-500"></i> Dashboard
             </a>
         <?php else: ?>
-            <a href="/E-commerce-shoes/pos/staff_dashboard.php"
+            <a href="/MyBrand_Ecommerce/pos/staff_dashboard.php"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/pos/staff_dashboard.php', $uri)) ?>">
                 <i class="fas fa-home w-5 text-center text-gray-500"></i> Staff Dashboard
             </a>
         <?php endif; ?>
 
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/controller/users/users.php"
+            <a href="/MyBrand_Ecommerce/admin/controller/users/users.php"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/users/users.php', $uri)) ?>">
                 <i class="fas fa-users w-5 text-center text-gray-500"></i> Users
             </a>
         <?php endif; ?>
 
-        <a href="/E-commerce-shoes/admin/controller/navbar/menu.php"
+        <a href="/MyBrand_Ecommerce/admin/controller/navbar/menu.php"
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/navbar/menu.php', $uri)) ?>">
             <i class="fas fa-bars w-5 text-center text-gray-500"></i> Navbar
         </a>
@@ -87,7 +87,7 @@ function navClass(bool $active): string
             <p class="px-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">E-commerce</p>
 
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/controller/products/products.php"
+                <a href="/MyBrand_Ecommerce/admin/controller/products/products.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/products/products.php', $uri)) ?>">
                     <i class="fas fa-shopping-bag w-5 text-center text-gray-500"></i> Products
                 </a>
@@ -111,22 +111,22 @@ function navClass(bool $active): string
                     </button>
 
                     <div class="js-accordion-panel mt-1 ml-8 space-y-1 <?= $itemOpen ? '' : 'hidden' ?>">
-                        <a href="/E-commerce-shoes/admin/controller/featured/featured.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/featured/featured.php"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm <?= navClass(isActive('/admin/controller/featured/featured.php', $uri)) ?>">
                             <i class="fa-solid fa-star w-5 text-center text-gray-500"></i> Featured
                         </a>
-                        <a href="/E-commerce-shoes/admin/controller/category/category.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/category/category.php"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm <?= navClass(isActive('/admin/controller/category/category.php', $uri)) ?>">
                             <i class="fa-solid fa-layer-group w-5 text-center text-gray-500"></i> Categories
                         </a>
-                        <a href="/E-commerce-shoes/admin/controller/slides/slides.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/slides/slides.php"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm <?= navClass(isActive('/admin/controller/slides/slides.php', $uri)) ?>">
                             <i class="fa-solid fa-sliders w-5 text-center text-gray-500"></i> Slides
                         </a>
                     </div>
                 </div>
 
-                <a href="/E-commerce-shoes/admin/controller/orders/order.php"
+                <a href="/MyBrand_Ecommerce/admin/controller/orders/order.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/orders/order.php', $uri)) ?>">
                     <i class="fas fa-shopping-cart w-5 text-center text-gray-500"></i> Orders
                 </a>
@@ -137,11 +137,11 @@ function navClass(bool $active): string
             <div class="pt-4">
                 <p class="px-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/E-commerce-shoes/admin/controller/analytics/analytics.php"
+                    <a href="/MyBrand_Ecommerce/admin/controller/analytics/analytics.php"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/analytics/analytics.php', $uri)) ?>">
                         <i class="fas fa-chart-bar w-5 text-center text-gray-500"></i> Analytics
                     </a>
-                    <a href="/E-commerce-shoes/admin/controller/report/report.php"
+                    <a href="/MyBrand_Ecommerce/admin/controller/report/report.php"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/report/report.php', $uri)) ?>">
                         <i class="fas fa-chart-pie w-5 text-center text-gray-500"></i> Reports
                     </a>
@@ -152,11 +152,11 @@ function navClass(bool $active): string
         <div class="pt-4">
             <p class="px-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/controller/setting/setting.php"
+                <a href="/MyBrand_Ecommerce/admin/controller/setting/setting.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/setting/setting.php', $uri)) ?>">
                     <i class="fas fa-cog w-5 text-center text-gray-500"></i> Settings
                 </a>
-                <a href="/E-commerce-shoes/admin/logs.php"
+                <a href="/MyBrand_Ecommerce/admin/logs.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/logs.php', $uri)) ?>">
                     <i class="fas fa-clipboard-list w-5 text-center text-gray-500"></i> Activity Logs
                 </a>
@@ -285,7 +285,7 @@ function navClass(bool $active): string
                             <div class="border-t px-4 py-3 bg-gray-50">
                                 <a
                                     id="viewAllNotifications"
-                                    href="/E-commerce-shoes/admin/notifications.php"
+                                    href="/MyBrand_Ecommerce/admin/notifications.php"
                                     class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all notifications
                                 </a>
@@ -369,7 +369,7 @@ function navClass(bool $active): string
                             </div>
 
                             <div class="px-4 py-3 border-t border-gray-100 bg-gray-50">
-                                <a href="/E-commerce-shoes/admin/pages/messages.php"
+                                <a href="/MyBrand_Ecommerce/admin/pages/messages.php"
                                     class="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                     View all messages
                                 </a>
@@ -396,15 +396,15 @@ function navClass(bool $active): string
                                 <p class="text-xs text-gray-500 mt-1"><?= e($admin_role) ?></p>
                             </div>
                             <div class="p-2">
-                                <a href="/E-commerce-shoes/admin/profile.php" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-xl">
+                                <a href="/MyBrand_Ecommerce/admin/profile.php" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-xl">
                                     <i class="fas fa-user w-5 text-center text-gray-500"></i> My Profile
                                 </a>
-                                <a href="/E-commerce-shoes/admin/activity.php" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-xl">
+                                <a href="/MyBrand_Ecommerce/admin/activity.php" class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-xl">
                                     <i class="fas fa-chart-line w-5 text-center text-gray-500"></i> Activity
                                 </a>
                             </div>
                             <div class="p-2 border-t">
-                                <a href="/E-commerce-shoes/auth/Log/logout.php"
+                                <a href="/MyBrand_Ecommerce/auth/Log/logout.php"
                                     onclick="return confirm('Are you sure you want to logout?');"
                                     class="flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl">
                                     <i class="fas fa-sign-out-alt w-5 text-center text-red-500"></i> Logout
@@ -449,25 +449,25 @@ function navClass(bool $active): string
     <div class="px-3 py-4 overflow-y-auto hide-scrollbar">
         <!-- Dashboard -->
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/controller/dashboard/dashboard.php"
+            <a href="/MyBrand_Ecommerce/admin/controller/dashboard/dashboard.php"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/dashboard/dashboard.php', $uri)) ?>">
                 <i class="fas fa-home w-5 text-center text-gray-500"></i> Dashboard
             </a>
         <?php else: ?>
-            <a href="/E-commerce-shoes/pos/staff_dashboard.php"
+            <a href="/MyBrand_Ecommerce/pos/staff_dashboard.php"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/pos/staff_dashboard.php', $uri)) ?>">
                 <i class="fas fa-home w-5 text-center text-gray-500"></i> Staff Dashboard
             </a>
         <?php endif; ?>
 
         <?php if ($currentRole === 'admin'): ?>
-            <a href="/E-commerce-shoes/admin/controller/users/users.php"
+            <a href="/MyBrand_Ecommerce/admin/controller/users/users.php"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/users/users.php', $uri)) ?>">
                 <i class="fas fa-users w-5 text-center text-gray-500"></i> Users
             </a>
         <?php endif; ?>
 
-        <a href="/E-commerce-shoes/admin/controller/navbar/menu.php"
+        <a href="/MyBrand_Ecommerce/admin/controller/navbar/menu.php"
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/navbar/menu.php', $uri)) ?>">
             <i class="fas fa-bars w-5 text-center text-gray-500"></i> Navbar
         </a>
@@ -477,7 +477,7 @@ function navClass(bool $active): string
             <p class="px-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">E-commerce</p>
 
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/controller/products/products.php"
+                <a href="/MyBrand_Ecommerce/admin/controller/products/products.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/products/products.php', $uri)) ?>">
                     <i class="fas fa-shopping-bag w-5 text-center text-gray-500"></i> Products
                 </a>
@@ -501,22 +501,22 @@ function navClass(bool $active): string
                     </button>
 
                     <div class="js-accordion-panel mt-1 ml-8 space-y-1 <?= $itemOpen ? '' : 'hidden' ?>">
-                        <a href="/E-commerce-shoes/admin/controller/featured/featured.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/featured/featured.php"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm <?= navClass(isActive('/admin/controller/featured/featured.php', $uri)) ?>">
                             <i class="fa-solid fa-star w-5 text-center text-gray-500"></i> Featured
                         </a>
-                        <a href="/E-commerce-shoes/admin/controller/category/category.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/category/category.php"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm <?= navClass(isActive('/admin/controller/category/category.php', $uri)) ?>">
                             <i class="fa-solid fa-layer-group w-5 text-center text-gray-500"></i> Categories
                         </a>
-                        <a href="/E-commerce-shoes/admin/controller/slides/slides.php"
+                        <a href="/MyBrand_Ecommerce/admin/controller/slides/slides.php"
                             class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm <?= navClass(isActive('/admin/controller/slides/slides.php', $uri)) ?>">
                             <i class="fa-solid fa-sliders w-5 text-center text-gray-500"></i> Slides
                         </a>
                     </div>
                 </div>
 
-                <a href="/E-commerce-shoes/admin/controller/orders/order.php"
+                <a href="/MyBrand_Ecommerce/admin/controller/orders/order.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/orders/order.php', $uri)) ?>">
                     <i class="fas fa-shopping-cart w-5 text-center text-gray-500"></i> Orders
                 </a>
@@ -527,11 +527,11 @@ function navClass(bool $active): string
             <div class="pt-4">
                 <p class="px-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Analytics</p>
                 <div class="mt-2 space-y-1">
-                    <a href="/E-commerce-shoes/admin/controller/analytics/analytics.php"
+                    <a href="/MyBrand_Ecommerce/admin/controller/analytics/analytics.php"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/analytics/analytics.php', $uri)) ?>">
                         <i class="fas fa-chart-bar w-5 text-center text-gray-500"></i> Analytics
                     </a>
-                    <a href="/E-commerce-shoes/admin/controller/report/report.php"
+                    <a href="/MyBrand_Ecommerce/admin/controller/report/report.php"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/report/report.php', $uri)) ?>">
                         <i class="fas fa-chart-pie w-5 text-center text-gray-500"></i> Reports
                     </a>
@@ -542,11 +542,11 @@ function navClass(bool $active): string
         <div class="pt-4">
             <p class="px-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Settings</p>
             <div class="mt-2 space-y-1">
-                <a href="/E-commerce-shoes/admin/controller/setting/setting.php"
+                <a href="/MyBrand_Ecommerce/admin/controller/setting/setting.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/controller/setting/setting.php', $uri)) ?>">
                     <i class="fas fa-cog w-5 text-center text-gray-500"></i> Settings
                 </a>
-                <a href="/E-commerce-shoes/admin/logs.php"
+                <a href="/MyBrand_Ecommerce/admin/logs.php"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <?= navClass(isActive('/admin/logs.php', $uri)) ?>">
                     <i class="fas fa-clipboard-list w-5 text-center text-gray-500"></i> Activity Logs
                 </a>
@@ -555,10 +555,10 @@ function navClass(bool $active): string
     </div>
 </aside>
 <!-- Keep your existing scripts -->
-<script src="/E-commerce-shoes/assets/Js/nav.js"></script>
+<script src="/MyBrand_Ecommerce/assets/Js/nav.js"></script>
 <?php if (strpos($_SERVER['REQUEST_URI'], '/admin/controller/slides/slides.php') !== false): ?>
-    <script src="/E-commerce-shoes/admin/controller/slides/media_choice.js"></script>
-    <script src="/E-commerce-shoes/admin/controller/slides/media_preview.js"></script>
+    <script src="/MyBrand_Ecommerce/admin/controller/slides/media_choice.js"></script>
+    <script src="/MyBrand_Ecommerce/admin/controller/slides/media_preview.js"></script>
 <?php endif; ?>
-<script src="/E-commerce-shoes/assets/Js/notifications.js"></script>
-<script src="/E-commerce-shoes/assets/Js/message.js"></script>
+<script src="/MyBrand_Ecommerce/assets/Js/notifications.js"></script>
+<script src="/MyBrand_Ecommerce/assets/Js/message.js"></script>

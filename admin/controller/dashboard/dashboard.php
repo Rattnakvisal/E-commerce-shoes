@@ -74,7 +74,7 @@ require_once __DIR__ . '/process_dashboard.php';
 
                         <!-- Right: Actions -->
                         <div class="flex flex-wrap items-center gap-3">
-                            <a href="/E-commerce-shoes/admin/controller/orders/order.php"
+                            <a href="/MyBrand_Ecommerce/admin/controller/orders/order.php"
                                 class="inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold hover:bg-gray-50 transition">
                                 <i class="fa-solid fa-bag-shopping"></i>
                                 View Orders

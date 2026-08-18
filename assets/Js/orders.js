@@ -14,9 +14,9 @@
      CONFIG (EDIT PATHS)
   ================================ */
   // Controller endpoints (corrected paths)
-  const ORDERS_API = "/E-commerce-shoes/admin/controller/orders/get_order.php";
+  const ORDERS_API = "/MyBrand_Ecommerce/admin/controller/orders/get_order.php";
   const STATUS_API =
-    "/E-commerce-shoes/admin/controller/orders/order_update_status.php";
+    "/MyBrand_Ecommerce/admin/controller/orders/order_update_status.php";
 
   const RELOAD_DELAY = 700;
 

@@ -33,7 +33,7 @@ $cfg = file_exists(__DIR__ . '/../../config/google.local.php')
 
 function go_login(string $q = ''): void
 {
-    header('Location: /E-commerce-shoes/auth/login.php' . $q);
+    header('Location: /MyBrand_Ecommerce/auth/Log/login.php' . $q);
     exit;
 }
 

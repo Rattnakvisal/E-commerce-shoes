@@ -1,6 +1,6 @@
 /* ==========================
    Real-time Location (GPS -> Address autofill)
-   Proxy: /E-commerce-shoes/ajax/reverse_geocode.php?lat=..&lon=..
+   Proxy: /MyBrand_Ecommerce/ajax/reverse_geocode.php?lat=..&lon=..
    - One-time mode + Real-time mode (watchPosition)
    - Throttle reverse geocode to prevent spamming
 ========================== */
@@ -89,7 +89,7 @@ function watchGPS(
 
 // ---------- Reverse geocode ----------
 async function reverseGeocode(lat, lng) {
-  const url = `/E-commerce-shoes/ajax/reverse_geocode.php?lat=${encodeURIComponent(
+  const url = `/MyBrand_Ecommerce/ajax/reverse_geocode.php?lat=${encodeURIComponent(
     lat,
   )}&lon=${encodeURIComponent(lng)}`;
 

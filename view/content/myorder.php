@@ -490,7 +490,7 @@ foreach ($ordersArr as $o) {
 
     <?php require_once __DIR__ . '/../../includes/shader/footer.php'; ?>
 
-    <script src="/E-commerce-shoes/view/assets/Js/myorder.js"></script>
+    <script src="/MyBrand_Ecommerce/view/assets/Js/myorder.js"></script>
 
 </body>
 

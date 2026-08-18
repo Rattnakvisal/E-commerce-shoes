@@ -2,7 +2,14 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/telegram.php';
+$telegramConfig = require __DIR__ . '/../../config/telegram.php';
+
+if (!defined('TELEGRAM_BOT_TOKEN')) {
+    define('TELEGRAM_BOT_TOKEN', (string)($telegramConfig['bot_token'] ?? ''));
+}
+if (!defined('TELEGRAM_CHAT_ID')) {
+    define('TELEGRAM_CHAT_ID', (string)($telegramConfig['chat_id'] ?? ''));
+}
 
 // Optionally load the richer notification service if present
 @require_once __DIR__ . '/../../includes/telegram/telegram.php';
@@ -29,6 +36,7 @@ function telegram_send_message(string $text): bool
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
         CURLOPT_TIMEOUT => 10,
         CURLOPT_POSTFIELDS => http_build_query($payload),
     ]);
@@ -69,7 +77,7 @@ function telegram_notify_payment_success(
     // If the full service class is available, delegate to it
     if (class_exists('TelegramNotificationService')) {
         try {
-            TelegramNotificationService::notifyPaymentSuccess(
+            return TelegramNotificationService::notifyPaymentSuccess(
                 $orderId,
                 $name,
                 $email,
@@ -86,7 +94,6 @@ function telegram_notify_payment_success(
                 $adminUrl
             );
 
-            return true;
         } catch (Throwable) {
             // fallback to simple message below
         }

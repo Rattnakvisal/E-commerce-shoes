@@ -16,20 +16,20 @@ function bankLogo(string $name): ?string
     $n = strtolower(trim($name));
 
     $map = [
-        'aba'        => '/E-commerce-shoes/view/assets/Payments/aba.png',
-        'aba bank'   => '/E-commerce-shoes/view/assets/Payments/aba.png',
+        'aba'        => '/MyBrand_Ecommerce/view/assets/Payments/aba.png',
+        'aba bank'   => '/MyBrand_Ecommerce/view/assets/Payments/aba.png',
 
-        'acleda'     => '/E-commerce-shoes/view/assets/Payments/acleda.png',
-        'acleda bank' => '/E-commerce-shoes/view/assets/Payments/acleda.png',
+        'acleda'     => '/MyBrand_Ecommerce/view/assets/Payments/acleda.png',
+        'acleda bank' => '/MyBrand_Ecommerce/view/assets/Payments/acleda.png',
 
-        'wing'       => '/E-commerce-shoes/view/assets/Payments/wing.png',
-        'wing bank'  => '/E-commerce-shoes/view/assets/Payments/wing.png',
+        'wing'       => '/MyBrand_Ecommerce/view/assets/Payments/wing.png',
+        'wing bank'  => '/MyBrand_Ecommerce/view/assets/Payments/wing.png',
 
-        'bakong'  => '/E-commerce-shoes/view/assets/Payments/icon.png',
-        'bakong' => '/E-commerce-shoes/view/assets/Payments/icon.png',
+        'bakong'  => '/MyBrand_Ecommerce/view/assets/Payments/icon.png',
+        'bakong' => '/MyBrand_Ecommerce/view/assets/Payments/icon.png',
 
-        'chip mong bank'   => '/E-commerce-shoes/view/assets/Payments/chipmong.png',
-        'chip mong (nbc)'  => '/E-commerce-shoes/view/assets/Payments/chipmong.png',
+        'chip mong bank'   => '/MyBrand_Ecommerce/view/assets/Payments/chipmong.png',
+        'chip mong (nbc)'  => '/MyBrand_Ecommerce/view/assets/Payments/chipmong.png',
     ];
 
     // direct match

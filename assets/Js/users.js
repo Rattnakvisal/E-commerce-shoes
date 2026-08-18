@@ -13,7 +13,7 @@
   /* ===============================
      CONFIG
   ================================ */
-  const BASE_URL = "/E-commerce-shoes";
+  const BASE_URL = "/MyBrand_Ecommerce";
   const USERS_API_URL = `${BASE_URL}/admin/controller/users/users_api.php`;
   const RELOAD_DELAY = 700;
 

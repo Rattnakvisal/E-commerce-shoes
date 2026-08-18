@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 /* ================= AUTH ================= */
 $userId = (int)($_SESSION['user_id'] ?? 0);
 if ($userId <= 0) {
-    header('Location: /E-commerce-shoes/view/auth/Log/login.php');
+    header('Location: /MyBrand_Ecommerce/auth/Log/login.php');
     exit;
 }
 
@@ -24,7 +24,7 @@ if (!$pdo instanceof PDO) {
 $csrf = (string)($_POST['csrf'] ?? '');
 if (empty($_SESSION['csrf']) || !hash_equals((string)$_SESSION['csrf'], $csrf)) {
     $_SESSION['message'] = 'Invalid request (CSRF).';
-    header('Location: /E-commerce-shoes/view/content/profile.php');
+    header('Location: /MyBrand_Ecommerce/view/content/profile.php');
     exit;
 }
 
@@ -44,7 +44,7 @@ function colExists(PDO $pdo, string $table, string $col): bool
 function redirectWith(string $msg): void
 {
     $_SESSION['message'] = $msg;
-    header('Location: /E-commerce-shoes/view/content/profile.php');
+    header('Location: /MyBrand_Ecommerce/view/content/profile.php');
     exit;
 }
 
@@ -192,7 +192,7 @@ try {
             throw new RuntimeException('Upload failed.');
         }
 
-        $storeUrl = '/E-commerce-shoes/assets/Images/avatars/' . $file;
+        $storeUrl = '/MyBrand_Ecommerce/assets/Images/avatars/' . $file;
 
         $stmt = $pdo->prepare("UPDATE users SET avatar_url = :u WHERE user_id = :id");
         $stmt->execute([':u' => $storeUrl, ':id' => $userId]);

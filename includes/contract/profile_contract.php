@@ -9,8 +9,8 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 /* ================= AUTH ================= */
 $userId = (int)($_SESSION['user_id'] ?? 0);
 if ($userId <= 0) {
-    $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/E-commerce-shoes/view/content/profile.php';
-    header('Location: /E-commerce-shoes/view/auth/Log/login.php');
+    $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/MyBrand_Ecommerce/view/content/profile.php';
+    header('Location: /MyBrand_Ecommerce/auth/Log/login.php');
     exit;
 }
 

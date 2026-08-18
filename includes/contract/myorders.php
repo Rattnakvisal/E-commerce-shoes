@@ -12,11 +12,11 @@ if (session_status() === PHP_SESSION_NONE) {
 $userId = (int)($_SESSION['user_id'] ?? 0);
 
 if ($userId <= 0) {
-    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/E-commerce-shoes/view/content/myorder.php');
-    if (strpos($uri, '/') !== 0) $uri = '/E-commerce-shoes/view/content/myorder.php';
+    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/MyBrand_Ecommerce/view/content/myorder.php');
+    if (strpos($uri, '/') !== 0) $uri = '/MyBrand_Ecommerce/view/content/myorder.php';
     $_SESSION['after_login'] = $uri;
 
-    header('Location: /E-commerce-shoes/view/auth/Log/login.php');
+    header('Location: /MyBrand_Ecommerce/auth/Log/login.php');
     exit;
 }
 

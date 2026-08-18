@@ -4,7 +4,7 @@
   /* ============================
      CONFIG
   ============================ */
-  const ENDPOINT = "/E-commerce-shoes/view/order_items.php"; // change if needed
+  const ENDPOINT = "/MyBrand_Ecommerce/view/order_items.php"; // change if needed
   const AUTO_LOAD = true; // set false if you want load only on <details> open
 
   // cache: orderId -> items[]
@@ -120,7 +120,7 @@
             const name = esc(it.name || it.product_name || "Item");
             const productId = it.product_id ?? it.id ?? "";
             const productUrl = productId
-              ? `/E-commerce-shoes/view/content/product.php?product_id=${encodeURIComponent(productId)}`
+              ? `/MyBrand_Ecommerce/view/content/product.php?product_id=${encodeURIComponent(productId)}`
               : "#";
 
             const qty = Number(it.qty ?? it.quantity ?? 0);
@@ -230,7 +230,7 @@
     );
     if (btn) btn.disabled = true;
 
-    fetch("/E-commerce-shoes/view/cancel_order.php", {
+    fetch("/MyBrand_Ecommerce/view/cancel_order.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",

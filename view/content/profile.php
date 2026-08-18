@@ -62,7 +62,7 @@ if ($flash) {
                         <h1 class="text-3xl lg:text-4xl font-bold tracking-tight mt-2">My Profile</h1>
                         <p class="text-gray-300 mt-2">Manage your account, address and password</p>
                     </div>
-                    <a href="/E-commerce-shoes/view/content/index.php"
+                    <a href="/MyBrand_Ecommerce/view/content/index.php"
                         class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white text-black text-sm font-bold hover:bg-gray-100">
                         <i class="fas fa-house mr-2"></i> Home
                     </a>
@@ -164,7 +164,7 @@ if ($flash) {
                 <!-- Avatar upload -->
                 <div class="border-t p-6">
                     <?php if ($canUploadAvatar): ?>
-                        <form action="/E-commerce-shoes/view/actions/profile_update.php" method="post"
+                        <form action="/MyBrand_Ecommerce/view/actions/profile_update.php" method="post"
                             enctype="multipart/form-data" class="space-y-3">
                             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
                             <input type="hidden" name="action" value="avatar">
@@ -200,7 +200,7 @@ if ($flash) {
                         <h2 class="text-xl font-bold">Profile Information</h2>
                         <p class="text-sm text-gray-600 mt-1">Update your personal details.</p>
 
-                        <form action="/E-commerce-shoes/view/actions/profile_update.php" method="post"
+                        <form action="/MyBrand_Ecommerce/view/actions/profile_update.php" method="post"
                             class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
                             autocomplete="on">
                             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
@@ -251,7 +251,7 @@ if ($flash) {
                                     Save Changes
                                 </button>
 
-                                <a href="/E-commerce-shoes/view/content/profile.php"
+                                <a href="/MyBrand_Ecommerce/view/content/profile.php"
                                     class="px-5 py-3 rounded-full bg-gray-100 text-gray-900 font-bold hover:bg-gray-200 text-center">
                                     Reset
                                 </a>
@@ -266,7 +266,7 @@ if ($flash) {
                         <h2 class="text-xl font-bold">Change Password</h2>
                         <p class="text-sm text-gray-600 mt-1">Keep your account secure.</p>
 
-                        <form action="/E-commerce-shoes/view/actions/profile_update.php" method="post"
+                        <form action="/MyBrand_Ecommerce/view/actions/profile_update.php" method="post"
                             class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
                             autocomplete="off">
                             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">

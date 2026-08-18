@@ -38,7 +38,7 @@
   const mobileResultsWrap = one("#mobileSearchResultsContent");
   const mobileOverlay = one("#mobileSearchOverlay"); // optional
 
-  const API = "/E-commerce-shoes/includes/contract/search_api.php?q=";
+  const API = "/MyBrand_Ecommerce/includes/contract/search_api.php?q=";
 
   const safeArray = (v) => (Array.isArray(v) ? v : []);
   const openEl = (el) => el && el.classList.remove("hidden");
@@ -115,7 +115,7 @@
   }
 
   function viewAllHTML(q) {
-    const url = `/E-commerce-shoes/view/content/products.php?search=${encodeURIComponent(q)}`;
+    const url = `/MyBrand_Ecommerce/view/content/products.php?search=${encodeURIComponent(q)}`;
     return `
       <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
         <a href="${url}" class="inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:underline">
@@ -130,7 +130,7 @@
     const id = encodeURIComponent(c.category_id ?? "");
     const name = c.category_name ?? "Category";
     return `
-      <a href="/E-commerce-shoes/view/content/products.php?category_id=${id}"
+      <a href="/MyBrand_Ecommerce/view/content/products.php?category_id=${id}"
          class="block px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600">
@@ -161,7 +161,7 @@
          </div>`;
 
     return `
-      <a href="/E-commerce-shoes/view/content/products.php?product_id=${id}"
+      <a href="/MyBrand_Ecommerce/view/content/products.php?product_id=${id}"
          class="block px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition">
         <div class="flex items-center gap-3">
           ${img}

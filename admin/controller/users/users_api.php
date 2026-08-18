@@ -118,7 +118,7 @@ function storeAvatar(array $file, int $userId): ?string
 
     if (!move_uploaded_file($file['tmp_name'], $dst)) return null;
 
-    return '/E-commerce-shoes/assets/Images/avatars/' . $filename;
+    return '/MyBrand_Ecommerce/assets/Images/avatars/' . $filename;
 }
 
 function deleteAvatarByUrl(string $url): void

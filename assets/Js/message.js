@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const API = "/E-commerce-shoes/admin/controller/message/messages_api.php";
+  const API = "/MyBrand_Ecommerce/admin/controller/message/messages_api.php";
 
   // DOM (match your HTML)
   const listEl = document.getElementById("messagesList");

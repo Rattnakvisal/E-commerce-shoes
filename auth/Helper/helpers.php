@@ -101,17 +101,17 @@ function redirect_by_role(string $role): void
 
     switch ($role) {
         case 'admin':
-            header('Location: ' . $base . '/E-commerce-shoes/admin/controller/dashboard/dashboard.php');
+            header('Location: ' . $base . '/MyBrand_Ecommerce/admin/controller/dashboard/dashboard.php');
             break;
 
         case 'staff':
-            header('Location: ' . $base . '/E-commerce-shoes/pos/staff_dashboard.php');
+            header('Location: ' . $base . '/MyBrand_Ecommerce/pos/staff_dashboard.php');
             break;
 
         case 'customer':
         case 'user':
         default:
-            header('Location: ' . $base . '/E-commerce-shoes/view/content/index.php');
+            header('Location: ' . $base . '/MyBrand_Ecommerce/view/content/index.php');
             break;
     }
     exit;
@@ -125,7 +125,7 @@ function require_role(string ...$allowedRoles): void
     $allowedRoles = array_map(fn($r) => strtolower(trim($r)), $allowedRoles);
 
     if ($role === '' || !in_array($role, $allowedRoles, true)) {
-        header('Location: /E-commerce-shoes/auth/Log/login.php');
+        header('Location: /MyBrand_Ecommerce/auth/Log/login.php');
         exit;
     }
 }

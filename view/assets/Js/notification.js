@@ -3,7 +3,7 @@
     Notification Dropdown (Clean + Safe)
   ================================= */
 
-  const apiBase = "/E-commerce-shoes/admin/controller/notifications_api.php";
+  const apiBase = "/MyBrand_Ecommerce/admin/controller/notifications_api.php";
 
   const countEl = document.getElementById("notificationCount");
   const listEl = document.getElementById("notificationList");

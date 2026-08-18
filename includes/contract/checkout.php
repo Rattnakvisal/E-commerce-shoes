@@ -49,8 +49,8 @@ function checkoutColExists(PDO $pdo, string $table, string $col): bool
 $userId = (int)($_SESSION['user_id'] ?? 0);
 
 if ($userId <= 0) {
-    $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/E-commerce-shoes/view/checkout.php';
-    redirect('/E-commerce-shoes/auth/Log/login.php');
+    $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/MyBrand_Ecommerce/view/checkout.php';
+    redirect('/MyBrand_Ecommerce/auth/Log/login.php');
 }
 
 // FK safe: confirm user exists
@@ -67,7 +67,7 @@ $userRow = $u->fetch(PDO::FETCH_ASSOC);
 
 if (!$userRow) {
     session_destroy();
-    redirect('/E-commerce-shoes/auth/Log/login.php');
+    redirect('/MyBrand_Ecommerce/auth/Log/login.php');
 }
 
 /* =========================
@@ -80,7 +80,7 @@ if (!isset($_SESSION[$cartSessionKey]) || !is_array($_SESSION[$cartSessionKey]))
 $cart = &$_SESSION[$cartSessionKey];
 
 if (!$cart) {
-    redirect('/E-commerce-shoes/view/content/products.php');
+    redirect('/MyBrand_Ecommerce/view/content/products.php');
 }
 
 /* =====================================================
@@ -111,7 +111,7 @@ $productIds = array_keys($cart);
 $productIds = array_values(array_filter(array_map('intval', $productIds), fn($v) => $v > 0));
 
 if (!$productIds) {
-    redirect('/E-commerce-shoes/view/content/products.php');
+    redirect('/MyBrand_Ecommerce/view/content/products.php');
 }
 
 $placeholders = implode(',', array_fill(0, count($productIds), '?'));
@@ -125,7 +125,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
 if (!$products) {
     $_SESSION[$cartSessionKey] = [];
-    redirect('/E-commerce-shoes/view/content/products.php');
+    redirect('/MyBrand_Ecommerce/view/content/products.php');
 }
 
 /* =====================================================
@@ -403,7 +403,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Clear cart
             $_SESSION[$cartSessionKey] = [];
 
-            redirect('/E-commerce-shoes/view/content/order_success.php');
+            redirect('/MyBrand_Ecommerce/view/content/order_success.php');
         } catch (Throwable $ex) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             $error = 'Order failed: ' . $ex->getMessage();

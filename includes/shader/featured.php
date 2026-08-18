@@ -124,7 +124,7 @@ require_once __DIR__ . '/../contract/Featured.php';
                         <?php foreach ($featured as $item):
                             $title = htmlspecialchars($item['title'] ?: $item['product_name']);
                             $img   = htmlspecialchars($item['image_url']);
-                            $link  = '/E-commerce-shoes/view/content/products.php?product_id=' . urlencode($item['product_id']);
+                            $link  = '/MyBrand_Ecommerce/view/content/products.php?product_id=' . urlencode($item['product_id']);
                             $price = isset($item['price']) ? number_format($item['price'], 2) : '';
                             $discount = isset($item['discount']) ? $item['discount'] : null;
                         ?>

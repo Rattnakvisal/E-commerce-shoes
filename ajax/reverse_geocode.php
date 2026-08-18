@@ -81,7 +81,7 @@ $curlOptions = [
     CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_HTTPHEADER     => [
         // IMPORTANT: use a real UA. Replace with your domain/email.
-        'User-Agent: E-commerce-shoes/1.0 (contact: admin@myshop.local)',
+        'User-Agent: MyBrand_Ecommerce/1.0 (contact: admin@myshop.local)',
         'Accept: application/json'
     ],
 ];

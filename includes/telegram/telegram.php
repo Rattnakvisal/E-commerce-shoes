@@ -2,11 +2,19 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/telegram.php';
+$telegramConfig = require __DIR__ . '/../../config/telegram.php';
+
+if (!defined('TELEGRAM_BOT_TOKEN')) {
+    define('TELEGRAM_BOT_TOKEN', (string)($telegramConfig['bot_token'] ?? ''));
+}
+if (!defined('TELEGRAM_CHAT_ID')) {
+    define('TELEGRAM_CHAT_ID', (string)($telegramConfig['chat_id'] ?? ''));
+}
 
 final class TelegramNotificationService
 {
     private const API_TIMEOUT = 15;
+    private const CONNECT_TIMEOUT = 5;
     private const PARSE_MODE  = 'HTML';
 
     /** Where your bank logos are stored (local filesystem path) */
@@ -43,8 +51,11 @@ final class TelegramNotificationService
         ?float $lat = null,
         ?float $lng = null,
         ?string $adminUrl = null
-    ): void {
-        if (!self::isConfigured()) return;
+    ): bool {
+        if (!self::isConfigured()) {
+            error_log('Telegram notification skipped: bot token or chat ID is missing.');
+            return false;
+        }
 
         // Validate GPS (optional)
         $hasGps = self::validLatLng($lat, $lng);
@@ -70,7 +81,8 @@ final class TelegramNotificationService
         $media = self::collectMedia($paymentCode, $products, $cart);
 
         // Send message with media if available
-        self::sendCaptionWithOptionalMedia($caption, $media);
+        $sent = self::sendCaptionWithOptionalMedia($caption, $media);
+        if (!$sent) return false;
 
         // Optional: send telegram "pin" location
         // (Uncomment if you want a real location message)
@@ -80,6 +92,7 @@ final class TelegramNotificationService
 
         // Send buttons message (adds Open Map)
         self::sendActionButtons($orderId, $adminUrl, $hasGps ? $lat : null, $hasGps ? $lng : null);
+        return true;
     }
 
     /* =====================================================
@@ -136,6 +149,7 @@ final class TelegramNotificationService
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
             CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => self::CONNECT_TIMEOUT,
             CURLOPT_TIMEOUT        => self::API_TIMEOUT,
             CURLOPT_POSTFIELDS     => $payload,
         ]);
@@ -145,7 +159,20 @@ final class TelegramNotificationService
         $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        return !($res === false || $err) && $code >= 200 && $code < 300;
+        $body = is_string($res) ? json_decode($res, true) : null;
+        $ok = $res !== false
+            && $err === ''
+            && $code >= 200
+            && $code < 300
+            && is_array($body)
+            && ($body['ok'] ?? false) === true;
+
+        if (!$ok) {
+            $description = is_array($body) ? (string)($body['description'] ?? '') : '';
+            error_log(sprintf('Telegram API %s failed (HTTP %d): %s%s', $method, $code, $err, $description));
+        }
+
+        return $ok;
     }
 
     private static function sendMessage(string $text): bool
@@ -267,7 +294,7 @@ final class TelegramNotificationService
             $qty = (int) ($cart[$pid] ?? 0);
             if ($pid <= 0 || $qty < 1) continue;
 
-            $name  = (string) ($p['name'] ?? '');
+            $name  = htmlspecialchars((string)($p['name'] ?? 'Item'), ENT_QUOTES, 'UTF-8');
             $price = (float) ($p['price'] ?? 0);
 
             $items[] = sprintf('• %s × %d (%s)', $name, $qty, self::money($price));
@@ -406,24 +433,21 @@ final class TelegramNotificationService
         return $path !== '' && file_exists($path) && is_file($path);
     }
 
-    private static function sendCaptionWithOptionalMedia(string $caption, array $media): void
+    private static function sendCaptionWithOptionalMedia(string $caption, array $media): bool
     {
         if (!$media) {
-            self::sendMessage($caption);
-            return;
+            return self::sendMessage($caption);
         }
 
         if (count($media) === 1) {
             $first = $media[0];
             if (self::isLocalFile($first)) {
-                self::sendPhoto(new CURLFile($first), $caption);
-            } else {
-                self::sendPhoto($first, $caption);
+                return self::sendPhoto(new CURLFile($first), $caption);
             }
-            return;
+            return self::sendPhoto($first, $caption);
         }
 
-        self::sendMediaGroup($media, $caption);
+        return self::sendMediaGroup($media, $caption);
     }
 
     /* =====================================================

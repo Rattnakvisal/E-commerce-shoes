@@ -227,7 +227,7 @@ function uploadImage($file)
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
     move_uploaded_file($file['tmp_name'], $dir . $name);
-    return '/E-commerce-shoes/assets/Images/products/' . $name;
+    return '/MyBrand_Ecommerce/assets/Images/products/' . $name;
 }
 
 /**

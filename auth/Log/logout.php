@@ -66,5 +66,5 @@ session_destroy();
 /* ----------------------------
    Redirect
 ---------------------------- */
-header('Location: /E-commerce-shoes/auth/Log/login.php?loggedout=1');
+header('Location: /MyBrand_Ecommerce/auth/Log/login.php?loggedout=1');
 exit;
