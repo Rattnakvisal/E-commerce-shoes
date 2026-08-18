@@ -96,43 +96,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8" />
-    <title>Login</title>
+    <title>Sign in | MyBrand</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
+        :root { --ink: #18231f; --accent: #b85c38; --accent-dark: #934426; }
+        body { font-family: 'DM Sans', sans-serif; }
+        h1, h2, .brand { font-family: 'Manrope', sans-serif; }
+        .auth-shell { box-shadow: 0 28px 80px rgba(40, 36, 28, .14); }
+        .photo-panel::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,12,.04) 20%, rgba(10,14,12,.84) 100%); }
+        .field:focus-within { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(184,92,56,.12); }
+        .field:focus-within .field-icon { color: var(--accent); }
+        .primary-button { background: var(--ink); }
+        .primary-button:hover { background: var(--accent-dark); transform: translateY(-1px); }
+        .primary-button:active { transform: translateY(0); }
+        .auth-link { color: var(--accent-dark); }
+        .google-g { background: conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 40%, #fbbc05 0 65%, #ea4335 0 82%, #4285f4 0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        @media (prefers-reduced-motion: no-preference) {
+            .auth-shell { animation: enter .55s ease-out both; }
+            @keyframes enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        }
+    </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-white-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
+<body class="min-h-screen flex items-center justify-center bg-[#f2efe8] px-4 py-6 sm:px-6 sm:py-10">
 
     <!-- Card -->
-    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2">
+    <main class="auth-shell w-full max-w-5xl overflow-hidden rounded-[1.75rem] bg-[#fffdf9]">
+        <div class="grid min-h-[650px] grid-cols-1 md:grid-cols-[0.92fr_1.08fr]">
 
             <!-- Left Image -->
-            <div class="relative hidden md:block">
+            <section class="photo-panel relative hidden overflow-hidden md:block" aria-label="MyBrand welcome">
                 <img src="../../assets/Images/Login image detail.avif"
-                    class="h-full w-full object-cover" alt="Login">
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="absolute inset-0 p-10 flex flex-col justify-end">
-                    <h2 class="text-4xl font-extrabold text-white leading-tight">
-                        Welcome<br>Back
+                    class="h-full w-full object-cover transition duration-700 hover:scale-[1.02]" alt="Black and white sneakers displayed on a wooden stool">
+                <div class="absolute left-9 top-8 z-10 flex items-center gap-3 text-white">
+                    <span class="grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm"><i class="fa-solid fa-bag-shopping text-sm"></i></span>
+                    <span class="brand text-lg font-extrabold tracking-tight">MYBRAND</span>
+                </div>
+                <div class="absolute inset-x-0 bottom-0 z-10 p-9 lg:p-12">
+                    <span class="mb-4 inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[.18em] text-white/90 backdrop-blur-sm">Member access</span>
+                    <h2 class="text-4xl font-extrabold leading-tight text-white lg:text-5xl">
+                        Good to see<br>you again.
                     </h2>
-                    <p class="text-white/80 mt-2">
-                        Sign in to continue.
+                    <p class="mt-4 max-w-xs text-base leading-7 text-white/75">
+                        Sign in to continue shopping, track your orders, and revisit your favorites.
                     </p>
                 </div>
-            </div>
+            </section>
 
             <!-- Right Form -->
-            <div class="p-8 sm:p-10">
-                <h1 class="text-3xl font-extrabold text-center">Sign In</h1>
-                <p class="text-slate-500 text-center mt-2 mb-8">
-                    Enter your credentials below
-                </p>
+            <section class="flex items-center px-6 py-9 sm:px-10 lg:px-16">
+              <div class="mx-auto w-full max-w-md">
+                <a href="../../view/content/index.php" class="mb-10 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-900"><i class="fa-solid fa-arrow-left text-xs"></i> Back to store</a>
+                <div class="mb-8 flex items-center gap-3 text-[#18231f] md:hidden">
+                    <span class="grid h-10 w-10 place-items-center rounded-full bg-[#18231f] text-white"><i class="fa-solid fa-bag-shopping text-sm"></i></span>
+                    <span class="brand text-lg font-extrabold tracking-tight">MYBRAND</span>
+                </div>
+                <h1 class="text-[2rem] font-extrabold tracking-[-0.035em] text-[#18231f] sm:text-4xl">Welcome back</h1>
+                <p class="mb-8 mt-2 text-slate-500">Enter your details to access your account.</p>
 
                 <!-- Success -->
                 <?php if (!empty($success)): ?>
-                    <div class="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg text-sm">
+                    <div role="status" class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                         <i class="fas fa-check-circle mr-1"></i>
                         <?= htmlspecialchars($success) ?>
                     </div>
@@ -140,41 +167,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <!-- Error -->
                 <?php if (!empty($error)): ?>
-                    <div class="mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
+                    <div role="alert" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                         <i class="fas fa-exclamation-circle mr-1"></i>
                         <?= htmlspecialchars($error) ?>
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="space-y-5">
+                <form method="POST" class="space-y-5" novalidate>
                     <?= csrf_input_field(); ?>
 
                     <!-- Email -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                        <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">
                             Email Address
                         </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <div class="field relative rounded-xl border border-slate-200 bg-white transition">
+                            <span class="field-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition">
                                 <i class="fas fa-envelope"></i>
                             </span>
                             <input type="email"
+                                id="email"
                                 name="email"
                                 required
                                 value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES) ?>"
                                 placeholder="you@example.com"
-                                class="w-full pl-10 pr-4 py-3 rounded-xl border bg-slate-50
-                                       focus:outline-none focus:ring-2 focus:ring-slate-900">
+                                autocomplete="email"
+                                class="w-full rounded-xl bg-transparent py-3.5 pl-11 pr-4 text-slate-900 outline-none placeholder:text-slate-400">
                         </div>
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">
-                            Password
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <div class="mb-2 flex items-center justify-between">
+                            <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
+                            <a href="forgot-password.php" class="auth-link text-sm font-semibold hover:underline">Forgot password?</a>
+                        </div>
+                        <div class="field relative rounded-xl border border-slate-200 bg-white transition">
+                            <span class="field-icon pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition">
                                 <i class="fas fa-lock"></i>
                             </span>
                             <input type="password"
@@ -182,13 +211,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 name="password"
                                 required
                                 placeholder="••••••••"
-                                class="w-full pl-10 pr-12 py-3 rounded-xl border bg-slate-50
-                                       focus:outline-none focus:ring-2 focus:ring-slate-900">
+                                autocomplete="current-password"
+                                class="w-full rounded-xl bg-transparent py-3.5 pl-11 pr-12 text-slate-900 outline-none placeholder:text-slate-400">
 
                             <!-- Toggle -->
                             <button type="button"
                                 id="togglePassword"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#b85c38]"
                                 aria-label="Toggle password visibility"
                                 aria-pressed="false">
                                 <i class="fa-solid fa-eye"></i>
@@ -198,51 +227,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- Submit -->
                     <button type="submit"
-                        class="w-full bg-slate-900 text-white py-3 rounded-xl font-semibold
-                               hover:bg-slate-800 transition flex items-center justify-center gap-2">
+                        class="primary-button flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold text-white shadow-lg shadow-slate-900/10 transition disabled:cursor-wait disabled:opacity-70">
                         <i class="fas fa-sign-in-alt"></i>
                         Sign In
                     </button>
 
-                    <!-- Forgot -->
-                    <div class="text-right">
-                        <a href="forgot-password.php"
-                            class="text-sm text-slate-600 hover:text-slate-900 hover:underline">
-                            Forgot password?
-                        </a>
-                    </div>
-
                     <!-- Divider -->
-                    <div class="flex items-center gap-3 py-2">
+                    <div class="flex items-center gap-4 py-1">
                         <div class="flex-1 h-px bg-slate-200"></div>
-                        <span class="text-xs text-slate-400">OR</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-[.16em] text-slate-400">or continue with</span>
                         <div class="flex-1 h-px bg-slate-200"></div>
                     </div>
 
                     <!-- Google -->
-                    <button type="button"
-                        onclick="window.location.href='../google/google-login.php'"
-                        class="w-full border py-3 rounded-xl font-semibold flex justify-center gap-2 hover:bg-slate-50">
-                        <i class="fa-brands fa-google"></i>
+                    <a href="../google/google-login.php"
+                        class="flex w-full justify-center gap-3 rounded-xl border border-[#d7e3fc] bg-[#f8faff] py-3.5 font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:border-[#a8c7fa] hover:bg-[#f1f6ff] hover:shadow-md">
+                        <span class="google-g text-xl font-extrabold leading-none">G</span>
                         Sign in with Google
-                    </button>
+                    </a>
 
                     <!-- Links -->
-                    <div class="text-center text-sm text-slate-600 space-y-2 mt-2">
+                    <div class="pt-1 text-center text-sm text-slate-500">
                         <p>
                             Don’t have an account?
-                            <a href="register.php" class="font-semibold hover:underline">Sign up</a>
-                        </p>
-                        <p>
-                            Go to
-                            <a href="../../view/content/index.php" class="font-semibold hover:underline">View Page</a>
+                            <a href="register.php" class="auth-link font-semibold hover:underline">Create one</a>
                         </p>
                     </div>
                 </form>
-            </div>
+              </div>
+            </section>
 
         </div>
-    </div>
+    </main>
 
     <script src="../../assets/Js/login.js"></script>
 </body>

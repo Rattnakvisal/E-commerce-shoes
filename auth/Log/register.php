@@ -159,64 +159,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8" />
-    <title>Create Account</title>
+    <title>Create account | MyBrand</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
+        :root { --ink: #18231f; --accent: #b85c38; --accent-dark: #934426; }
+        body { font-family: 'DM Sans', sans-serif; }
+        h1, h2, .brand { font-family: 'Manrope', sans-serif; }
+        .auth-shell { box-shadow: 0 28px 80px rgba(40, 36, 28, .14); }
+        .photo-panel::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,12,.04) 20%, rgba(10,14,12,.84) 100%); }
+        .field:focus-within { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(184,92,56,.12); }
+        .field:focus-within .field-icon { color: var(--accent); }
+        .primary-button { background: var(--ink); }
+        .primary-button:hover { background: var(--accent-dark); transform: translateY(-1px); }
+        .auth-link { color: var(--accent-dark); }
+        .google-g { background: conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 40%, #fbbc05 0 65%, #ea4335 0 82%, #4285f4 0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        input[type="checkbox"] { accent-color: var(--accent); }
+        @media (prefers-reduced-motion: no-preference) {
+            .auth-shell { animation: enter .55s ease-out both; }
+            @keyframes enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        }
+    </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-white-to-br from-teal-900 via-slate-900 to-black px-4 py-10">
+<body class="min-h-screen flex items-center justify-center bg-[#f2efe8] px-4 py-6 sm:px-6 sm:py-10">
 
-    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2">
+    <main class="auth-shell w-full max-w-5xl overflow-hidden rounded-[1.75rem] bg-[#fffdf9]">
+        <div class="grid min-h-[760px] grid-cols-1 md:grid-cols-[0.92fr_1.08fr]">
 
             <!-- Left image -->
-            <div class="relative hidden md:block">
+            <section class="photo-panel relative hidden overflow-hidden md:block" aria-label="MyBrand membership">
                 <img src="../../assets/Images/Login image detail.avif"
-                    class="h-full w-full object-cover" alt="Register">
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="absolute inset-0 p-10 flex flex-col justify-end">
-                    <h2 class="text-4xl font-extrabold text-white">Create your<br>Account</h2>
-                    <p class="text-white/80 mt-2">Join and get started today.</p>
+                    class="h-full w-full object-cover transition duration-700 hover:scale-[1.02]" alt="Black and white sneakers displayed on a wooden stool">
+                <div class="absolute left-9 top-8 z-10 flex items-center gap-3 text-white">
+                    <span class="grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm"><i class="fa-solid fa-bag-shopping text-sm"></i></span>
+                    <span class="brand text-lg font-extrabold tracking-tight">MYBRAND</span>
                 </div>
-            </div>
+                <div class="absolute inset-x-0 bottom-0 z-10 p-9 lg:p-12">
+                    <span class="mb-4 inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[.18em] text-white/90 backdrop-blur-sm">Join the community</span>
+                    <h2 class="text-4xl font-extrabold leading-tight text-white lg:text-5xl">Your next favorite<br>is waiting.</h2>
+                    <p class="mt-4 max-w-xs text-base leading-7 text-white/75">Create an account for faster checkout, order updates, and a wishlist that stays with you.</p>
+                </div>
+            </section>
 
             <!-- Form -->
-            <div class="p-8 sm:p-10">
-                <h1 class="text-3xl font-extrabold text-center">Sign Up</h1>
-                <p class="text-slate-500 text-center mt-2 mb-8">It only takes a minute</p>
+            <section class="flex items-center px-6 py-9 sm:px-10 lg:px-16">
+              <div class="mx-auto w-full max-w-md">
+                <a href="../../view/content/index.php" class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-900"><i class="fa-solid fa-arrow-left text-xs"></i> Back to store</a>
+                <div class="mb-7 flex items-center gap-3 text-[#18231f] md:hidden">
+                    <span class="grid h-10 w-10 place-items-center rounded-full bg-[#18231f] text-white"><i class="fa-solid fa-bag-shopping text-sm"></i></span>
+                    <span class="brand text-lg font-extrabold tracking-tight">MYBRAND</span>
+                </div>
+                <h1 class="text-[2rem] font-extrabold tracking-[-0.035em] text-[#18231f] sm:text-4xl">Create your account</h1>
+                <p class="mb-7 mt-2 text-slate-500">Join MyBrand and make every checkout easier.</p>
 
                 <?php if (!empty($error)): ?>
-                    <div class="mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
+                    <div role="alert" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                         <i class="fas fa-exclamation-circle mr-1"></i>
                         <?= htmlspecialchars($error) ?>
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="space-y-5">
+                <form method="POST" class="space-y-4" novalidate>
                     <?= csrf_input_field(); ?>
 
                     <!-- Name -->
-                    <input id="name" type="text" name="name" required
-                        value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
-                        placeholder="Full Name"
-                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
+                    <div>
+                        <label for="name" class="mb-2 block text-sm font-semibold text-slate-700">Full name</label>
+                        <div class="field relative rounded-xl border border-slate-200 bg-white transition">
+                            <i class="field-icon fa-regular fa-user pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition"></i>
+                            <input id="name" type="text" name="name" required autocomplete="name"
+                                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" placeholder="Your full name"
+                                class="w-full rounded-xl bg-transparent py-3 pl-11 pr-4 text-slate-900 outline-none placeholder:text-slate-400">
+                        </div>
+                    </div>
 
                     <!-- Email -->
-                    <input id="email" type="email" name="email" required
-                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-                        placeholder="Email Address"
-                        class="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
+                    <div>
+                        <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email address</label>
+                        <div class="field relative rounded-xl border border-slate-200 bg-white transition">
+                            <i class="field-icon fa-regular fa-envelope pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition"></i>
+                            <input id="email" type="email" name="email" required autocomplete="email"
+                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="you@example.com"
+                                class="w-full rounded-xl bg-transparent py-3 pl-11 pr-4 text-slate-900 outline-none placeholder:text-slate-400">
+                        </div>
+                    </div>
 
                     <!-- Password -->
                     <div class="space-y-2">
-                        <div class="relative">
+                        <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
+                        <div class="field relative rounded-xl border border-slate-200 bg-white transition">
+                            <i class="field-icon fa-solid fa-lock pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition"></i>
                             <input id="password" type="password" name="password" required
-                                placeholder="Password (min 8 chars)"
-                                class="w-full px-4 py-3 pr-12 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
+                                placeholder="At least 8 characters" autocomplete="new-password"
+                                class="w-full rounded-xl bg-transparent py-3 pl-11 pr-12 text-slate-900 outline-none placeholder:text-slate-400">
 
                             <button id="togglePassword" type="button"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#b85c38]"
                                 aria-label="Toggle password">
                                 <i class="fa-regular fa-eye"></i>
                             </button>
@@ -231,13 +272,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- Confirm Password -->
                     <div class="space-y-2">
-                        <div class="relative">
+                        <label for="confirm_password" class="block text-sm font-semibold text-slate-700">Confirm password</label>
+                        <div class="field relative rounded-xl border border-slate-200 bg-white transition">
+                            <i class="field-icon fa-solid fa-shield-halved pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition"></i>
                             <input id="confirm_password" type="password" name="confirm_password" required
-                                placeholder="Confirm Password"
-                                class="w-full px-4 py-3 pr-12 rounded-xl border bg-slate-50 focus:ring-2 focus:ring-slate-900">
+                                placeholder="Repeat your password" autocomplete="new-password"
+                                class="w-full rounded-xl bg-transparent py-3 pl-11 pr-12 text-slate-900 outline-none placeholder:text-slate-400">
 
                             <button id="toggleConfirmPassword" type="button"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#b85c38]"
                                 aria-label="Toggle confirm password">
                                 <i class="fa-regular fa-eye"></i>
                             </button>
@@ -253,46 +296,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <!-- Terms -->
-                    <label class="flex items-center gap-2 text-sm text-slate-600">
-                        <input id="agree_terms" type="checkbox" name="agree_terms" required>
-                        I agree to the Terms & Conditions
+                    <label class="flex cursor-pointer items-start gap-3 text-sm leading-5 text-slate-600">
+                        <input id="agree_terms" type="checkbox" name="agree_terms" required class="mt-0.5 h-4 w-4 rounded border-slate-300">
+                        <span>I agree to the <span class="font-semibold text-slate-800">Terms &amp; Conditions</span></span>
                     </label>
 
                     <!-- Submit -->
                     <button type="submit"
-                        class="w-full bg-slate-900 text-white py-3 rounded-xl font-semibold hover:bg-slate-800">
+                        class="primary-button w-full rounded-xl py-3.5 font-semibold text-white shadow-lg shadow-slate-900/10 transition disabled:cursor-wait disabled:opacity-70">
                         Create Account
                     </button>
 
-                    <div class="text-right">
-                        <a href="forgot-password.php"
-                            class="text-sm text-slate-600 hover:text-slate-900 hover:underline">
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-4 py-1">
                         <div class="flex-1 h-px bg-slate-200"></div>
-                        <span class="text-xs text-slate-400">OR</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-[.16em] text-slate-400">or continue with</span>
                         <div class="flex-1 h-px bg-slate-200"></div>
                     </div>
 
                     <!-- Google -->
-                    <button type="button"
-                        onclick="window.location.href='../google/google-login.php'"
-                        class="w-full border py-3 rounded-xl font-semibold flex justify-center gap-2">
-                        <i class="fa-brands fa-google"></i>
+                    <a href="../google/google-login.php"
+                        class="flex w-full justify-center gap-3 rounded-xl border border-[#d7e3fc] bg-[#f8faff] py-3.5 font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:border-[#a8c7fa] hover:bg-[#f1f6ff] hover:shadow-md">
+                        <span class="google-g text-xl font-extrabold leading-none">G</span>
                         Sign up with Google
-                    </button>
+                    </a>
 
-                    <p class="text-center text-sm mt-2">
+                    <p class="mt-2 text-center text-sm text-slate-500">
                         Already have an account?
-                        <a href="login.php" class="font-semibold underline">Sign in</a>
+                        <a href="login.php" class="auth-link font-semibold hover:underline">Sign in</a>
                     </p>
                 </form>
-            </div>
+              </div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <script src="../../assets/Js/register.js"></script>
 </body>

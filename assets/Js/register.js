@@ -35,8 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const div = document.createElement("div");
     div.id = "registerError";
+    div.setAttribute("role", "alert");
+    div.setAttribute("aria-live", "polite");
     div.className =
-      "mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm";
+      "mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700";
     div.innerHTML = `
       <div class="flex items-start gap-2">
         <i class="fas fa-exclamation-circle mt-0.5"></i>
